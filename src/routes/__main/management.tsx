@@ -109,7 +109,7 @@ function ManagementPage() {
         <>
             <PageHeader title="Management" description="Manage residents, hubs, and coordinators" lastUpdated="05:41:15 PM" />
 
-            <Card className="flex-1 overflow-hidden shadow-sm flex flex-col min-h-[400px]">
+            <Card className="flex-1 overflow-hidden shadow-sm flex flex-col min-h-100">
                 <CardContent className="p-4 flex-1 flex flex-col">
                     {isLoading ? (
                         <div className="flex-1 flex items-center justify-center text-muted-foreground">Loading management data...</div>

@@ -15,7 +15,7 @@ import {
     Pie,
     Legend,
 } from 'recharts'
-import { Search, Clock, TrendingUp, HeartPulse, TriangleAlert, Waves, BatteryWarning } from 'lucide-react'
+import {TrendingUp, HeartPulse, TriangleAlert, Waves, BatteryWarning } from 'lucide-react'
 import { PageHeader } from '#/components/ui/page-header'
 
 export const Route = createFileRoute('/__main/')({
@@ -87,16 +87,16 @@ const urgentFlags = [
 
 function FlagIcon({ type, color }: { type: string; color: string }) {
     return (
-        <div className="relative shrink-0 size-[48px] rounded-full bg-[#f2f2f2] flex items-center justify-center">
+        <div className="relative shrink-0 size-12 rounded-full bg-[#f2f2f2] flex items-center justify-center">
             <div
                 className="absolute inset-0 rounded-full flex items-center justify-center m-1 shadow-sm"
                 style={{ backgroundColor: color }}
             />
             <div className="relative z-10 text-white flex items-center justify-center">
-                {type === 'medical' && <HeartPulse className="size-[22px]" />}
-                {type === 'warning' && <TriangleAlert className="size-[22px]" fill="white" />}
-                {type === 'flood' && <Waves className="size-[22px]" />}
-                {type === 'battery' && <BatteryWarning className="size-[22px]" fill="white" />}
+                {type === 'medical' && <HeartPulse className="size-5.5" />}
+                {type === 'warning' && <TriangleAlert className="size-5.5" fill="white" />}
+                {type === 'flood' && <Waves className="size-5.5" />}
+                {type === 'battery' && <BatteryWarning className="size-5.5" fill="white" />}
             </div>
         </div>
     )
@@ -135,7 +135,7 @@ function Dashboard() {
                 ].map((card) => (
                     <div
                         key={card.label}
-                        className="bg-white rounded-[16px] px-6 py-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-shadow"
+                        className="bg-white rounded-2xl px-6 py-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-shadow"
                     >
                         <div>
                             <p className="text-[#989898] text-[15px] font-medium mb-2 line-clamp-1">{card.label}</p>
@@ -147,19 +147,19 @@ function Dashboard() {
                                 <span className="text-emerald-600 text-[13px] font-semibold">12.5% vs Last Period</span>
                             </div>
                         ) : (
-                            <div className="h-[26px] mt-2" />
+                            <div className="h-6.5 mt-2" />
                         )}
                     </div>
                 ))}
             </div>
 
             {/* Charts row 1 */}
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 h-auto lg:h-[440px]">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 h-auto lg:h-110">
                 {/* Check-ins trend */}
-                <div className="bg-white rounded-[16px] xl:col-span-8 p-7 flex flex-col shadow-sm border border-slate-100">
+                <div className="bg-white rounded-2xl xl:col-span-8 p-7 flex flex-col shadow-sm border border-slate-100">
                     <h2 className="text-[#1e1e20] text-[22px] font-bold mb-1">Residents Check-ins Trend</h2>
                     <p className="text-[#989898] text-[15px] mb-8 font-medium">Network-wide check-in volume over the last 6 hours</p>
-                    <div className="flex-1 min-h-[300px] lg:min-h-0">
+                    <div className="flex-1 min-h-75 lg:min-h-0">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={checkInTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
@@ -201,7 +201,7 @@ function Dashboard() {
                 </div>
 
                 {/* Urgent Flags */}
-                <div className="bg-white rounded-[16px] xl:col-span-4 p-7 flex flex-col shadow-sm border border-slate-100">
+                <div className="bg-white rounded-2xl xl:col-span-4 p-7 flex flex-col shadow-sm border border-slate-100">
                     <div className="flex items-center justify-between mb-8">
                         <h2 className="text-[#1e1e20] text-[22px] font-bold">Urgent Flags</h2>
                         <span className="bg-rose-100/80 text-rose-600 text-[13px] font-bold px-4 py-1.5 rounded-full">6 Active</span>
@@ -219,7 +219,7 @@ function Dashboard() {
                                             {flag.type}
                                         </p>
                                         <p
-                                            className="text-[#686868] text-[13px] font-medium leading-tight max-w-[160px] truncate"
+                                            className="text-[#686868] text-[13px] font-medium leading-tight max-w-40 truncate"
                                             title={flag.location}
                                         >
                                             {flag.location}
@@ -234,11 +234,11 @@ function Dashboard() {
             </div>
 
             {/* Charts row 2 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 h-auto lg:h-[440px]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 h-auto lg:h-110">
                 {/* Hazard Types */}
-                <div className="bg-white rounded-[16px] p-7 flex flex-col shadow-sm border border-slate-100">
+                <div className="bg-white rounded-2xl p-7 flex flex-col shadow-sm border border-slate-100">
                     <h2 className="text-[#1e1e20] text-[22px] font-bold mb-8">Hazard Types</h2>
-                    <div className="flex-1 min-h-[300px] lg:min-h-0">
+                    <div className="flex-1 min-h-75 lg:min-h-0">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={hazardData} layout="vertical" margin={{ top: 0, right: 30, left: 0, bottom: 0 }} barSize={32}>
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
@@ -273,9 +273,9 @@ function Dashboard() {
                 </div>
 
                 {/* System Workload */}
-                <div className="bg-white rounded-[16px] p-7 flex flex-col shadow-sm border border-slate-100">
+                <div className="bg-white rounded-2xl p-7 flex flex-col shadow-sm border border-slate-100">
                     <h2 className="text-[#1e1e20] text-[22px] font-bold mb-4">System Workload</h2>
-                    <div className="flex-1 min-h-[300px] lg:min-h-0 flex items-center justify-center">
+                    <div className="flex-1 min-h-75 lg:min-h-0 flex items-center justify-center">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
