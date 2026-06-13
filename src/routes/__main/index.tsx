@@ -15,7 +15,7 @@ import {
     Pie,
     Legend,
 } from 'recharts'
-import {TrendingUp, HeartPulse, TriangleAlert, Waves, BatteryWarning } from 'lucide-react'
+import { TrendingUp, HeartPulse, TriangleAlert, Waves, BatteryWarning } from 'lucide-react'
 import { PageHeader } from '#/components/ui/page-header'
 
 export const Route = createFileRoute('/__main/')({
