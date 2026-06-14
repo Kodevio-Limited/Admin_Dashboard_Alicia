@@ -59,19 +59,22 @@ function AccessControlPage() {
             {
                 key: 'role',
                 header: 'ROLE',
-                className: 'py-4 text-muted-foreground',
+                className: 'py-4 text-muted-foreground text-left',
+                headerClassName: 'text-left',
                 render: (user: AccessUserRow) => user.role,
             },
             {
                 key: 'area',
                 header: 'ASSIGNED AREA',
-                className: 'py-4 text-muted-foreground',
+                className: 'py-4 text-muted-foreground text-left',
+                headerClassName: 'text-left',
                 render: (user: AccessUserRow) => user.area,
             },
             {
                 key: 'status',
                 header: 'STATUS',
-                className: 'py-4',
+                className: 'py-4 text-left',
+                headerClassName: 'text-left',
                 render: (user: AccessUserRow) => (
                     <Badge variant={statusVariant(user.status)} className="rounded-full px-3 py-1 text-xs font-semibold">{user.status}</Badge>
                 ),
@@ -79,7 +82,8 @@ function AccessControlPage() {
             {
                 key: 'action',
                 header: 'ACTION',
-                className: 'py-4 text-right pr-4',
+                className: 'py-4 text-left pr-4',
+                headerClassName: 'text-left pr-4',
                 render: (user: AccessUserRow) => (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -107,7 +111,7 @@ function AccessControlPage() {
                 <Button size="sm">+ Invite User</Button>
             </PageHeader>
 
-            <Card className="flex-1 overflow-hidden shadow-sm flex flex-col min-h-100">
+            <Card className="flex-1 overflow-hidden shadow-sm flex flex-col min-h-0">
                 <CardContent className="p-4 flex-1 flex flex-col">
                     {isLoading ? (
                         <div className="flex-1 flex items-center justify-center text-muted-foreground">Loading access control data...</div>
