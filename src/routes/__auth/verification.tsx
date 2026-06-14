@@ -60,7 +60,7 @@ function TwoStepVerificationPage() {
             {/* Button */}
             <Button
                 size="lg"
-                className="w-full h-14 rounded-2xl bg-[#03045e] hover:bg-[#020348] text-white text-lg font-semibold mt-2 shadow-md transition-all active:scale-[0.98]"
+                className="w-full"
                 onClick={() => navigate({ to: '/' })}
                 disabled={otp.length !== 6}
             >

@@ -15,8 +15,10 @@ import {
     Pie,
     Legend,
 } from 'recharts'
-import { TrendingUp, HeartPulse, TriangleAlert, Waves, BatteryWarning } from 'lucide-react'
+import { HeartPulse, TriangleAlert, Waves, BatteryWarning, Users, Activity, CheckCircle, ShieldCheck, AlertCircle } from 'lucide-react'
 import { PageHeader } from '#/components/ui/page-header'
+import { StatCard } from '#/components/ui/stat-card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export const Route = createFileRoute('/__main/')({
     component: Dashboard,
@@ -122,44 +124,30 @@ function Dashboard() {
     }, [])
 
     return (
-        <div className="flex flex-col gap-6 w-full max-w-full overflow-hidden pb-8 font-sans">
+        <div className="flex flex-col gap-3 w-full max-w-full overflow-hidden pb-8 font-sans">
             <PageHeader title="Dashboard" description="System status overview" lastUpdated={currentTime} />
             {/* Stat cards */}
-            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 shrink-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 shrink-0">
                 {[
-                    { label: 'Residents Checked-in', value: '1,250', trend: true },
-                    { label: 'Active Hubs', value: '18/20', trend: true },
-                    { label: 'Coordinators Active', value: '24', trend: true },
-                    { label: 'Gov/NGO Licenses', value: '5', trend: false },
-                    { label: 'Open Alerts', value: '3', trend: true },
+                    { label: 'Residents Checked-in', value: '1,250', trend: { value: '12.5%', direction: 'up', label: 'vs Last Period' }, icon: Users, color: 'emerald' },
+                    { label: 'Active Hubs', value: '18/20', trend: { value: '12.5%', direction: 'up', label: 'vs Last Period' }, icon: Activity, color: 'blue' },
+                    { label: 'Coordinators Active', value: '24', trend: { value: '12.5%', direction: 'up', label: 'vs Last Period' }, icon: CheckCircle, color: 'amber' },
+                    { label: 'Gov/NGO Licenses', value: '5', icon: ShieldCheck, color: 'slate' },
+                    { label: 'Open Alerts', value: '3', trend: { value: '12.5%', direction: 'up', label: 'vs Last Period' }, icon: AlertCircle, color: 'rose' },
                 ].map((card) => (
-                    <div
-                        key={card.label}
-                        className="bg-white rounded-2xl px-6 py-5 shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-shadow"
-                    >
-                        <div>
-                            <p className="text-[#989898] text-[15px] font-medium mb-2 line-clamp-1">{card.label}</p>
-                            <p className="text-slate-900 text-[32px] font-bold mb-4 tracking-tight leading-none">{card.value}</p>
-                        </div>
-                        {card.trend ? (
-                            <div className="flex items-center gap-1.5 mt-2">
-                                <TrendingUp className="size-4 text-emerald-600 stroke-[2.5]" />
-                                <span className="text-emerald-600 text-[13px] font-semibold">12.5% vs Last Period</span>
-                            </div>
-                        ) : (
-                            <div className="h-6.5 mt-2" />
-                        )}
-                    </div>
+                    <StatCard key={card.label} {...card as any} />
                 ))}
             </div>
 
             {/* Charts row 1 */}
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 h-auto lg:h-110">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 h-auto lg:h-110">
                 {/* Check-ins trend */}
-                <div className="bg-white rounded-2xl xl:col-span-8 p-7 flex flex-col shadow-sm border border-slate-100">
-                    <h2 className="text-[#1e1e20] text-[22px] font-bold mb-1">Residents Check-ins Trend</h2>
-                    <p className="text-[#989898] text-[15px] mb-8 font-medium">Network-wide check-in volume over the last 6 hours</p>
-                    <div className="flex-1 min-h-75 lg:min-h-0">
+                <Card className="xl:col-span-8 p-5 md:p-6 flex flex-col min-h-75 lg:min-h-0">
+                    <CardHeader className="px-0 pt-0 pb-8">
+                        <CardTitle className="text-[22px] font-bold">Residents Check-ins Trend</CardTitle>
+                        <p className="text-muted-foreground text-[15px] font-medium">Network-wide check-in volume over the last 6 hours</p>
+                    </CardHeader>
+                    <CardContent className="p-0 flex-1 min-h-75 lg:min-h-0">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={checkInTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
@@ -197,16 +185,16 @@ function Dashboard() {
                                 />
                             </AreaChart>
                         </ResponsiveContainer>
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
 
                 {/* Urgent Flags */}
-                <div className="bg-white rounded-2xl xl:col-span-4 p-7 flex flex-col shadow-sm border border-slate-100">
-                    <div className="flex items-center justify-between mb-8">
-                        <h2 className="text-[#1e1e20] text-[22px] font-bold">Urgent Flags</h2>
+                <Card className="xl:col-span-4 p-5 md:p-6 flex flex-col">
+                    <CardHeader className="px-0 pt-0 pb-8 flex flex-row items-center justify-between space-y-0">
+                        <CardTitle className="text-[22px] font-bold">Urgent Flags</CardTitle>
                         <span className="bg-rose-100/80 text-rose-600 text-[13px] font-bold px-4 py-1.5 rounded-full">6 Active</span>
-                    </div>
-                    <div className="flex flex-col gap-6 flex-1 overflow-y-auto pr-2">
+                    </CardHeader>
+                    <CardContent className="p-0 flex flex-col gap-6 flex-1 overflow-y-auto pr-2">
                         {urgentFlags.map((flag) => (
                             <div
                                 key={flag.id}
@@ -229,16 +217,18 @@ function Dashboard() {
                                 <p className="text-[#989898] text-[13px] font-semibold shrink-0 ml-2">{flag.time}</p>
                             </div>
                         ))}
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
             </div>
 
             {/* Charts row 2 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 h-auto lg:h-110">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-auto lg:h-110">
                 {/* Hazard Types */}
-                <div className="bg-white rounded-2xl p-7 flex flex-col shadow-sm border border-slate-100">
-                    <h2 className="text-[#1e1e20] text-[22px] font-bold mb-8">Hazard Types</h2>
-                    <div className="flex-1 min-h-75 lg:min-h-0">
+                <Card className="p-5 md:p-6 flex flex-col">
+                    <CardHeader className="px-0 pt-0 pb-8">
+                        <CardTitle className="text-[22px] font-bold">Hazard Types</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0 flex-1 min-h-75 lg:min-h-0">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={hazardData} layout="vertical" margin={{ top: 0, right: 30, left: 0, bottom: 0 }} barSize={32}>
                                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
@@ -269,13 +259,15 @@ function Dashboard() {
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
 
                 {/* System Workload */}
-                <div className="bg-white rounded-2xl p-7 flex flex-col shadow-sm border border-slate-100">
-                    <h2 className="text-[#1e1e20] text-[22px] font-bold mb-4">System Workload</h2>
-                    <div className="flex-1 min-h-75 lg:min-h-0 flex items-center justify-center">
+                <Card className="p-5 md:p-6 flex flex-col">
+                    <CardHeader className="px-0 pt-0 pb-4">
+                        <CardTitle className="text-[22px] font-bold">System Workload</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0 flex-1 min-h-75 lg:min-h-0 flex items-center justify-center">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
@@ -331,8 +323,8 @@ function Dashboard() {
                                 />
                             </PieChart>
                         </ResponsiveContainer>
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     )

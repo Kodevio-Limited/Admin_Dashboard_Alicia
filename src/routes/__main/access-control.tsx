@@ -38,8 +38,8 @@ function UserProfile({ name, email, avatar }: { name: string; email: string; ava
     )
 }
 
-function statusClasses(status: UserStatus) {
-    return status === 'ACTIVE' ? 'bg-[#adfebc] text-[#0a9105]' : 'bg-[#e9e9e9] text-[#686868]'
+function statusVariant(status: UserStatus): "success" | "secondary" {
+    return status === 'ACTIVE' ? 'success' : 'secondary'
 }
 
 function AccessControlPage() {
@@ -73,7 +73,7 @@ function AccessControlPage() {
                 header: 'STATUS',
                 className: 'py-4',
                 render: (user: AccessUserRow) => (
-                    <Badge className={`${statusClasses(user.status)} rounded-full px-3 py-1 text-xs font-semibold`}>{user.status}</Badge>
+                    <Badge variant={statusVariant(user.status)} className="rounded-full px-3 py-1 text-xs font-semibold">{user.status}</Badge>
                 ),
             },
             {
@@ -83,7 +83,7 @@ function AccessControlPage() {
                 render: (user: AccessUserRow) => (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="rounded-full px-3 py-2 flex items-center gap-2">
+                            <Button variant="outline" className="gap-2">
                                 <Eye className="size-4" />
                                 Action
                             </Button>

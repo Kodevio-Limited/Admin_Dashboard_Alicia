@@ -31,14 +31,14 @@ export const data = {
             icon: <LayoutDashboard />,
         },
         {
-            title: 'AI Reports',
-            url: '/ai-reports',
-            icon: <BrainCircuit />,
-        },
-        {
             title: 'Management',
             url: '/management',
             icon: <Users />,
+        },
+        {
+            title: 'AI Reports',
+            url: '/ai-reports',
+            icon: <BrainCircuit />,
         },
         {
             title: 'Access Control',
@@ -67,7 +67,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <div className="flex justify-center w-full px-4">
                     <div className="h-12 w-full max-w-[140px] relative flex items-center justify-center">
                         <img src="/logo.png" alt="Logo" className="w-full h-full object-contain group-data-[collapsible=icon]:hidden" />
-                        <span className="hidden group-data-[collapsible=icon]:block font-bold text-[#03045e] text-xl">L</span>
+                        <span className="hidden group-data-[collapsible=icon]:block font-bold text-primary text-xl">L</span>
                     </div>
                 </div>
             </SidebarHeader>

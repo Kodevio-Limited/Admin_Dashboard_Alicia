@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Eye } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +12,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
 import { PageHeader } from '@/components/ui/page-header'
 import { DataTable } from '@/components/ui/data-table'
@@ -38,13 +39,14 @@ function ResidentProfile({ name, email, avatar }: { name: string; email: string;
     )
 }
 
-function statusClasses(status: ResidentStatus) {
-    if (status === 'ACTIVE') return 'bg-[#adfebc] text-[#0a9105]'
-    if (status === 'DELAYED') return 'bg-[#fef2c3] text-[#d29d08]'
-    return 'bg-[#feadad] text-[#910000]'
+function statusVariant(status: ResidentStatus): "success" | "warning" | "destructive" {
+    if (status === 'ACTIVE') return 'success'
+    if (status === 'DELAYED') return 'warning'
+    return 'destructive'
 }
 
 function ManagementPage() {
+    const [activeTab, setActiveTab] = useState('residents')
     const { data: residents = [], isLoading } = useQuery({
         queryKey: ['management-residents'],
         queryFn: fetchResidents,
@@ -75,7 +77,7 @@ function ManagementPage() {
                 header: 'STATUS',
                 className: 'py-4',
                 render: (resident: ResidentRow) => (
-                    <Badge className={`${statusClasses(resident.status)} rounded-full px-3 py-1 text-xs font-semibold`}>
+                    <Badge variant={statusVariant(resident.status)} className="rounded-full px-3 py-1 text-xs font-semibold">
                         {resident.status}
                     </Badge>
                 ),
@@ -87,7 +89,7 @@ function ManagementPage() {
                 render: (resident: ResidentRow) => (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="rounded-full px-3 py-2 flex items-center gap-2">
+                            <Button variant="outline" className="gap-2">
                                 <Eye className="size-4" />
                                 Action
                             </Button>
@@ -109,17 +111,45 @@ function ManagementPage() {
         <>
             <PageHeader title="Management" description="Manage residents, hubs, and coordinators" lastUpdated="05:41:15 PM" />
 
-            <Card className="flex-1 overflow-hidden shadow-sm flex flex-col min-h-100">
-                <CardContent className="p-4 flex-1 flex flex-col">
-                    {isLoading ? (
-                        <div className="flex-1 flex items-center justify-center text-muted-foreground">Loading management data...</div>
-                    ) : (
-                        <div className="flex-1 flex flex-col gap-4">
-                            <DataTable columns={columns} data={residents} noun="residents" emptyIcon={<Eye className="h-6 w-6" />} />
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+            <div className="flex-1 flex flex-col gap-6 w-full">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col w-full min-h-0">
+                    <TabsList className="inline-flex w-fit h-10 md:h-12 bg-muted/50 p-1.5 rounded-full overflow-x-auto justify-start border-0">
+                        <TabsTrigger value="residents" className="rounded-full px-6 h-full text-sm font-medium">Residents</TabsTrigger>
+                        <TabsTrigger value="hubs" className="rounded-full px-6 h-full text-sm font-medium">Hubs</TabsTrigger>
+                        <TabsTrigger value="coordinators" className="rounded-full px-6 h-full text-sm font-medium">Coordinators</TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="residents" className="m-0 border-0 p-0 outline-none flex-1 data-[state=active]:flex flex-col mt-2">
+                        <Card className="flex-1 overflow-hidden shadow-sm flex flex-col min-h-100">
+                            <CardContent className="p-4 flex-1 flex flex-col">
+                                {isLoading ? (
+                                    <div className="flex-1 flex items-center justify-center text-muted-foreground">Loading management data...</div>
+                                ) : (
+                                    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                                        <div className="flex-1 overflow-y-auto">
+                                            <div className="flex flex-col gap-4 min-h-min">
+                                                <DataTable columns={columns} data={residents} noun="residents" emptyIcon={<Eye className="h-6 w-6" />} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                    
+                    <TabsContent value="hubs" className="m-0 border-0 p-0 outline-none flex-1 data-[state=active]:flex flex-col mt-2">
+                        <Card className="flex-1 flex items-center justify-center shadow-sm min-h-100 text-muted-foreground">
+                            Hubs management coming soon...
+                        </Card>
+                    </TabsContent>
+                    
+                    <TabsContent value="coordinators" className="m-0 border-0 p-0 outline-none flex-1 data-[state=active]:flex flex-col mt-2">
+                        <Card className="flex-1 flex items-center justify-center shadow-sm min-h-100 text-muted-foreground">
+                            Coordinators management coming soon...
+                        </Card>
+                    </TabsContent>
+                </Tabs>
+            </div>
         </>
     )
 }

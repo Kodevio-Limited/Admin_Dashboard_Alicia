@@ -23,12 +23,12 @@ function AiReportsPage() {
 
             <div className="flex-1 flex flex-col gap-6 w-full">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList variant="line" className="rounded-full bg-[#e3e3e3] p-1 max-w-195">
-                        <TabsTrigger value="ai-control" className="rounded-full bg-white">
+                    <TabsList className="inline-flex w-fit h-10 md:h-12 bg-muted/50 p-1.5 rounded-full overflow-x-auto justify-start border-0">
+                        <TabsTrigger value="ai-control" className="rounded-full px-6 h-full text-sm font-medium">
                             AI Control
                         </TabsTrigger>
-                        <TabsTrigger value="message-review">Message Review</TabsTrigger>
-                        <TabsTrigger value="reports-center">Reports Center</TabsTrigger>
+                        <TabsTrigger value="message-review" className="rounded-full px-6 h-full text-sm font-medium">Message Review</TabsTrigger>
+                        <TabsTrigger value="reports-center" className="rounded-full px-6 h-full text-sm font-medium">Reports Center</TabsTrigger>
                     </TabsList>
                 </Tabs>
 

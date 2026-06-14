@@ -10,6 +10,7 @@ export type DataTableColumn<T> = {
     header: string
     render: (row: T) => React.ReactNode
     className?: string
+    headerClassName?: string
 }
 
 type DataTableProps<T> = {
@@ -72,7 +73,7 @@ function DataTable<T>({
                 <TableHeader>
                     <TableRow>
                         {columns.map((col) => (
-                            <TableHead key={col.key}>{col.header}</TableHead>
+                            <TableHead key={col.key} className={col.headerClassName}>{col.header}</TableHead>
                         ))}
                     </TableRow>
                 </TableHeader>

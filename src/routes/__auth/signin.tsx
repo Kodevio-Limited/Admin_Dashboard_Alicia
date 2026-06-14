@@ -145,7 +145,7 @@ function RouteComponent() {
                             type="submit"
                             disabled={isSubmitting}
                             size="lg"
-                            className="w-full h-14 rounded-2xl bg-[#03045e] hover:bg-[#020348] text-white text-lg font-semibold mt-2 shadow-md transition-all active:scale-[0.98]"
+                            className="w-full mt-2"
                         >
                             {isSubmitting ? 'Signing in...' : 'Sign In'}
                         </Button>

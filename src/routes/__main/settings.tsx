@@ -4,10 +4,12 @@ import { toast } from 'sonner'
 import { Lock, EyeOff, User, Building, Briefcase, MapPin, Mail, ShieldCheck, Smartphone, MailCheck, Edit } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PageHeader } from '@/components/ui/page-header'
+import { Field, FieldLabel } from '@/components/ui/field'
+import { InputGroup, InputGroupAddon, InputGroupText, InputGroupInput, InputGroupButton } from '@/components/ui/input-group'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import imgProfile3D from '@/assets/male_profile.png'
 
 export const Route = createFileRoute('/__main/settings')({
@@ -19,23 +21,22 @@ interface PasswordFieldProps {
 
 function PasswordField({ label }: PasswordFieldProps) {
     return (
-        <div className="flex flex-col gap-2 w-full">
-            <label className="font-medium text-muted-foreground text-sm">{label}</label>
-            <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
-                <Input
-                    type="password"
-                    className="pl-10 pr-10 h-10 rounded-full bg-muted/50 border-transparent focus-visible:ring-[#03045e]/20 text-sm"
-                    placeholder="••••••••"
-                />
-                <button
-                    type="button"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                >
-                    <EyeOff className="size-5" />
-                </button>
-            </div>
-        </div>
+        <Field>
+            <FieldLabel>{label}</FieldLabel>
+            <InputGroup className="rounded-full bg-muted/50 border-transparent focus-within:ring-[#03045e]/20">
+                <InputGroupAddon align="inline-start">
+                    <InputGroupText>
+                        <Lock className="size-5" />
+                    </InputGroupText>
+                </InputGroupAddon>
+                <InputGroupInput type="password" placeholder="••••••••" />
+                <InputGroupAddon align="inline-end">
+                    <InputGroupButton variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-foreground hover:bg-transparent">
+                        <EyeOff className="size-5" />
+                    </InputGroupButton>
+                </InputGroupAddon>
+            </InputGroup>
+        </Field>
     )
 }
 
@@ -47,10 +48,7 @@ function SecurityTab() {
                 <PasswordField label="New Password" />
                 <PasswordField label="Confirm Password" />
                 <div className="mt-8">
-                    <Button
-                        className="bg-[#03045e] hover:bg-[#03045e]/90 h-12 rounded-[12px] w-full text-white text-sm font-medium"
-                        onClick={() => toast.success('Password updated successfully')}
-                    >
+                    <Button size="lg" className="w-full" onClick={() => toast.success('Password updated successfully')}>
                         Update Password
                     </Button>
                 </div>
@@ -74,7 +72,7 @@ function TwoFactorTab() {
                             <ShieldCheck className="size-8 text-[#0a9105]" />
                             <p className="font-semibold text-md">Status</p>
                         </div>
-                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-0 w-fit px-3 py-1">Enabled</Badge>
+                        <Badge variant="success" className="w-fit">Enabled</Badge>
                     </div>
                     <Switch defaultChecked className="data-[state=checked]:bg-[#03045e] scale-125 origin-right" />
                 </div>
@@ -105,10 +103,7 @@ function TwoFactorTab() {
                 </div>
 
                 <div className="mt-8 flex justify-end">
-                    <Button
-                        className="bg-[#03045e] hover:bg-[#03045e]/90 h-12 rounded-[12px] w-full text-white text-sm font-medium"
-                        onClick={() => toast.success('2FA settings saved')}
-                    >
+                    <Button size="lg" className="w-full" onClick={() => toast.success('2FA settings saved')}>
                         Save Changes
                     </Button>
                 </div>
@@ -125,17 +120,17 @@ interface FormInputProps {
 
 function FormInput({ label, icon: Icon, defaultValue }: FormInputProps) {
     return (
-        <div className="flex flex-col gap-2 w-full">
-            <label className="font-medium text-muted-foreground text-sm">{label}</label>
-            <div className="relative">
-                <Icon className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
-                <Input
-                    type="text"
-                    className="pl-10 h-10 rounded-full bg-muted/50 border-transparent focus-visible:ring-[#03045e]/20 text-sm font-medium"
-                    defaultValue={defaultValue}
-                />
-            </div>
-        </div>
+        <Field>
+            <FieldLabel>{label}</FieldLabel>
+            <InputGroup className="rounded-full bg-muted/50 border-transparent focus-within:ring-[#03045e]/20">
+                <InputGroupAddon align="inline-start">
+                    <InputGroupText>
+                        <Icon className="size-5" />
+                    </InputGroupText>
+                </InputGroupAddon>
+                <InputGroupInput type="text" defaultValue={defaultValue} className="font-medium" />
+            </InputGroup>
+        </Field>
     )
 }
 
@@ -146,13 +141,10 @@ function ProfileTab() {
                 {/* Avatar */}
                 <div className="flex justify-center relative">
                     <div className="relative group cursor-pointer">
-                        <div className="size-32 md:size-36 rounded-full overflow-hidden ring-4 ring-white shadow-sm">
-                            <img
-                                alt="Profile Picture"
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                src={imgProfile3D}
-                            />
-                        </div>
+                        <Avatar className="size-32 md:size-36 ring-4 ring-white shadow-sm">
+                            <AvatarImage src={imgProfile3D} alt="Profile Picture" className="group-hover:scale-105 transition-transform duration-500 object-cover" />
+                            <AvatarFallback>DP</AvatarFallback>
+                        </Avatar>
                         {/* Edit button */}
                         <div className="absolute bottom-0 right-0 bg-[#545c99] text-white size-10 rounded-full flex items-center justify-center shadow-sm ring-4 ring-white group-hover:scale-110 transition-transform">
                             <Edit className="size-4" />
@@ -181,10 +173,7 @@ function ProfileTab() {
 
                     {/* Save Button */}
                     <div className="mt-4 w-full">
-                        <Button
-                            className="bg-[#03045e] hover:bg-[#03045e]/90 h-12 rounded-2xl w-full text-white text-sm font-medium"
-                            onClick={() => toast.success('Profile changes saved')}
-                        >
+                        <Button size="lg" className="w-full" onClick={() => toast.success('Profile changes saved')}>
                             Save Changes
                         </Button>
                     </div>
@@ -258,29 +247,17 @@ function SettingsPage() {
             <PageHeader title="Settings" description="Manage your account & apps." lastUpdated="05:41:15 PM" />
 
             <Tabs defaultValue="profile" className="flex-1 flex flex-col w-full min-h-0">
-                <TabsList className="inline-flex w-fit h-10 md:h-12 bg-[#e8e9ec] p-1.5 rounded-full overflow-x-auto justify-start border-0">
-                    <TabsTrigger
-                        value="profile"
-                        className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#1e1e20] data-[state=active]:shadow-sm text-[#7c7d81]"
-                    >
+                <TabsList className="inline-flex w-fit h-10 md:h-12 bg-muted/50 p-1.5 rounded-full overflow-x-auto justify-start border-0">
+                    <TabsTrigger value="profile" className="rounded-full px-6 h-full text-sm font-medium">
                         My Profile
                     </TabsTrigger>
-                    <TabsTrigger
-                        value="security"
-                        className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#1e1e20] data-[state=active]:shadow-sm text-[#7c7d81]"
-                    >
+                    <TabsTrigger value="security" className="rounded-full px-6 h-full text-sm font-medium">
                         Security
                     </TabsTrigger>
-                    <TabsTrigger
-                        value="2fa"
-                        className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#1e1e20] data-[state=active]:shadow-sm text-[#7c7d81]"
-                    >
+                    <TabsTrigger value="2fa" className="rounded-full px-6 h-full text-sm font-medium">
                         Two-Factor Auth
                     </TabsTrigger>
-                    <TabsTrigger
-                        value="notifications"
-                        className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#1e1e20] data-[state=active]:shadow-sm text-[#7c7d81]"
-                    >
+                    <TabsTrigger value="notifications" className="rounded-full px-6 h-full text-sm font-medium">
                         Notifications
                     </TabsTrigger>
                 </TabsList>
