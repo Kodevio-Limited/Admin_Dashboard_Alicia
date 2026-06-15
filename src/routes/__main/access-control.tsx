@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { Eye } from 'lucide-react'
+import { Eye, Edit } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -38,8 +38,10 @@ function UserProfile({ name, email, avatar }: { name: string; email: string; ava
     )
 }
 
-function statusVariant(status: UserStatus): "success" | "secondary" {
-    return status === 'ACTIVE' ? 'success' : 'secondary'
+function statusVariant(status: UserStatus): "success" | "secondary" | "destructive" {
+    if (status === 'ACTIVE') return 'success'
+    if (status === 'SUSPEND') return 'destructive'
+    return 'secondary'
 }
 
 function AccessControlPage() {
@@ -84,21 +86,15 @@ function AccessControlPage() {
                 header: 'ACTION',
                 className: 'py-2 text-left pr-4',
                 headerClassName: 'text-left pr-4',
-                render: (user: AccessUserRow) => (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="gap-2">
-                                <Eye className="size-4" />
-                                Action
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" sideOffset={8}>
-                            <DropdownMenuItem onSelect={() => console.log('View', user.name)}>View details</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onSelect={() => console.log('Edit', user.name)}>Edit user</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => console.log('Disable', user.name)}>Disable access</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                render: () => (
+                    <div className="flex items-center gap-2">
+                        <Button variant="secondary" className="size-8 rounded-md bg-muted/80 hover:bg-muted" size="icon">
+                            <Eye className="size-4 text-muted-foreground" />
+                        </Button>
+                        <Button variant="secondary" className="size-8 rounded-md bg-muted/80 hover:bg-muted" size="icon">
+                            <Edit className="size-4 text-muted-foreground" />
+                        </Button>
+                    </div>
                 ),
             },
         ],

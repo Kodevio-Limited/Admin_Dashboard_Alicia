@@ -89,7 +89,7 @@ const urgentFlags = [
 
 function FlagIcon({ type, color }: { type: string; color: string }) {
     return (
-        <div className="relative shrink-0 size-12 rounded-full bg-[#f2f2f2] flex items-center justify-center">
+        <div className="relative shrink-0 size-12 rounded-full bg-muted flex items-center justify-center">
             <div
                 className="absolute inset-0 rounded-full flex items-center justify-center m-1 shadow-sm"
                 style={{ backgroundColor: color }}
@@ -124,7 +124,7 @@ function Dashboard() {
     }, [])
 
     return (
-        <div className="flex flex-col gap-3 w-full max-w-full overflow-hidden pb-8 font-sans">
+        <div className="flex flex-col gap-3 w-full max-w-full overflow-hidden pb-2 font-sans">
             <PageHeader title="Dashboard" description="System status overview" lastUpdated={currentTime} />
             {/* Stat cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 shrink-0">
@@ -143,7 +143,7 @@ function Dashboard() {
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 h-auto lg:h-110">
                 {/* Check-ins trend */}
                 <Card className="xl:col-span-8 p-5 md:p-6 flex flex-col min-h-75 lg:min-h-0">
-                    <CardHeader className="px-0 pt-0 pb-8">
+                    <CardHeader className="px-0 pt-0 pb-2">
                         <CardTitle className="text-[22px] font-bold">Residents Check-ins Trend</CardTitle>
                         <p className="text-muted-foreground text-[15px] font-medium">Network-wide check-in volume over the last 6 hours</p>
                     </CardHeader>
@@ -190,9 +190,9 @@ function Dashboard() {
 
                 {/* Urgent Flags */}
                 <Card className="xl:col-span-4 p-5 md:p-6 flex flex-col">
-                    <CardHeader className="px-0 pt-0 pb-8 flex flex-row items-center justify-between space-y-0">
+                    <CardHeader className="px-0 pt-0 pb-2 flex flex-row items-center justify-between space-y-0">
                         <CardTitle className="text-[22px] font-bold">Urgent Flags</CardTitle>
-                        <span className="bg-rose-100/80 text-rose-600 text-[13px] font-bold px-4 py-1.5 rounded-full">6 Active</span>
+                        <span className="bg-rose-100/80 text-rose-600 text-[13px] font-bold px-4 py-1.5 rounded-full">{urgentFlags.length} Active</span>
                     </CardHeader>
                     <CardContent className="p-0 flex flex-col gap-6 flex-1 overflow-y-auto pr-2">
                         {urgentFlags.map((flag) => (
@@ -202,7 +202,7 @@ function Dashboard() {
                             >
                                 <div className="flex items-center gap-4">
                                     <FlagIcon type={flag.icon} color={flag.color} />
-                                    <div className="flex flex-col gap-1">
+                                    <div className="flex flex-col gap-1 min-w-0">
                                         <p className="text-slate-900 text-[16px] font-bold group-hover:text-blue-700 transition-colors">
                                             {flag.type}
                                         </p>
@@ -225,7 +225,7 @@ function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-auto lg:h-110">
                 {/* Hazard Types */}
                 <Card className="p-5 md:p-6 flex flex-col">
-                    <CardHeader className="px-0 pt-0 pb-8">
+                    <CardHeader className="px-0 pt-0 pb-2">
                         <CardTitle className="text-[22px] font-bold">Hazard Types</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0 flex-1 min-h-75 lg:min-h-0">
@@ -274,13 +274,11 @@ function Dashboard() {
                                     data={workloadData}
                                     cx="40%"
                                     cy="50%"
-                                    innerRadius={70}
                                     outerRadius={135}
                                     dataKey="value"
-                                    paddingAngle={1.5}
-                                    label={({ name, value, cx, cy, midAngle, innerRadius, outerRadius }) => {
+                                    label={({ name, percent, cx, cy, midAngle, outerRadius }) => {
                                         const RADIAN = Math.PI / 180
-                                        const radius = innerRadius + (outerRadius - innerRadius) * 0.5
+                                        const radius = outerRadius * 0.6
                                         const angle = midAngle ?? 0
                                         const x = cx + radius * Math.cos(-angle * RADIAN)
                                         const y = cy + radius * Math.sin(-angle * RADIAN)
@@ -292,13 +290,13 @@ function Dashboard() {
                                                 textAnchor="middle"
                                                 dominantBaseline="central"
                                                 fontSize={13}
-                                                fontWeight={600}
+                                                fontWeight={400}
                                             >
                                                 <tspan x={x} dy="-8">
                                                     {name}
                                                 </tspan>
                                                 <tspan x={x} dy="18" fontWeight="700">
-                                                    {value.toFixed(1)}
+                                                    {`${((percent ?? 0) * 100).toFixed(0)}%`}
                                                 </tspan>
                                             </text>
                                         )

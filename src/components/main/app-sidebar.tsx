@@ -60,7 +60,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <Sidebar
             variant="floating"
             collapsible="icon"
-            className="[&>[data-sidebar=sidebar]]:rounded-[12px] [&>[data-sidebar=sidebar]]:overflow-hidden"
+            className="[&>[data-sidebar=sidebar]]:rounded-[12px]  [&>[data-sidebar=sidebar]]:overflow-hidden"
             {...props}
         >
             <SidebarHeader className="pt-6 pb-2 bg-transparent">
@@ -71,10 +71,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </div>
                 </div>
             </SidebarHeader>
-            <SidebarContent className="bg-transparent px-0">
+            <SidebarContent className="bg-transparent px-0 ">
                 <NavMain items={data.navMain} />
             </SidebarContent>
-            <SidebarFooter className="bg-transparent pb-4 px-2">
+            <SidebarFooter className="bg-transparent pb-4 px-2 ">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton onClick={() => navigate({ to: '/signin' })}>

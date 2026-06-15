@@ -231,3 +231,74 @@ export function deleteReport(id: number): boolean {
     REPORTS = REPORTS.filter((r) => r.id !== id)
     return REPORTS.length !== initialLength
 }
+
+export type MessageReviewStatus = 'REVIEWD' | 'PENDING' | 'ESCALATED' | 'RESOLVED'
+
+export interface MessageReviewRow {
+    id: number
+    preview: string
+    resident: string
+    status: MessageReviewStatus
+    time: string
+}
+
+export const MESSAGE_REVIEWS: MessageReviewRow[] = [
+    {
+        id: 1,
+        preview: 'The water level is rising near the entrance; we may require assistance shortly.',
+        resident: 'RES-1234',
+        status: 'REVIEWD',
+        time: '10 min ago',
+    },
+    {
+        id: 2,
+        preview: 'Medical supply request',
+        resident: 'RES-1234',
+        status: 'REVIEWD',
+        time: '50 min ago',
+    },
+    {
+        id: 3,
+        preview: 'The situation is approaching the entrance; we could use some help soon.',
+        resident: 'RES-1234',
+        status: 'PENDING',
+        time: '42 min ago',
+    },
+    {
+        id: 4,
+        preview: "We're approaching the entrance and may require assistance soon.",
+        resident: 'RES-1234',
+        status: 'ESCALATED',
+        time: '32 min ago',
+    },
+    {
+        id: 5,
+        preview: 'The water level is rising near the entrance; we may require assistance shortly.',
+        resident: 'RES-1234',
+        status: 'PENDING',
+        time: '22 min ago',
+    },
+]
+
+export async function fetchMessageReviews(): Promise<MessageReviewRow[]> {
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    return [...MESSAGE_REVIEWS]
+}
+
+export interface ReportHistoryItem {
+    id: number
+    title: string
+    date: string
+}
+
+export const REPORT_HISTORY: ReportHistoryItem[] = [
+    { id: 1, title: 'Weekly System Summary', date: 'Oct 24, 2026' },
+    { id: 2, title: 'Incident Report Hurricane Melissa', date: 'Oct 28, 2026' },
+    { id: 3, title: 'Hub Performance Summary', date: 'Nov 1, 2026' },
+    { id: 4, title: 'AI Classification Accuracy Report', date: 'Nov 7, 2026' },
+]
+
+export async function fetchReportHistory(): Promise<ReportHistoryItem[]> {
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    return [...REPORT_HISTORY]
+}

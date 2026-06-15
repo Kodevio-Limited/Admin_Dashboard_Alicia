@@ -103,7 +103,7 @@ function ManagementPage() {
                 render: (resident: ResidentRow) => (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="gap-2">
+                            <Button variant="outline" className="">
                                 <Eye className="size-4" />
                                 Action
                             </Button>
@@ -180,18 +180,18 @@ function ManagementPage() {
                 render: (coordinator: CoordinatorRow) => <ResidentProfile name={coordinator.name} email={coordinator.email} avatar={coordinator.avatar} />,
             },
             {
-                key: 'assignedHub',
-                header: 'ASSIGNED HUB',
+                key: 'assignedArea',
+                header: 'ASSIGNED AREA',
                 className: 'py-2 text-center text-muted-foreground',
                 headerClassName: 'text-center',
-                render: (coordinator: CoordinatorRow) => coordinator.assignedHub,
+                render: (coordinator: CoordinatorRow) => coordinator.assignedArea,
             },
             {
-                key: 'phone',
-                header: 'PHONE',
+                key: 'activeHubs',
+                header: 'ACTIVE HUBS',
                 className: 'py-2 text-center text-muted-foreground',
                 headerClassName: 'text-center',
-                render: (coordinator: CoordinatorRow) => coordinator.phone,
+                render: (coordinator: CoordinatorRow) => coordinator.activeHubs,
             },
             {
                 key: 'status',
@@ -199,7 +199,7 @@ function ManagementPage() {
                 className: 'py-2 text-center',
                 headerClassName: 'text-center',
                 render: (coordinator: CoordinatorRow) => (
-                    <Badge variant={coordinator.status === 'ACTIVE' ? 'success' : 'secondary'} className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider">
+                    <Badge variant={coordinator.status === 'ACTIVE' ? 'success' : coordinator.status === 'UNASSIGNED' ? 'warning' : 'secondary'} className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider">
                         {coordinator.status}
                     </Badge>
                 ),
@@ -234,7 +234,7 @@ function ManagementPage() {
         <>
             <PageHeader title="Management" description="Manage residents, hubs, and coordinators" lastUpdated="05:41:15 PM" />
 
-            <div className="flex-1 flex flex-col gap-6 w-full">
+            <div className="flex-1 flex flex-col w-full">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col w-full min-h-0">
                     <div className="flex items-center justify-between w-full">
                         <TabsList className="inline-flex w-fit h-10 md:h-12 bg-muted/50 p-1.5 rounded-full overflow-x-auto justify-start border-0">
@@ -257,9 +257,9 @@ function ManagementPage() {
                         )}
                     </div>
 
-                    <TabsContent value="residents" className="m-0 border-0 p-0 outline-none flex-1 data-[state=active]:flex flex-col mt-4">
+                    <TabsContent value="residents" className="rounded-[12px] outline-none flex-1 data-[state=active]:flex flex-col mt-4">
                         <Card className="flex-1 overflow-hidden shadow-sm flex flex-col min-h-100">
-                            <CardContent className="p-4 flex-1 flex flex-col">
+                            <CardContent className="p-4 pb-[6px] flex-1 flex flex-col">
                                 {isLoading ? (
                                     <div className="flex-1 flex items-center justify-center text-muted-foreground">Loading management data...</div>
                                 ) : (
@@ -277,7 +277,7 @@ function ManagementPage() {
                     
                     <TabsContent value="hubs" className="m-0 border-0 p-0 outline-none flex-1 data-[state=active]:flex flex-col mt-4">
                         <Card className="flex-1 overflow-hidden shadow-sm flex flex-col min-h-0">
-                            <CardContent className="p-4 flex-1 flex flex-col">
+                            <CardContent className="p-4 pb-[6px] flex-1 flex flex-col">
                                 {isLoadingHubs ? (
                                     <div className="flex-1 flex items-center justify-center text-muted-foreground">Loading hubs data...</div>
                                 ) : (
@@ -295,7 +295,7 @@ function ManagementPage() {
                     
                     <TabsContent value="coordinators" className="m-0 border-0 p-0 outline-none flex-1 data-[state=active]:flex flex-col mt-4">
                         <Card className="flex-1 overflow-hidden shadow-sm flex flex-col min-h-0">
-                            <CardContent className="p-4 flex-1 flex flex-col">
+                            <CardContent className="p-4 pb-[6px] flex-1 flex flex-col">
                                 {isLoadingCoordinators ? (
                                     <div className="flex-1 flex items-center justify-center text-muted-foreground">Loading coordinators data...</div>
                                 ) : (
