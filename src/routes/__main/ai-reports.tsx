@@ -266,12 +266,16 @@ function AiReportsPage() {
 
             <div className="flex-1 flex flex-col gap-6 w-full min-h-0">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 w-full">
-                    <TabsList className="inline-flex w-fit h-10 md:h-12 bg-muted/50 p-1.5 rounded-full overflow-x-auto justify-start border-0">
-                        <TabsTrigger value="ai-control" className="rounded-full px-6 h-full text-sm font-medium">
+                    <TabsList className="inline-flex w-fit h-10 md:h-12 bg-[#DFDFDF] p-1.5 rounded-full overflow-x-auto justify-start border-0">
+                        <TabsTrigger value="ai-control" className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#03063A] data-[state=active]:shadow-sm text-[#737373] transition-all">
                             AI Control
                         </TabsTrigger>
-                        <TabsTrigger value="message-review" className="rounded-full px-6 h-full text-sm font-medium">Message Review</TabsTrigger>
-                        <TabsTrigger value="reports-center" className="rounded-full px-6 h-full text-sm font-medium">Reports Center</TabsTrigger>
+                        <TabsTrigger value="message-review" className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#03063A] data-[state=active]:shadow-sm text-[#737373] transition-all">
+                            Message Review
+                        </TabsTrigger>
+                        <TabsTrigger value="reports-center" className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#03063A] data-[state=active]:shadow-sm text-[#737373] transition-all">
+                            Reports Center
+                        </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="ai-control" className="mt-6 flex flex-col gap-6 outline-none">

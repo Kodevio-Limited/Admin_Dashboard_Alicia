@@ -248,10 +248,10 @@ function ManagementPage() {
             <div className="flex-1 flex flex-col w-full">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col w-full min-h-0">
                     <div className="flex items-center justify-between w-full">
-                        <TabsList className="inline-flex w-fit h-10 md:h-12 bg-muted/50 p-1.5 rounded-full overflow-x-auto justify-start border-0">
-                            <TabsTrigger value="residents" className="rounded-full px-6 h-full text-sm font-medium">Residents</TabsTrigger>
-                            <TabsTrigger value="hubs" className="rounded-full px-6 h-full text-sm font-medium">Hubs</TabsTrigger>
-                            <TabsTrigger value="coordinators" className="rounded-full px-6 h-full text-sm font-medium">Coordinators</TabsTrigger>
+                        <TabsList className="inline-flex w-fit h-10 md:h-12 bg-[#DFDFDF] p-1.5 rounded-full overflow-x-auto justify-start border-0">
+                            <TabsTrigger value="residents" className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#03063A] data-[state=active]:shadow-sm text-[#737373] transition-all">Residents</TabsTrigger>
+                            <TabsTrigger value="hubs" className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#03063A] data-[state=active]:shadow-sm text-[#737373] transition-all">Hubs</TabsTrigger>
+                            <TabsTrigger value="coordinators" className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#03063A] data-[state=active]:shadow-sm text-[#737373] transition-all">Coordinators</TabsTrigger>
                         </TabsList>
 
                         {activeTab === 'hubs' && (
