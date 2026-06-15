@@ -12,6 +12,7 @@ export { hubColumns } from './hubs/columns'
 export { CoordinatorActionCell } from './coordinators/CoordinatorActionCell'
 export { AssignCoordinatorDialog } from './coordinators/AssignCoordinatorDialog'
 export { ReassignCoordinatorDialog } from './coordinators/ReassignCoordinatorDialog'
+export { EditCoordinatorDialog } from './coordinators/EditCoordinatorDialog'
 export { coordinatorColumns } from './coordinators/columns'
 
 // Shared

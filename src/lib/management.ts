@@ -315,3 +315,11 @@ export async function fetchCoordinators(): Promise<CoordinatorRow[]> {
     return [...COORDINATORS]
 }
 
+export function updateCoordinator(id: number, data: Partial<CoordinatorRow>): CoordinatorRow | undefined {
+    const index = COORDINATORS.findIndex((c) => c.id === id)
+    if (index !== -1) {
+        COORDINATORS[index] = { ...COORDINATORS[index], ...data }
+        return COORDINATORS[index]
+    }
+    return undefined
+}

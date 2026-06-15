@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { Eye, Clock, Users, Activity } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -11,11 +12,33 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
-import type { CoordinatorRow } from '@/lib/management'
+import { updateCoordinator } from '@/lib/management'
+import type { CoordinatorRow, CoordinatorStatus } from '@/lib/management'
 import { ReassignCoordinatorDialog } from './ReassignCoordinatorDialog'
+import { EditCoordinatorDialog } from './EditCoordinatorDialog'
 
 export function CoordinatorActionCell({ coordinator }: { coordinator: CoordinatorRow }) {
     const [open, setOpen] = useState(false)
+    const queryClient = useQueryClient()
+
+    const createStatusMutation = (status: CoordinatorStatus) =>
+        useMutation({
+            mutationFn: (id: number) => {
+                const updated = updateCoordinator(id, { status })
+                if (!updated) throw new Error('Coordinator not found')
+                return Promise.resolve(updated)
+            },
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: ['management-coordinators'] })
+                setOpen(false)
+            },
+        })
+
+    const suspendMutation = createStatusMutation('INACTIVE')
+    const unsuspendMutation = createStatusMutation('ACTIVE')
+
+    const isSuspended = coordinator.status === 'INACTIVE'
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DropdownMenu>
@@ -30,8 +53,27 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>View details</DropdownMenuItem>
                     </DialogTrigger>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => console.log('Edit', coordinator.name)}>Edit coordinator</DropdownMenuItem>
-                    {/* <DropdownMenuItem onSelect={() => console.log('Message', coordinator.name)}>Send message</DropdownMenuItem> */}
+                    <EditCoordinatorDialog coordinator={coordinator}>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit coordinator</DropdownMenuItem>
+                    </EditCoordinatorDialog>
+                    <DropdownMenuSeparator />
+                    {isSuspended ? (
+                        <DropdownMenuItem
+                            onSelect={() => unsuspendMutation.mutate(coordinator.id)}
+                            disabled={unsuspendMutation.isPending}
+                            className="text-green-600 focus:text-green-600"
+                        >
+                            Unsuspend coordinator
+                        </DropdownMenuItem>
+                    ) : (
+                        <DropdownMenuItem
+                            onSelect={() => suspendMutation.mutate(coordinator.id)}
+                            disabled={suspendMutation.isPending}
+                            className="text-destructive focus:text-destructive"
+                        >
+                            Suspend coordinator
+                        </DropdownMenuItem>
+                    )}
                 </DropdownMenuContent>
             </DropdownMenu>
 
@@ -76,7 +118,25 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                 </div>
 
                 <div className="px-6 pb-8 mt-12 md:mt-24 flex gap-3">
-                    <Button variant="secondary" className="flex-1">Suspend Coordinator</Button>
+                    {isSuspended ? (
+                        <Button
+                            variant="secondary"
+                            className="flex-1"
+                            disabled={unsuspendMutation.isPending}
+                            onClick={() => unsuspendMutation.mutate(coordinator.id)}
+                        >
+                            {unsuspendMutation.isPending ? 'Restoring...' : 'Unsuspend'}
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="secondary"
+                            className="flex-1"
+                            disabled={suspendMutation.isPending}
+                            onClick={() => suspendMutation.mutate(coordinator.id)}
+                        >
+                            {suspendMutation.isPending ? 'Suspending...' : 'Suspend Coordinator'}
+                        </Button>
+                    )}
                     <ReassignCoordinatorDialog coordinator={coordinator}>
                         <Button variant="default" className="flex-1">Reassign Area</Button>
                     </ReassignCoordinatorDialog>

@@ -26,17 +26,22 @@ export function ResidentActionCell({ resident }: { resident: ResidentRow }) {
     const [open, setOpen] = useState(false)
     const queryClient = useQueryClient()
 
-    const suspendMutation = useMutation({
-        mutationFn: (id: number) => {
-            const updated = updateResident(id, { status: 'SILENT' })
-            if (!updated) throw new Error('Resident not found')
-            return Promise.resolve(updated)
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['management-residents'] })
-            setOpen(false)
-        },
-    })
+    const createStatusMutation = (status: ResidentStatus) =>
+        useMutation({
+            mutationFn: (id: number) => {
+                const updated = updateResident(id, { status })
+                if (!updated) throw new Error('Resident not found')
+                return Promise.resolve(updated)
+            },
+            onSuccess: () => {
+                queryClient.invalidateQueries({ queryKey: ['management-residents'] })
+                setOpen(false)
+            },
+        })
+
+    const delayMutation = createStatusMutation('DELAYED')
+    const suspendMutation = createStatusMutation('SILENT')
+    const unsuspendMutation = createStatusMutation('ACTIVE')
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -55,6 +60,24 @@ export function ResidentActionCell({ resident }: { resident: ResidentRow }) {
                     <EditResidentDialog resident={resident}>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit resident</DropdownMenuItem>
                     </EditResidentDialog>
+                    <DropdownMenuSeparator />
+                    {resident.status === 'SILENT' ? (
+                        <DropdownMenuItem
+                            onSelect={() => unsuspendMutation.mutate(resident.id)}
+                            disabled={unsuspendMutation.isPending}
+                            className="text-green-600 focus:text-green-600"
+                        >
+                            Unsuspend resident
+                        </DropdownMenuItem>
+                    ) : (
+                        <DropdownMenuItem
+                            onSelect={() => suspendMutation.mutate(resident.id)}
+                            disabled={suspendMutation.isPending}
+                            className="text-destructive focus:text-destructive"
+                        >
+                            Suspend resident
+                        </DropdownMenuItem>
+                    )}
                 </DropdownMenuContent>
             </DropdownMenu>
 
@@ -98,14 +121,23 @@ export function ResidentActionCell({ resident }: { resident: ResidentRow }) {
                     </div>
                 </div>
 
-                <div className="px-6 pb-8 mt-12 md:mt-24">
+                <div className="px-6 pb-8 mt-12 md:mt-24 flex flex-col gap-3">
+                    <Button
+                        variant="secondary"
+                        className="w-full"
+                        disabled={delayMutation.isPending || resident.status === 'DELAYED'}
+                        onClick={() => delayMutation.mutate(resident.id)}
+                    >
+                        <Clock className="mr-2 size-4" />
+                        {delayMutation.isPending ? 'Marking...' : resident.status === 'DELAYED' ? 'Already Delayed' : 'Mark as Delayed'}
+                    </Button>
                     <Button
                         variant="destructive"
                         className="w-full"
                         disabled={suspendMutation.isPending || resident.status === 'SILENT'}
                         onClick={() => suspendMutation.mutate(resident.id)}
                     >
-                        <Ban className="mr-2" />
+                        <Ban className="mr-2 size-4" />
                         {suspendMutation.isPending ? 'Suspending...' : resident.status === 'SILENT' ? 'Already Suspended' : 'Suspend Account'}
                     </Button>
                 </div>
