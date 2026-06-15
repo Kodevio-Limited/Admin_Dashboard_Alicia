@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { Eye, Ban, Clock, MapPin } from 'lucide-react'
+import { toast } from 'sonner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -36,6 +37,7 @@ export function ResidentActionCell({ resident }: { resident: ResidentRow }) {
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ['management-residents'] })
                 setOpen(false)
+                toast.success(`Resident status updated to ${status}`)
             },
         })
 

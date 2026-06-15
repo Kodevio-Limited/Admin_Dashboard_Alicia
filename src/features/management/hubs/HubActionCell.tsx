@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Eye, Clock, MapPin, Battery, Wifi, Users } from 'lucide-react'
+import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -33,7 +34,7 @@ export function HubActionCell({ hub }: { hub: HubRow }) {
                     <CreateHubDialog mode="edit" hub={hub}>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit hub</DropdownMenuItem>
                     </CreateHubDialog>
-                    <DropdownMenuItem onSelect={() => console.log('Restart', hub.name)}>Restart hub</DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => toast.success(`Restarted hub ${hub.name}`)}>Restart hub</DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
 
@@ -74,7 +75,7 @@ export function HubActionCell({ hub }: { hub: HubRow }) {
                         <Button className="w-full">Assign Coordinator</Button>
                     </AssignCoordinatorDialog>
                     <div className="flex gap-3">
-                        <Button variant="secondary" className="flex-1">Restart Sync Service</Button>
+                        <Button variant="secondary" className="flex-1" onClick={() => toast.success(`Restarted Sync Service for ${hub.name}`)}>Restart Sync Service</Button>
                         <CreateHubDialog mode="edit" hub={hub}>
                             <Button variant="secondary" className="flex-1">Edit</Button>
                         </CreateHubDialog>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { Eye, Clock, Users, Activity } from 'lucide-react'
+import { toast } from 'sonner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -31,6 +32,7 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
             onSuccess: () => {
                 queryClient.invalidateQueries({ queryKey: ['management-coordinators'] })
                 setOpen(false)
+                toast.success(`Coordinator status updated to ${status}`)
             },
         })
 
