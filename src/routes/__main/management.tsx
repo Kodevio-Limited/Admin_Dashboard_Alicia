@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { useMemo, useState } from 'react'
-import { Eye, Plus, Ban, Clock, MapPin, BadgeCheck, Search, Battery, Wifi, Users, Edit, Activity } from 'lucide-react'
+import { useMemo, useState, useEffect } from 'react'
+import { Eye, Plus, Ban, Clock, MapPin, BadgeCheck, Search, Battery, Wifi, Users, Edit, Activity, Check, ChevronDown } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -65,7 +65,9 @@ function ResidentActionCell({ resident }: { resident: ResidentRow }) {
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>View details</DropdownMenuItem>
                     </DialogTrigger>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => console.log('Edit', resident.name)}>Edit resident</DropdownMenuItem>
+                    <EditResidentDialog resident={resident}>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit resident</DropdownMenuItem>
+                    </EditResidentDialog>
                     <DropdownMenuItem onSelect={() => console.log('Message', resident.name)}>Send message</DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
@@ -111,6 +113,88 @@ function ResidentActionCell({ resident }: { resident: ResidentRow }) {
                     <Button variant="destructive" className="w-full">
                         <Ban className="mr-2" />
                         Suspend Account
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
+function EditResidentDialog({ children, resident }: { children?: React.ReactNode, resident: ResidentRow }) {
+    const [open, setOpen] = useState(false)
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                {children}
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-xl p-6 md:p-8 rounded-2xl border-none shadow-xl gap-6">
+                <div className="flex flex-col items-center mb-2">
+                    <h2 className="text-2xl md:text-3xl font-semibold text-center text-foreground">Edit Resident</h2>
+                </div>
+                
+                <div className="flex flex-col gap-5 w-full">
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium text-foreground">Name</label>
+                        <Input 
+                            defaultValue={resident.name}
+                            placeholder="e.g. John Doe" 
+                            className="h-12 rounded-lg bg-muted/50 border-none px-4 shadow-none"
+                        />
+                    </div>
+                    
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium text-foreground">Email</label>
+                        <Input 
+                            defaultValue={resident.email}
+                            placeholder="e.g. john@example.com" 
+                            className="h-12 rounded-lg bg-muted/50 border-none px-4 shadow-none"
+                            type="email"
+                        />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-medium text-foreground">Community</label>
+                            <Select defaultValue={resident.community}>
+                                <SelectTrigger className="h-12 rounded-lg bg-muted/50 border-none px-4 shadow-none">
+                                    <SelectValue placeholder="Select Community" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl border-none shadow-md">
+                                    <SelectItem value="Savanna-la-Mar">Savanna-la-Mar</SelectItem>
+                                    <SelectItem value="Frome">Frome</SelectItem>
+                                    <SelectItem value="Petersfield">Petersfield</SelectItem>
+                                    <SelectItem value="Little London">Little London</SelectItem>
+                                    <SelectItem value="Darliston">Darliston</SelectItem>
+                                    <SelectItem value="Whithorn">Whithorn</SelectItem>
+                                    <SelectItem value="Negril">Negril</SelectItem>
+                                    <SelectItem value="Lucea">Lucea</SelectItem>
+                                    <SelectItem value="Green Island">Green Island</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-medium text-foreground">Status</label>
+                            <Select defaultValue={resident.status}>
+                                <SelectTrigger className="h-12 rounded-lg bg-muted/50 border-none px-4 shadow-none">
+                                    <SelectValue placeholder="Select Status" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl border-none shadow-md">
+                                    <SelectItem value="ACTIVE">Active</SelectItem>
+                                    <SelectItem value="DELAYED">Delayed</SelectItem>
+                                    <SelectItem value="SILENT">Silent</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-3 mt-4 w-full items-center justify-end">
+                    <Button onClick={() => setOpen(false)} variant="outline">
+                        Cancel
+                    </Button>
+                    <Button onClick={() => setOpen(false)} variant="default">
+                        Save Changes
                     </Button>
                 </div>
             </DialogContent>
@@ -191,7 +275,7 @@ function HubActionCell({ hub }: { hub: HubRow }) {
                 </div>
 
                 <div className="flex flex-col gap-3 mt-6">
-                    <AssignCoordinatorDialog>
+                    <AssignCoordinatorDialog hub={hub}>
                         <Button className="w-full">
                             Assign Coordinator
                         </Button>
@@ -282,8 +366,100 @@ function CoordinatorActionCell({ coordinator }: { coordinator: CoordinatorRow })
                     <Button variant="secondary" className='flex-1'>
                         Suspend Coordinator
                     </Button>
-                    <Button variant="default" className='flex-1'>
-                        Reassign Area
+                    <ReassignCoordinatorDialog coordinator={coordinator}>
+                        <Button variant="default" className='flex-1'>
+                            Reassign Area
+                        </Button>
+                    </ReassignCoordinatorDialog>
+                </div>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
+function ReassignCoordinatorDialog({ children, coordinator }: { children?: React.ReactNode, coordinator: CoordinatorRow }) {
+    const [open, setOpen] = useState(false)
+    const { data: hubs = [] } = useQuery({
+        queryKey: ['management-hubs'],
+        queryFn: fetchHubs,
+    })
+    
+    const [selectedHubs, setSelectedHubs] = useState<number[]>([])
+    const [search, setSearch] = useState('')
+
+    const toggleHub = (id: number) => {
+        setSelectedHubs(prev => prev.includes(id) ? prev.filter(hId => hId !== id) : [...prev, id])
+    }
+
+    const filteredHubs = useMemo(() => {
+        return hubs.filter(h => h.name.toLowerCase().includes(search.toLowerCase()) || h.location.toLowerCase().includes(search.toLowerCase()))
+    }, [hubs, search])
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                {children}
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md p-6 md:p-8 rounded-[32px] border-none shadow-xl gap-6 bg-white">
+                <div className="flex flex-col items-center gap-6 mt-2">
+                    <h2 className="text-2xl font-bold text-foreground">Reassign Coordinator</h2>
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="relative">
+                            <Avatar className="size-24 md:size-28 bg-[#D1D5DB] border-none">
+                                <AvatarImage src={coordinator.avatar} />
+                                <AvatarFallback className="text-4xl text-white font-medium bg-[#D1D5DB]">{coordinator.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            {coordinator.status === 'ACTIVE' && (
+                                <div className="absolute bottom-1 right-2 size-5 bg-[#34D399] rounded-full border-2 border-white" />
+                            )}
+                        </div>
+                        <h3 className="text-2xl font-medium text-foreground">{coordinator.name}</h3>
+                    </div>
+                </div>
+
+                <div className="flex flex-col gap-3 w-full mt-2">
+                    <label className="text-sm font-semibold text-foreground">Assign to Area/Hub</label>
+                    
+                    <div className="relative">
+                        <Input 
+                            placeholder="Search hub" 
+                            className="h-12 rounded-xl bg-[#EBEBEB] border-none px-4 shadow-none pr-10 text-base placeholder:text-[#888888]"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 size-5 text-[#888888]" />
+                    </div>
+
+                    <div className="w-full flex flex-col gap-2 mt-2 max-h-[220px] overflow-y-auto pr-1">
+                        {filteredHubs.map((hub) => {
+                            const isSelected = selectedHubs.includes(hub.id)
+                            return (
+                                <div 
+                                    key={hub.id} 
+                                    className={cn("flex items-center justify-between p-4 rounded-xl cursor-pointer transition-colors", isSelected ? "bg-[#D5D5D5]" : "bg-[#EEEEEE] hover:bg-[#E5E5E5]")}
+                                    onClick={() => toggleHub(hub.id)}
+                                >
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[15px] font-medium text-foreground">{hub.name}</span>
+                                        <span className="text-xs text-[#888888]">Westmoreland</span>
+                                    </div>
+                                    {isSelected && (
+                                        <div className="flex items-center justify-center size-5 rounded-full bg-[#111111]">
+                                            <Check className="size-3 text-white" strokeWidth={3} />
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 mt-6 w-full">
+                    <Button onClick={() => setOpen(false)} variant="secondary" className="flex-1 h-12 rounded-[16px] text-base font-medium bg-[#EEEEEE] hover:bg-[#E5E5E5] text-foreground">
+                        Cancel
+                    </Button>
+                    <Button onClick={() => setOpen(false)} className="flex-1 h-12 rounded-[16px] text-base font-medium bg-[#03063A] hover:bg-[#03063A]/90 text-white">
+                        Confirm Assignment
                     </Button>
                 </div>
             </DialogContent>
@@ -388,14 +564,47 @@ function CreateHubDialog({ children, mode = 'create', hub }: { children?: React.
     )
 }
 
-function AssignCoordinatorDialog({ children }: { children?: React.ReactNode }) {
+function AssignCoordinatorDialog({ children, hub: initialHub }: { children?: React.ReactNode, hub?: HubRow }) {
     const [open, setOpen] = useState(false)
     const [step, setStep] = useState<'select' | 'success'>('select')
+    
+    const { data: coordinators = [] } = useQuery({
+        queryKey: ['management-coordinators'],
+        queryFn: fetchCoordinators,
+    })
+
+    const { data: hubs = [] } = useQuery({
+        queryKey: ['management-hubs'],
+        queryFn: fetchHubs,
+    })
+
+    const [search, setSearch] = useState('')
+    const [selected, setSelected] = useState<CoordinatorRow | null>(null)
+    const [selectedHub, setSelectedHub] = useState<HubRow | null>(initialHub || null)
+
+    useEffect(() => {
+        if (initialHub) {
+            setSelectedHub(initialHub)
+        }
+    }, [initialHub])
+
+    const filteredCoordinators = useMemo(() => {
+        return coordinators.filter(c => 
+            c.name.toLowerCase().includes(search.toLowerCase()) || 
+            c.email.toLowerCase().includes(search.toLowerCase()) ||
+            c.assignedArea.toLowerCase().includes(search.toLowerCase())
+        )
+    }, [search, coordinators])
 
     const handleOpenChange = (val: boolean) => {
         setOpen(val)
         if (!val) {
-            setTimeout(() => setStep('select'), 300)
+            setTimeout(() => {
+                setStep('select')
+                setSearch('')
+                setSelected(null)
+                if (!initialHub) setSelectedHub(null)
+            }, 300)
         }
     }
 
@@ -423,33 +632,61 @@ function AssignCoordinatorDialog({ children }: { children?: React.ReactNode }) {
                                 <Input 
                                     placeholder="Search Coordinators" 
                                     className="h-12 rounded-lg bg-muted/50 border-none pl-10 pr-4 shadow-none"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
                                 />
                             </div>
                         </div>
 
-                        <div className="w-full bg-muted/30 rounded-xl p-4 flex flex-col gap-2">
-                            {[
-                                { name: 'Omar Symister', location: 'Zone 3 - Oceanview' },
-                                { name: 'Grace Reid', location: 'Savanna-la-Mar' },
-                                { name: 'Juline Asquith', location: 'Zone 3 - Oceanview' }
-                            ].map((person, idx) => (
-                                <div key={idx} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
+                        <div className="w-full bg-muted/30 rounded-xl p-2 flex flex-col gap-1 max-h-[240px] overflow-y-auto">
+                            {filteredCoordinators.length > 0 ? filteredCoordinators.map((person) => (
+                                <div 
+                                    key={person.id} 
+                                    className={`flex items-center gap-4 p-2 rounded-lg cursor-pointer transition-colors ${selected?.id === person.id ? 'bg-primary/10 border border-primary/20' : 'hover:bg-muted/50 border border-transparent'}`}
+                                    onClick={() => setSelected(person)}
+                                >
                                     <Avatar className="size-12 bg-muted flex items-center justify-center border-none">
+                                        <AvatarImage src={person.avatar} />
                                         <AvatarFallback className="text-muted-foreground font-medium">{person.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                     <div className="flex flex-col">
                                         <span className="text-base font-medium text-foreground">{person.name}</span>
-                                        <span className="text-sm text-muted-foreground">{person.location}</span>
+                                        <span className="text-sm text-muted-foreground">{person.assignedArea}</span>
                                     </div>
                                 </div>
-                            ))}
+                            )) : (
+                                <div className="p-4 text-center text-sm text-muted-foreground">No coordinators found.</div>
+                            )}
                         </div>
+                        
+                        {!initialHub && (
+                            <div className="flex flex-col gap-2 w-full mt-2">
+                                <label className="text-sm font-medium text-foreground">Select Hub</label>
+                                <Select value={selectedHub?.id.toString() || ''} onValueChange={(val) => {
+                                    const h = hubs.find(h => h.id.toString() === val)
+                                    setSelectedHub(h || null)
+                                }}>
+                                    <SelectTrigger className="h-12 rounded-lg bg-muted/50 border-none px-4 shadow-none">
+                                        <SelectValue placeholder="Select a hub" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl border-none shadow-md max-h-[200px]">
+                                        {hubs.map(h => (
+                                            <SelectItem key={h.id} value={h.id.toString()}>{h.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
 
                         <div className="flex flex-col sm:flex-row gap-3 mt-2 w-full">
                             <Button onClick={() => handleOpenChange(false)} variant="secondary" className="flex-1">
                                 Cancel
                             </Button>
-                            <Button onClick={() => setStep('success')} className="flex-1">
+                            <Button 
+                                onClick={() => setStep('success')} 
+                                className="flex-1"
+                                disabled={!selected || !selectedHub}
+                            >
                                 Confirm Assignment
                             </Button>
                         </div>
@@ -462,8 +699,8 @@ function AssignCoordinatorDialog({ children }: { children?: React.ReactNode }) {
                                 <h2 className="text-2xl md:text-3xl font-semibold text-foreground">
                                     Successfully Assigned!
                                 </h2>
-                                <p className="text-base text-muted-foreground max-w-sm">
-                                    Grace Reid has been successfully assigned to coordinate the following hub:
+                                <p className="text-base text-muted-foreground max-w-sm text-center">
+                                    <span className="font-medium text-foreground">{selected?.name}</span> has been successfully assigned to coordinate the following hub:
                                 </p>
                             </div>
                         </div>
@@ -471,11 +708,11 @@ function AssignCoordinatorDialog({ children }: { children?: React.ReactNode }) {
                         <div className="bg-muted/30 rounded-xl p-6 w-full flex flex-col gap-5 text-left mt-2">
                             <div className="flex flex-col gap-1">
                                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Hub Name</span>
-                                <span className="text-base font-medium text-foreground">Little London Primary</span>
+                                <span className="text-base font-medium text-foreground">{selectedHub?.name}</span>
                             </div>
                             <div className="flex flex-col gap-1">
                                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Location</span>
-                                <span className="text-base font-medium text-foreground">Riverside Park</span>
+                                <span className="text-base font-medium text-foreground">{selectedHub?.location}</span>
                             </div>
                         </div>
 
