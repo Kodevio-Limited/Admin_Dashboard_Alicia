@@ -53,27 +53,27 @@ function AccessControlPage() {
             {
                 key: 'user',
                 header: 'USER',
-                className: 'font-medium py-4 px-4 text-sm',
+                className: 'font-medium py-2 px-2 text-sm',
                 render: (user: AccessUserRow) => <UserProfile {...user} />,
             },
             {
                 key: 'role',
                 header: 'ROLE',
-                className: 'py-4 text-muted-foreground text-left',
+                className: 'py-2 text-muted-foreground text-left',
                 headerClassName: 'text-left',
                 render: (user: AccessUserRow) => user.role,
             },
             {
                 key: 'area',
                 header: 'ASSIGNED AREA',
-                className: 'py-4 text-muted-foreground text-left',
+                className: 'py-2 text-muted-foreground text-left',
                 headerClassName: 'text-left',
                 render: (user: AccessUserRow) => user.area,
             },
             {
                 key: 'status',
                 header: 'STATUS',
-                className: 'py-4 text-left',
+                className: 'py-2 text-left',
                 headerClassName: 'text-left',
                 render: (user: AccessUserRow) => (
                     <Badge variant={statusVariant(user.status)} className="rounded-full px-3 py-1 text-xs font-semibold">{user.status}</Badge>
@@ -82,7 +82,7 @@ function AccessControlPage() {
             {
                 key: 'action',
                 header: 'ACTION',
-                className: 'py-4 text-left pr-4',
+                className: 'py-2 text-left pr-4',
                 headerClassName: 'text-left pr-4',
                 render: (user: AccessUserRow) => (
                     <DropdownMenu>

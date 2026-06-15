@@ -67,27 +67,27 @@ function ManagementPage() {
             {
                 key: 'user',
                 header: 'RESIDENTS',
-                className: 'font-medium py-4 px-4 text-sm',
+                className: 'font-medium py-2 px-2 text-sm',
                 render: (resident: ResidentRow) => <ResidentProfile {...resident} />,
             },
             {
                 key: 'community',
                 header: 'COMMUNITY',
-                className: 'py-4 text-muted-foreground text-left pr-4',
+                className: 'py-2 text-muted-foreground text-left pr-4',
                 headerClassName: 'text-left pr-4',
                 render: (resident: ResidentRow) => resident.community,
             },
             {
                 key: 'lastCheckIn',
                 header: 'LAST CHECK IN',
-                className: 'py-4 text-left pr-4',
+                className: 'py-2 text-left pr-4',
                 headerClassName: 'text-left pr-4',
                 render: (resident: ResidentRow) => resident.lastCheckIn,
             },
             {
                 key: 'status',
                 header: 'STATUS',
-                className: 'py-4 text-left pr-4',
+                className: 'py-2 text-left pr-4',
                 headerClassName: 'text-left pr-4',
                 render: (resident: ResidentRow) => (
                     <Badge variant={statusVariant(resident.status)} className="rounded-full px-3 py-1 text-xs font-semibold">
@@ -98,7 +98,7 @@ function ManagementPage() {
             {
                 key: 'action',
                 header: 'ACTION',
-                className: 'py-4 text-left pr-4',
+                className: 'py-2 text-left pr-4',
                 headerClassName: 'text-left pr-4',
                 render: (resident: ResidentRow) => (
                     <DropdownMenu>
@@ -126,13 +126,13 @@ function ManagementPage() {
             {
                 key: 'hub',
                 header: 'HUB DETAILS',
-                className: 'font-medium py-4 px-4 text-sm',
+                className: 'font-medium py-2 px-2 text-sm',
                 render: (hub: HubRow) => hub.name,
             },
             {
                 key: 'location',
                 header: 'LOCATION',
-                className: 'py-4 text-center',
+                className: 'py-2 text-center',
                 headerClassName: 'text-center',
                 render: (hub: HubRow) => (
                     <div className="whitespace-normal max-w-[120px] mx-auto leading-tight">{hub.location}</div>
@@ -141,14 +141,14 @@ function ManagementPage() {
             {
                 key: 'lastSync',
                 header: 'LAST SYNC',
-                className: 'py-4 text-center',
+                className: 'py-2 text-center',
                 headerClassName: 'text-center',
                 render: (hub: HubRow) => hub.lastSync,
             },
             {
                 key: 'status',
                 header: 'STATUS',
-                className: 'py-4 text-center',
+                className: 'py-2 text-center',
                 headerClassName: 'text-center',
                 render: (hub: HubRow) => (
                     <Badge variant={hub.status === 'ONLINE' ? 'success' : 'destructive'} className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider">
@@ -159,9 +159,9 @@ function ManagementPage() {
             {
                 key: 'action',
                 header: 'ACTION',
-                className: 'py-4 text-right pr-4',
+                className: 'py-2 text-right pr-4',
                 headerClassName: 'text-right pr-4',
-                render: (hub: HubRow) => (
+                render: () => (
                     <Button variant="secondary" className="size-8 rounded-md bg-muted/80 hover:bg-muted" size="icon">
                         <Eye className="size-4 text-muted-foreground" />
                     </Button>
@@ -176,27 +176,27 @@ function ManagementPage() {
             {
                 key: 'user',
                 header: 'COORDINATOR',
-                className: 'font-medium py-4 px-4 text-sm',
+                className: 'font-medium py-2 px-2 text-sm',
                 render: (coordinator: CoordinatorRow) => <ResidentProfile name={coordinator.name} email={coordinator.email} avatar={coordinator.avatar} />,
             },
             {
                 key: 'assignedHub',
                 header: 'ASSIGNED HUB',
-                className: 'py-4 text-center text-muted-foreground',
+                className: 'py-2 text-center text-muted-foreground',
                 headerClassName: 'text-center',
                 render: (coordinator: CoordinatorRow) => coordinator.assignedHub,
             },
             {
                 key: 'phone',
                 header: 'PHONE',
-                className: 'py-4 text-center text-muted-foreground',
+                className: 'py-2 text-center text-muted-foreground',
                 headerClassName: 'text-center',
                 render: (coordinator: CoordinatorRow) => coordinator.phone,
             },
             {
                 key: 'status',
                 header: 'STATUS',
-                className: 'py-4 text-center',
+                className: 'py-2 text-center',
                 headerClassName: 'text-center',
                 render: (coordinator: CoordinatorRow) => (
                     <Badge variant={coordinator.status === 'ACTIVE' ? 'success' : 'secondary'} className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider">
@@ -207,7 +207,7 @@ function ManagementPage() {
             {
                 key: 'action',
                 header: 'ACTION',
-                className: 'py-4 text-right pr-4',
+                className: 'py-2 text-right pr-4',
                 headerClassName: 'text-right pr-4',
                 render: (coordinator: CoordinatorRow) => (
                     <DropdownMenu>

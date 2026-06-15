@@ -19,6 +19,11 @@ export let HAZARDS: HazardItem[] = [
     { id: 5, lng: -76.8, lat: 18.001, type: 'Flooding', icon: Waves, color: '#30A2F3', pulse: true, size: 'lg' },
     { id: 6, lng: -76.795, lat: 17.99, type: 'Inactive', icon: MapPin, color: '#989898', pulse: false, size: 'md' },
     { id: 7, lng: -76.775, lat: 18.005, type: 'Fallen Tree', icon: TriangleAlert, color: '#FEBD09', pulse: false, size: 'md' },
+    { id: 8, lng: -76.81, lat: 18.015, type: 'Medical', icon: BriefcaseMedical, color: '#DC2626', pulse: true, size: 'lg' },
+    { id: 9, lng: -76.77, lat: 17.98, type: 'Flooding', icon: Waves, color: '#30A2F3', pulse: true, size: 'lg' },
+    { id: 10, lng: -76.782, lat: 17.992, type: 'Hub', icon: BatteryWarning, color: '#008A00', pulse: false, size: 'md' },
+    { id: 11, lng: -76.802, lat: 18.008, type: 'Blocked Road', icon: TriangleAlert, color: '#FEBD09', pulse: true, size: 'lg' },
+    { id: 12, lng: -76.79, lat: 17.985, type: 'Inactive', icon: MapPin, color: '#989898', pulse: false, size: 'md' },
 ]
 
 export async function fetchHazards(): Promise<HazardItem[]> {

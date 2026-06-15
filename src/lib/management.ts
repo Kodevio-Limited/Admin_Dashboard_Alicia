@@ -65,6 +65,33 @@ export let RESIDENTS: ResidentRow[] = [
         status: 'ACTIVE',
         avatar: '/avatars/shadcn.jpg',
     },
+    {
+        id: 7,
+        name: 'James Anderson',
+        email: 'james.a@example.com',
+        community: 'Negril',
+        lastCheckIn: '1 min ago',
+        status: 'ACTIVE',
+        avatar: '/avatars/shadcn.jpg',
+    },
+    {
+        id: 8,
+        name: 'Lisa Wong',
+        email: 'lisa.w@example.com',
+        community: 'Lucea',
+        lastCheckIn: '12 hr ago',
+        status: 'SILENT',
+        avatar: '/avatars/shadcn.jpg',
+    },
+    {
+        id: 9,
+        name: 'Marcus Garvey',
+        email: 'marcus.g@example.com',
+        community: 'Green Island',
+        lastCheckIn: '4 hr ago',
+        status: 'DELAYED',
+        avatar: '/avatars/shadcn.jpg',
+    },
 ]
 
 export async function fetchResidents(): Promise<ResidentRow[]> {
@@ -150,6 +177,27 @@ export const HUBS: HubRow[] = [
         lastSync: '9 hr ago',
         status: 'OFFLINE',
     },
+    {
+        id: 7,
+        name: 'Grange Hill High School',
+        location: 'Grange Hill',
+        lastSync: '1 min ago',
+        status: 'ONLINE',
+    },
+    {
+        id: 8,
+        name: 'Negril Community Clinic',
+        location: 'Negril',
+        lastSync: '12 hr ago',
+        status: 'OFFLINE',
+    },
+    {
+        id: 9,
+        name: 'Lucea Town Hall',
+        location: 'Lucea',
+        lastSync: '30 min ago',
+        status: 'ONLINE',
+    },
 ]
 
 export async function fetchHubs(): Promise<HubRow[]> {
@@ -194,6 +242,24 @@ export const COORDINATORS: CoordinatorRow[] = [
         email: 'd.wright@example.com',
         assignedHub: 'Whithorn Community Centre',
         phone: '+1 (876) 555-0103',
+        status: 'INACTIVE',
+        avatar: '/avatars/shadcn.jpg',
+    },
+    {
+        id: 4,
+        name: 'Amanda Brooks',
+        email: 'amanda.b@example.com',
+        assignedHub: 'Grange Hill High School',
+        phone: '+1 (876) 555-0104',
+        status: 'ACTIVE',
+        avatar: '/avatars/shadcn.jpg',
+    },
+    {
+        id: 5,
+        name: 'Robert King',
+        email: 'robert.k@example.com',
+        assignedHub: 'Negril Community Clinic',
+        phone: '+1 (876) 555-0105',
         status: 'INACTIVE',
         avatar: '/avatars/shadcn.jpg',
     },

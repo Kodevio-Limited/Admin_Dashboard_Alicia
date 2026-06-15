@@ -164,6 +164,42 @@ export let REPORTS: Report[] = [
         tacticalInsights:
             'The timing of this cyber activity during an ongoing recovery operation is suspicious. Ensure all critical infrastructure control systems are air-gapped or running on isolated, secure networks immediately.',
     },
+    {
+        id: 9,
+        time: 'Jun 9, 09:15 AM',
+        title: 'Structural Integrity Compromised',
+        summary: 'The main bridge over the Black River is showing signs of structural failure.',
+        description:
+            'Post-flood assessments have revealed severe scouring around the foundational pillars of the Black River Bridge. Load sensors indicate stress levels exceeding safety margins by 15%. All heavy traffic has been immediately diverted, and engineering teams are conducting a full structural diagnostic.',
+        stats: {
+            totalCheckIns: '4,500',
+            activeHazards: '3',
+            urgentFlags: '4',
+            silentZones: '0',
+        },
+        criticalSignals: ['Structural failure signs — Black River Bridge', 'Stress levels +15% over margin', 'Heavy traffic diverted'],
+        affectedAreas: ['Black River Bridge (Closed to Heavy Vehicles)', 'Route 66 (Traffic Rerouted)'],
+        tacticalInsights:
+            'Immediate full closure of the bridge may be necessary if stress levels continue to rise. Expedite the deployment of a temporary pontoon bridge downriver to maintain logistical flow.',
+    },
+    {
+        id: 10,
+        time: 'Jun 9, 11:30 AM',
+        title: 'Secondary Outbreak Detected',
+        summary: 'A localized outbreak of waterborne illness has been reported in the southern camps.',
+        description:
+            'Medical teams at the Southern Relief Camp have reported a sudden spike in gastrointestinal symptoms among evacuees. Preliminary tests point to a localized contamination of the backup water supply. Quarantine protocols have been enacted for the affected sector.',
+        stats: {
+            totalCheckIns: '4,820',
+            activeHazards: '4',
+            urgentFlags: '12',
+            silentZones: '0',
+        },
+        criticalSignals: ['Spike in gastrointestinal symptoms — Southern Camp', 'Water supply contamination suspected', 'Quarantine enacted'],
+        affectedAreas: ['Southern Relief Camp (Quarantine Sector B)'],
+        tacticalInsights:
+            'Deploy mobile water purification units immediately to the Southern Camp. Isolate the current water reservoir and distribute bottled water stockpiles. Enhance sanitation protocols across all relief sites.',
+    },
 ]
 
 export async function fetchReports(): Promise<Report[]> {
