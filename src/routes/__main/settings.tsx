@@ -60,14 +60,14 @@ function SecurityTab() {
 
 const staticContentApi = {
     get: async (key: string) => {
-        await new Promise(r => setTimeout(r, 600));
+
         if (key === "terms-and-conditions") {
             return { content: "<p>This is the default Terms & Conditions content. You can edit this text using the rich text editor below.</p>" };
         }
         return { content: "<p>This is the default Privacy Policy content. You can edit this text using the rich text editor below.</p>" };
     },
     update: async (key: string, content: string) => {
-        await new Promise(r => setTimeout(r, 800));
+
         return true;
     }
 };
@@ -178,7 +178,7 @@ function TermsAndConditionsTab() {
                     <Button
                         size="lg"
                         variant="secondary"
-                        className="flex-1 rounded-full text-base h-12 bg-muted/50 hover:bg-muted shadow-none border"
+                        className="flex-1 rounded-full"
                     >
                         Preview
                     </Button>
@@ -187,7 +187,7 @@ function TermsAndConditionsTab() {
                         variant="default"
                         disabled={updateContent.isPending}
                         onClick={() => updateContent.mutate()}
-                        className="flex-1 rounded-full text-base h-12 bg-[#03063A] hover:bg-[#03063A]/90 text-white shadow-none"
+                        className="flex-1 rounded-full"
                     >
                         {updateContent.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
                         Update

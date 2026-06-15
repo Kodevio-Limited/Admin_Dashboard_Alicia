@@ -9,6 +9,9 @@ import tailwindcss from '@tailwindcss/vite'
 const config = defineConfig({
     resolve: { tsconfigPaths: true },
     plugins: [devtools(), tailwindcss(), tanstackRouter({ target: 'react', autoCodeSplitting: true }), viteReact()],
+    optimizeDeps: {
+        include: ['lucide-react']
+    }
 })
 
 export default config
