@@ -1,11 +1,18 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Eye, Download } from 'lucide-react'
+import { Eye, Download, X } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { PageHeader } from '@/components/sections/page-header'
 import { Switch } from '@/components/ui/switch'
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -30,6 +37,7 @@ export const Route = createFileRoute('/__main/ai-reports')({
 
 function MessageReviewTab() {
     const [statusFilter, setStatusFilter] = useState('All')
+    const [viewingMessage, setViewingMessage] = useState<MessageReviewRow | null>(null)
     const filterOptions = ['All', 'Pending', 'Escalated', 'Resolved']
 
     const { data: reviews = [], isLoading } = useQuery({
@@ -97,10 +105,10 @@ function MessageReviewTab() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" sideOffset={8}>
-                            <DropdownMenuItem onSelect={() => console.log('View', row.resident)}>View details</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => setViewingMessage(row)}>View details</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onSelect={() => console.log('Edit', row.resident)}>Edit message</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => console.log('Resolve', row.resident)}>Mark as resolved</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => toast.success(`Editing message from ${row.resident}`)}>Edit message</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => toast.success(`Marked as resolved for ${row.resident}`)}>Mark as resolved</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 ),
@@ -139,6 +147,103 @@ function MessageReviewTab() {
                     )}
                 </CardContent>
             </Card>
+
+            <Dialog open={!!viewingMessage} onOpenChange={(open) => !open && setViewingMessage(null)}>
+                <DialogContent className="max-w-[420px] p-6 sm:rounded-[32px] gap-6 outline-none" showCloseButton={false}>
+                    <div className="absolute top-4 right-4">
+                        <Button variant="ghost" size="icon" onClick={() => setViewingMessage(null)}>
+                            <X className="size-4" />
+                        </Button>
+                    </div>
+
+                    <DialogHeader className="flex flex-col items-center gap-1.5 pt-2">
+                        <DialogTitle className="text-2xl font-bold tracking-tight">Review Message</DialogTitle>
+                        <p className="text-sm font-medium text-muted-foreground">{viewingMessage?.resident}</p>
+                        <Badge className={cn(
+                            "rounded-md px-2 py-0.5 mt-1 border-0 uppercase font-semibold text-[11px] tracking-wider",
+                            viewingMessage?.status === 'REVIEWD' || viewingMessage?.status === 'RESOLVED' ? "bg-[#B5F5C6] text-[#0A7B21] hover:bg-[#B5F5C6]" :
+                            viewingMessage?.status === 'PENDING' ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-100" :
+                            "bg-red-100 text-red-700 hover:bg-red-100"
+                        )}>
+                            {viewingMessage?.status}
+                        </Badge>
+                    </DialogHeader>
+
+                    <div className="flex flex-col gap-5">
+                        <div className="flex flex-col gap-2">
+                            <span className="text-[13px] font-medium text-muted-foreground">Resident Message</span>
+                            <div className="rounded-xl bg-[#F4F4F5] p-4 text-[15px] leading-relaxed font-medium text-foreground">
+                                "{viewingMessage?.preview}"
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <span className="text-[13px] font-medium text-muted-foreground">AI Interpretation Model</span>
+                            <div className="rounded-2xl bg-[#F4F4F5] p-5 flex flex-col gap-4">
+                                <div className="flex items-center justify-between">
+                                    <span className="font-bold text-[15px]">Predicted Intent</span>
+                                    <Badge className="bg-[#E4E4FA] text-[#3034A0] hover:bg-[#E4E4FA] rounded-md border-0 text-[11px] px-2 py-0.5">
+                                        Possible Hazard (Flood)
+                                    </Badge>
+                                </div>
+                                
+                                <div className="flex flex-col gap-1.5 text-[13px]">
+                                    <p className="text-muted-foreground">Hazard Type: <span className="text-foreground font-semibold">Flood</span></p>
+                                    <p className="text-muted-foreground">Approximate Location: <span className="text-foreground font-semibold">Haining Road</span></p>
+                                </div>
+
+                                <div className="flex flex-col gap-2 pt-2">
+                                    <div className="flex items-center justify-between text-[13px]">
+                                        <span className="font-semibold">Confidence Score</span>
+                                        <span className="font-bold">68%</span>
+                                    </div>
+                                    <div className="h-2 w-full bg-[#E5E5E5] rounded-full overflow-hidden flex">
+                                        <div className="h-full bg-[#EBD046] w-[68%] rounded-full" />
+                                    </div>
+                                    <p className="text-[11px] leading-snug text-muted-foreground mt-2">
+                                        Model confidence is below threshold. Human verification required before triggering standard response protocols.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-3 mt-2">
+                        <Button 
+                            variant="default"
+                            className="w-full"
+                            onClick={() => {
+                                toast.success('Message marked as safe.')
+                                setViewingMessage(null)
+                            }}
+                        >
+                            Mark as Safe
+                        </Button>
+                        <div className="flex gap-3">
+                            <Button 
+                                variant="secondary"
+                                className="flex-1"
+                                onClick={() => {
+                                    toast('Follow up initiated.')
+                                    setViewingMessage(null)
+                                }}
+                            >
+                                Follow Up
+                            </Button>
+                            <Button 
+                                variant="destructive"
+                                className="flex-1"
+                                onClick={() => {
+                                    toast.error('Escalated to critical!')
+                                    setViewingMessage(null)
+                                }}
+                            >
+                                Escalate to Critical
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }
@@ -193,25 +298,6 @@ function ReportsCenterTab() {
                 </div>
 
                 <div className="flex flex-col gap-6">
-                    <div className="flex items-center justify-between">
-                        <span className="font-semibold text-sm">Auto Reporting</span>
-                        <Switch defaultChecked />
-                    </div>
-
-                    <div className="space-y-2">
-                        <span className="text-xs text-muted-foreground">Frequency</span>
-                        <Select defaultValue="weekly">
-                            <SelectTrigger className="w-full bg-muted/50 border-0 rounded-xl h-11 text-sm font-medium">
-                                <SelectValue placeholder="Select frequency" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="daily">Daily</SelectItem>
-                                <SelectItem value="weekly">Weekly</SelectItem>
-                                <SelectItem value="monthly">Monthly</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
                     <div className="flex flex-col gap-4 mt-2">
                         <div className="flex items-center gap-3">
                             <Checkbox id="activity" defaultChecked className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black" />
@@ -256,6 +342,19 @@ function AiReportsPage() {
     const [confidence, setConfidence] = useState(85)
     const [autoClassification, setAutoClassification] = useState(true)
 
+    const handleAutoClassificationChange = (checked: boolean) => {
+        setAutoClassification(checked)
+        if (checked) {
+            toast.success('Auto-Classification Enabled', {
+                description: 'Messages will be automatically classified based on the confidence threshold.',
+            })
+        } else {
+            toast('Auto-Classification Disabled', {
+                description: 'All incoming messages will now require manual review.',
+            })
+        }
+    }
+
     return (
         <>
             <PageHeader title="AI & Reports" description="Monitor AI performance and manage automated reporting" lastUpdated="05:41:15 PM">
@@ -278,48 +377,65 @@ function AiReportsPage() {
                         </TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="ai-control" className="mt-6 flex flex-col gap-6 outline-none">
-                        <Card className="rounded-3xl bg-muted p-6 shadow-sm">
-                            <CardContent className="space-y-6 p-0">
-                                <div className="space-y-2">
-                                    <h2 className="text-2xl font-semibold text-foreground">Confidence Threshold</h2>
-                                    <p className="text-sm text-muted-foreground">Minimum AI confidence required to auto-classify a message.</p>
-                                </div>
+                    <TabsContent value="ai-control" className="mt-6 flex flex-col gap-4 outline-none w-full flex-1">
+                        <div className="rounded-2xl bg-[#E4E4E4] border border-black/[0.03] shadow-sm p-6">
+                            <div className="space-y-1">
+                                <h2 className="text-[17px] font-semibold text-foreground tracking-tight">Confidence Threshold</h2>
+                                <p className="text-sm text-muted-foreground">Minimum AI confidence required to auto-classify a message.</p>
+                            </div>
 
-                                <div className="space-y-4 rounded-[20px] bg-white p-6 shadow-sm">
-                                    <div className="flex items-center justify-between gap-4">
-                                        <span className="text-sm text-muted-foreground">Confidence</span>
-                                        <span className="text-xl font-semibold text-primary">{confidence}%</span>
-                                    </div>
-                                    <input
-                                        type="range"
-                                        min={0}
-                                        max={100}
-                                        value={confidence}
-                                        onChange={(event) => setConfidence(Number(event.target.value))}
-                                        className="w-full accent-primary"
-                                    />
-                                    <div className="flex justify-between text-xs text-muted-foreground">
-                                        <span>Passes More (50%)</span>
-                                        <span>Flags More (99%)</span>
-                                    </div>
+                            <div className="mt-14 relative">
+                                <div className="absolute right-0 -top-11 text-[28px] font-bold text-[#03063A] tracking-tight">{confidence}%</div>
+                                <input
+                                    type="range"
+                                    min={50}
+                                    max={99}
+                                    value={confidence}
+                                    onChange={(event) => setConfidence(Number(event.target.value))}
+                                    className="w-full h-2.5 rounded-full appearance-none outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#03063A] [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#03063A] [&::-moz-range-thumb]:border-0 cursor-pointer"
+                                    style={{
+                                        background: `linear-gradient(to right, #03063A 0%, #03063A ${((confidence - 50) / 49) * 100}%, #B4B9D6 ${((confidence - 50) / 49) * 100}%, #B4B9D6 100%)`
+                                    }}
+                                />
+                                <div className="flex justify-between text-[11px] text-muted-foreground mt-2.5 font-medium">
+                                    <span>Passes More (50%)</span>
+                                    <span>Flags More (99%)</span>
                                 </div>
-                            </CardContent>
-                        </Card>
+                            </div>
+                        </div>
 
-                        <Card className="rounded-3xl bg-muted p-6 shadow-sm">
-                            <CardContent className="flex flex-col gap-6 p-0">
-                                <div className="space-y-2">
-                                    <h2 className="text-2xl font-semibold text-foreground">Enable Auto-Classification</h2>
-                                    <p className="text-sm text-muted-foreground">
-                                        If disabled, all incoming messages will require manual human review regardless of confidence score.
-                                    </p>
-                                </div>
-                                <div className="flex justify-end">
-                                    <Switch checked={autoClassification} onCheckedChange={setAutoClassification} size="default" />
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <div className="rounded-2xl bg-[#E4E4E4] border border-black/[0.03] shadow-sm p-6 flex items-center justify-between gap-6">
+                            <div className="space-y-1 flex-1">
+                                <h2 className="text-[17px] font-semibold text-foreground tracking-tight">Enable Auto-Classification</h2>
+                                <p className="text-sm text-muted-foreground">
+                                    If disabled, all incoming messages will require manual human review regardless of confidence score.
+                                </p>
+                            </div>
+                            <Switch 
+                                checked={autoClassification} 
+                                onCheckedChange={handleAutoClassificationChange} 
+                                className="data-[state=checked]:bg-[#03063A] scale-125 origin-right" 
+                            />
+                        </div>
+
+                        <div className="rounded-2xl bg-[#E4E4E4] border border-black/[0.03] shadow-sm p-6 flex items-center justify-between gap-6">
+                            <div className="space-y-1 flex-1">
+                                <h2 className="text-[17px] font-semibold text-foreground tracking-tight">Report Frequency</h2>
+                                <p className="text-sm text-muted-foreground">
+                                    Select how often automated performance reports are generated.
+                                </p>
+                            </div>
+                            <Select defaultValue="60min">
+                                <SelectTrigger className="w-fit min-w-[160px] bg-white border border-[#E5E5E5] rounded-xl h-10 shadow-sm text-sm font-medium">
+                                    <SelectValue placeholder="Select frequency" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="60min">Every 60 minutes</SelectItem>
+                                    <SelectItem value="daily">Daily</SelectItem>
+                                    <SelectItem value="weekly">Weekly</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </TabsContent>
 
                     <TabsContent value="message-review" className="mt-6 outline-none flex-1 data-[state=active]:flex flex-col min-h-0">
