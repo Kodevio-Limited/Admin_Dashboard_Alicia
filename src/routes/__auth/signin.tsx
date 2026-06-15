@@ -83,7 +83,7 @@ function RouteComponent() {
                                     value={field.state.value}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                     onBlur={field.handleBlur}
-                                    className="pl-12 h-14 rounded-2xl bg-muted/30 border-2 border-transparent focus-visible:border-[#03045e]/50 focus-visible:ring-4 focus-visible:ring-[#03045e]/10 text-base transition-all"
+                                    className="pl-12 h-14 rounded-2xl bg-muted/30 border-2 border-transparent focus-visible:border-primary/50 focus-visible:ring-4 focus-visible:ring-primary/10 text-base transition-all"
                                 />
                             </div>
                             {field.state.meta.errors ? (
@@ -104,7 +104,7 @@ function RouteComponent() {
                                 </Label>
                                 <Link
                                     to="/forgot-password"
-                                    className="text-[#03045e] hover:text-[#020348] text-sm font-semibold hover:underline transition-colors"
+                                    className="text-primary hover:text-primary/90 text-sm font-semibold hover:underline transition-colors"
                                 >
                                     Forgot password?
                                 </Link>
@@ -118,7 +118,7 @@ function RouteComponent() {
                                     value={field.state.value}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                     onBlur={field.handleBlur}
-                                    className="pl-12 pr-12 h-14 rounded-2xl bg-muted/30 border-2 border-transparent focus-visible:border-[#03045e]/50 focus-visible:ring-4 focus-visible:ring-[#03045e]/10 text-base transition-all"
+                                    className="pl-12 pr-12 h-14 rounded-2xl bg-muted/30 border-2 border-transparent focus-visible:border-primary/50 focus-visible:ring-4 focus-visible:ring-primary/10 text-base transition-all"
                                 />
                                 <button
                                     type="button"

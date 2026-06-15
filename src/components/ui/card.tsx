@@ -16,7 +16,7 @@ function Card({
             data-slot="card"
             data-size={size}
             className={cn(
-                'group/card flex flex-col gap-5 overflow-hidden rounded-xl bg-card text-card-foreground',
+                'group/card flex flex-col gap-5 overflow-hidden rounded-xl bg-card py-5 text-card-foreground',
                 'has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0',
                 'data-[size=sm]:gap-4 data-[size=sm]:py-4',
                 'data-[size=sm]:has-data-[slot=card-footer]:pb-0',

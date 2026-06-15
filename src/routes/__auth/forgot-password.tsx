@@ -37,8 +37,8 @@ function RouteComponent() {
     return (
         <div className="flex flex-col gap-8 max-w-md w-full mx-auto">
             <div className="text-center">
-                <h1 className="text-4xl text-[#2d2f33] font-semibold tracking-tight">Forgot Password</h1>
-                <p className="mt-3 text-[#888] text-lg">Enter your email address and we'll send you a link to reset your password.</p>
+                <h1 className="text-4xl text-foreground font-semibold tracking-tight">Forgot Password</h1>
+                <p className="mt-3 text-muted-foreground text-lg">Enter your email address and we'll send you a link to reset your password.</p>
             </div>
 
             <form
@@ -51,16 +51,16 @@ function RouteComponent() {
                 <form.AppField name="email">
                     {(field) => (
                         <div className="flex flex-col gap-2">
-                            <label className="text-[#2d2f33] text-lg font-semibold">Email Address</label>
-                            <div className="flex items-center gap-3 bg-[#e9e9e9] rounded-full px-5 py-4 transition-colors focus-within:ring-2 focus-within:ring-primary/20">
-                                <Mail className="text-[#989898] shrink-0" size={22} />
+                            <label className="text-foreground text-lg font-semibold">Email Address</label>
+                            <div className="flex items-center gap-3 bg-muted rounded-full px-5 py-4 transition-colors focus-within:ring-2 focus-within:ring-primary/20">
+                                <Mail className="text-muted-foreground shrink-0" size={22} />
                                 <input
                                     type="email"
                                     placeholder="Enter your email"
                                     value={field.state.value}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                     onBlur={field.handleBlur}
-                                    className="flex-1 bg-transparent outline-none text-[#1e1e20] placeholder:text-[#989898] text-[15px]"
+                                    className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground text-[15px]"
                                 />
                             </div>
                             {field.state.meta.errors ? (
@@ -75,7 +75,7 @@ function RouteComponent() {
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full bg-[#03045e] text-white rounded-full py-5 shadow-md hover:bg-[#03045e]/90 transition-colors font-semibold text-[18px] mt-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-primary text-white rounded-full py-5 shadow-md hover:bg-primary/90 transition-colors font-semibold text-[18px] mt-3 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isSubmitting ? 'Sending...' : 'Send Reset Link'}
                         </button>
@@ -84,9 +84,9 @@ function RouteComponent() {
             </form>
 
             <div className="text-center mt-2">
-                <p className="text-[#888] text-sm">
+                <p className="text-muted-foreground text-sm">
                     Remember your password?{' '}
-                    <Link to="/signin" className="text-[#03045e] font-semibold hover:underline">
+                    <Link to="/signin" className="text-primary font-semibold hover:underline">
                         Sign In
                     </Link>
                 </p>

@@ -2,9 +2,9 @@ import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { routeTree } from './routeTree.gen'
-import { PendingComp } from '@/components/ui/pending-comp'
-import { ErrorComp } from '@/components/ui/error-comp'
-import { NotFoundComp } from '@/components/ui/not-found-comp'
+import { PendingComp } from '@/components/sections/pending-comp'
+import { ErrorComp } from '@/components/sections/error-comp'
+import { NotFoundComp } from '@/components/sections/not-found-comp'
 
 export const queryClient = new QueryClient({
     defaultOptions: {

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { PageHeader } from '@/components/ui/page-header'
+import { PageHeader } from '@/components/sections/page-header'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { InputGroup, InputGroupAddon, InputGroupText, InputGroupInput, InputGroupButton } from '@/components/ui/input-group'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
@@ -23,7 +23,7 @@ function PasswordField({ label }: PasswordFieldProps) {
     return (
         <Field>
             <FieldLabel>{label}</FieldLabel>
-            <InputGroup className="rounded-full bg-muted/50 border-transparent focus-within:ring-[#03045e]/20">
+            <InputGroup className="rounded-full bg-muted/50 border-transparent focus-within:ring-primary/20">
                 <InputGroupAddon align="inline-start">
                     <InputGroupText>
                         <Lock className="size-5" />
@@ -74,18 +74,18 @@ function TwoFactorTab() {
                         </div>
                         <Badge variant="success" className="w-fit">Enabled</Badge>
                     </div>
-                    <Switch defaultChecked className="data-[state=checked]:bg-[#03045e] scale-125 origin-right" />
+                    <Switch defaultChecked className="data-[state=checked]:bg-primary scale-125 origin-right" />
                 </div>
 
                 <div className="flex flex-col gap-4 mt-2">
                     <p className="font-medium text-lg text-foreground">Authentication Method</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex items-center gap-4 p-4 rounded-[12px] border-2 border-[#03045e] bg-[#03045e]/5 cursor-pointer transition-colors">
-                            <div className="size-12 rounded-full bg-white flex items-center justify-center shrink-0 border border-[#03045e]/20 text-[#03045e]">
+                        <div className="flex items-center gap-4 p-4 rounded-[12px] border-2 border-primary bg-primary/5 cursor-pointer transition-colors">
+                            <div className="size-12 rounded-full bg-white flex items-center justify-center shrink-0 border border-primary/20 text-primary">
                                 <Smartphone className="size-6" />
                             </div>
                             <div className="flex flex-col gap-1">
-                                <p className="font-medium text-[#03045e] text-lg">Authenticator App</p>
+                                <p className="font-medium text-primary text-lg">Authenticator App</p>
                                 <p className="text-muted-foreground text-sm">Google Auth, Authy etc</p>
                             </div>
                         </div>
@@ -122,7 +122,7 @@ function FormInput({ label, icon: Icon, defaultValue }: FormInputProps) {
     return (
         <Field>
             <FieldLabel>{label}</FieldLabel>
-            <InputGroup className="rounded-full bg-muted/50 border-transparent focus-within:ring-[#03045e]/20">
+            <InputGroup className="rounded-full bg-muted/50 border-transparent focus-within:ring-primary/20">
                 <InputGroupAddon align="inline-start">
                     <InputGroupText>
                         <Icon className="size-5" />
@@ -232,7 +232,7 @@ function NotificationsTab() {
                         <Switch
                             checked={toggles[row.key]}
                             onCheckedChange={(v) => setToggles((prev) => ({ ...prev, [row.key]: v }))}
-                            className="data-[state=checked]:bg-[#03045e] scale-125"
+                            className="data-[state=checked]:bg-primary scale-125"
                         />
                     </div>
                 ))}

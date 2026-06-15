@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { PageHeader } from '@/components/ui/page-header'
+import { PageHeader } from '@/components/sections/page-header'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -32,17 +32,17 @@ function AiReportsPage() {
                     </TabsList>
                 </Tabs>
 
-                <Card className="rounded-3xl bg-[#e9e9e9] p-6 shadow-sm">
+                <Card className="rounded-3xl bg-muted p-6 shadow-sm">
                     <CardContent className="space-y-6 p-0">
                         <div className="space-y-2">
-                            <h2 className="text-2xl font-semibold text-[#1e1e20]">Confidence Threshold</h2>
+                            <h2 className="text-2xl font-semibold text-foreground">Confidence Threshold</h2>
                             <p className="text-sm text-muted-foreground">Minimum AI confidence required to auto-classify a message.</p>
                         </div>
 
                         <div className="space-y-4 rounded-[20px] bg-white p-6 shadow-sm">
                             <div className="flex items-center justify-between gap-4">
                                 <span className="text-sm text-muted-foreground">Confidence</span>
-                                <span className="text-xl font-semibold text-[#03045e]">{confidence}%</span>
+                                <span className="text-xl font-semibold text-primary">{confidence}%</span>
                             </div>
                             <input
                                 type="range"
@@ -50,7 +50,7 @@ function AiReportsPage() {
                                 max={100}
                                 value={confidence}
                                 onChange={(event) => setConfidence(Number(event.target.value))}
-                                className="w-full accent-[#03045e]"
+                                className="w-full accent-primary"
                             />
                             <div className="flex justify-between text-xs text-muted-foreground">
                                 <span>Passes More (50%)</span>
@@ -60,10 +60,10 @@ function AiReportsPage() {
                     </CardContent>
                 </Card>
 
-                <Card className="rounded-3xl bg-[#e9e9e9] p-6 shadow-sm">
+                <Card className="rounded-3xl bg-muted p-6 shadow-sm">
                     <CardContent className="flex flex-col gap-6 p-0">
                         <div className="space-y-2">
-                            <h2 className="text-2xl font-semibold text-[#1e1e20]">Enable Auto-Classification</h2>
+                            <h2 className="text-2xl font-semibold text-foreground">Enable Auto-Classification</h2>
                             <p className="text-sm text-muted-foreground">
                                 If disabled, all incoming messages will require manual human review regardless of confidence score.
                             </p>

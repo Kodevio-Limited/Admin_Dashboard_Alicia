@@ -54,8 +54,8 @@ export function NavUser({
                             />
                         </div>
                         <div className="flex flex-col text-left hidden md:flex">
-                            <p className="font-semibold text-[#1e1e20] text-[13px] leading-tight">{user.name}</p>
-                            <p className="text-[#989898] text-[11px] leading-tight">{user.email}</p>
+                            <p className="font-semibold text-foreground text-[13px] leading-tight">{user.name}</p>
+                            <p className="text-muted-foreground text-[11px] leading-tight">{user.email}</p>
                         </div>
                     </button>
                 </DropdownMenuTrigger>

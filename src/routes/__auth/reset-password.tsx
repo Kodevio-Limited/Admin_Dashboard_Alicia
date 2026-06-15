@@ -65,8 +65,8 @@ function RouteComponent() {
     return (
         <div className="flex flex-col gap-8 max-w-md w-full mx-auto">
             <div className="text-center">
-                <h1 className="text-4xl text-[#2d2f33] font-semibold tracking-tight">Reset Password</h1>
-                <p className="mt-3 text-[#888] text-lg">Enter your new password below.</p>
+                <h1 className="text-4xl text-foreground font-semibold tracking-tight">Reset Password</h1>
+                <p className="mt-3 text-muted-foreground text-lg">Enter your new password below.</p>
             </div>
 
             <form
@@ -79,21 +79,21 @@ function RouteComponent() {
                 <form.AppField name="password">
                     {(field) => (
                         <div className="flex flex-col gap-2">
-                            <label className="text-[#2d2f33] text-lg font-semibold">New Password</label>
-                            <div className="flex items-center gap-3 bg-[#e9e9e9] rounded-full px-5 py-4 transition-colors focus-within:ring-2 focus-within:ring-primary/20">
-                                <Lock className="text-[#989898] shrink-0" size={22} />
+                            <label className="text-foreground text-lg font-semibold">New Password</label>
+                            <div className="flex items-center gap-3 bg-muted rounded-full px-5 py-4 transition-colors focus-within:ring-2 focus-within:ring-primary/20">
+                                <Lock className="text-muted-foreground shrink-0" size={22} />
                                 <input
                                     type={showPassword ? 'text' : 'password'}
                                     placeholder="••••••••"
                                     value={field.state.value}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                     onBlur={field.handleBlur}
-                                    className="flex-1 bg-transparent outline-none text-[#1e1e20] placeholder:text-[#989898] text-[15px]"
+                                    className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground text-[15px]"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword((v) => !v)}
-                                    className="text-[#989898] shrink-0 hover:text-[#1e1e20] transition-colors"
+                                    className="text-muted-foreground shrink-0 hover:text-foreground transition-colors"
                                 >
                                     {showPassword ? <Eye size={22} /> : <EyeOff size={22} />}
                                 </button>
@@ -108,21 +108,21 @@ function RouteComponent() {
                 <form.AppField name="confirmPassword">
                     {(field) => (
                         <div className="flex flex-col gap-2">
-                            <label className="text-[#2d2f33] text-lg font-semibold">Confirm Password</label>
-                            <div className="flex items-center gap-3 bg-[#e9e9e9] rounded-full px-5 py-4 transition-colors focus-within:ring-2 focus-within:ring-primary/20">
-                                <Lock className="text-[#989898] shrink-0" size={22} />
+                            <label className="text-foreground text-lg font-semibold">Confirm Password</label>
+                            <div className="flex items-center gap-3 bg-muted rounded-full px-5 py-4 transition-colors focus-within:ring-2 focus-within:ring-primary/20">
+                                <Lock className="text-muted-foreground shrink-0" size={22} />
                                 <input
                                     type={showConfirmPassword ? 'text' : 'password'}
                                     placeholder="••••••••"
                                     value={field.state.value}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                     onBlur={field.handleBlur}
-                                    className="flex-1 bg-transparent outline-none text-[#1e1e20] placeholder:text-[#989898] text-[15px]"
+                                    className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground text-[15px]"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowConfirmPassword((v) => !v)}
-                                    className="text-[#989898] shrink-0 hover:text-[#1e1e20] transition-colors"
+                                    className="text-muted-foreground shrink-0 hover:text-foreground transition-colors"
                                 >
                                     {showConfirmPassword ? <Eye size={22} /> : <EyeOff size={22} />}
                                 </button>
@@ -139,7 +139,7 @@ function RouteComponent() {
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full bg-[#03045e] text-white rounded-full py-5 shadow-md hover:bg-[#03045e]/90 transition-colors font-semibold text-[18px] mt-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-primary text-white rounded-full py-5 shadow-md hover:bg-primary/90 transition-colors font-semibold text-[18px] mt-3 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isSubmitting ? 'Resetting...' : 'Submit'}
                         </button>

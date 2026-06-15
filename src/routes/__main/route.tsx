@@ -32,7 +32,7 @@ function RouteComponent() {
     const isHome = pathname === '/'
 
     return (
-        <SidebarProvider className="bg-[#f0f1f4]">
+        <SidebarProvider className="bg-muted">
             <TooltipProvider>
                 <AppSidebar />
                 <SidebarInset className="bg-transparent">

@@ -16,8 +16,8 @@ import {
     Legend,
 } from 'recharts'
 import { HeartPulse, TriangleAlert, Waves, BatteryWarning, Users, Activity, CheckCircle, ShieldCheck, AlertCircle } from 'lucide-react'
-import { PageHeader } from '#/components/ui/page-header'
-import { StatCard } from '#/components/ui/stat-card'
+import { PageHeader } from '#/components/sections/page-header'
+import { StatCard } from '#/components/sections/stat-card'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export const Route = createFileRoute('/__main/')({
@@ -207,14 +207,14 @@ function Dashboard() {
                                             {flag.type}
                                         </p>
                                         <p
-                                            className="text-[#686868] text-[13px] font-medium leading-tight max-w-40 truncate"
+                                            className="text-muted-foreground text-[13px] font-medium leading-tight max-w-40 truncate"
                                             title={flag.location}
                                         >
                                             {flag.location}
                                         </p>
                                     </div>
                                 </div>
-                                <p className="text-[#989898] text-[13px] font-semibold shrink-0 ml-2">{flag.time}</p>
+                                <p className="text-muted-foreground text-[13px] font-semibold shrink-0 ml-2">{flag.time}</p>
                             </div>
                         ))}
                     </CardContent>
