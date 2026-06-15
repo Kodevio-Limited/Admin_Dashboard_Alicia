@@ -47,9 +47,9 @@ const hazardData = [
 ]
 
 const workloadData = [
-    { name: 'Check in', value: 268.61, color: '#8979FF' },
-    { name: 'Alerts', value: 93.12, color: '#FF928A' },
-    { name: 'AI Sync', value: 184.16, color: '#3CC3DF' },
+    { name: 'Check in', value: 51, color: '#8979FF' },
+    { name: 'Alerts', value: 14, color: '#FF928A' },
+    { name: 'AI Sync', value: 35, color: '#3CC3DF' },
 ]
 
 const urgentFlags = [
@@ -317,7 +317,7 @@ function Dashboard() {
                                 />
                                 <Tooltip
                                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}
-                                    formatter={(v: any) => [Number(v).toFixed(2), 'Value']}
+                                    formatter={(v: any) => [`${v}%`, 'Workload']}
                                 />
                             </PieChart>
                         </ResponsiveContainer>

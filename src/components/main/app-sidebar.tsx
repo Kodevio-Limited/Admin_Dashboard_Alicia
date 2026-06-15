@@ -64,10 +64,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             {...props}
         >
             <SidebarHeader className="pt-6 pb-2 bg-transparent">
-                <div className="flex justify-center w-full px-4">
-                    <div className="h-12 w-full max-w-[140px] relative flex items-center justify-center">
-                        <img src="/logo.png" alt="Logo" className="w-full h-full object-contain group-data-[collapsible=icon]:hidden" />
-                        <span className="hidden group-data-[collapsible=icon]:block font-bold text-primary text-xl">L</span>
+                 <div className="flex justify-center w-full px-2">
+                    <div className="h-12 w-full flex items-center justify-center gap-2 overflow-hidden">
+                        <img src="/logo.png" alt="Logo" className="h-12 w-12 object-contain shrink" />
+                        <h1 className="font-bold text-primary text-3xl truncate group-data-[collapsible=icon]:hidden">SPARK</h1>
                     </div>
                 </div>
             </SidebarHeader>

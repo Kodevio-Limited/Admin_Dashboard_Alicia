@@ -203,7 +203,7 @@ export let REPORTS: Report[] = [
 ]
 
 export async function fetchReports(): Promise<Report[]> {
-    await new Promise((resolve) => setTimeout(resolve, 500))
+
     return [...REPORTS]
 }
 
@@ -281,7 +281,7 @@ export const MESSAGE_REVIEWS: MessageReviewRow[] = [
 ]
 
 export async function fetchMessageReviews(): Promise<MessageReviewRow[]> {
-    await new Promise((resolve) => setTimeout(resolve, 500))
+
     return [...MESSAGE_REVIEWS]
 }
 
@@ -299,6 +299,6 @@ export const REPORT_HISTORY: ReportHistoryItem[] = [
 ]
 
 export async function fetchReportHistory(): Promise<ReportHistoryItem[]> {
-    await new Promise((resolve) => setTimeout(resolve, 500))
+
     return [...REPORT_HISTORY]
 }

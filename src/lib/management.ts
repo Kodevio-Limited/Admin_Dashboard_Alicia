@@ -111,7 +111,7 @@ export let RESIDENTS: ResidentRow[] = [
 ]
 
 export async function fetchResidents(): Promise<ResidentRow[]> {
-    await new Promise((resolve) => setTimeout(resolve, 600))
+
     return [...RESIDENTS]
 }
 
@@ -228,7 +228,7 @@ export const HUBS: HubRow[] = [
 ]
 
 export async function fetchHubs(): Promise<HubRow[]> {
-    await new Promise((resolve) => setTimeout(resolve, 600))
+
     return [...HUBS]
 }
 
@@ -311,7 +311,7 @@ export const COORDINATORS: CoordinatorRow[] = [
 ]
 
 export async function fetchCoordinators(): Promise<CoordinatorRow[]> {
-    await new Promise((resolve) => setTimeout(resolve, 600))
+
     return [...COORDINATORS]
 }
 

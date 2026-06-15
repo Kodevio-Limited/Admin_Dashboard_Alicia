@@ -8,9 +8,16 @@ export interface HazardDataPoint {
     value: number
 }
 
+export interface WorkloadDataPoint {
+    name: string
+    value: number
+    color: string
+}
+
 export interface OverviewData {
     checkinData: CheckinDataPoint[]
     hazardData: HazardDataPoint[]
+    workloadData: WorkloadDataPoint[]
 }
 
 export let OVERVIEW_DATA: OverviewData = {
@@ -29,11 +36,16 @@ export let OVERVIEW_DATA: OverviewData = {
         { name: 'Fire', value: 80 },
         { name: 'Flood', value: 110 },
     ],
+    workloadData: [
+        { name: 'Check in', value: 51, color: '#8979FF' },
+        { name: 'Alerts', value: 14, color: '#FF928A' },
+        { name: 'AI Sync', value: 35, color: '#3CC3DF' },
+    ],
 }
 
 export async function fetchOverviewData(): Promise<OverviewData> {
     // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 500))
+
     return OVERVIEW_DATA
 }
 

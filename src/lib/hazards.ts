@@ -27,7 +27,7 @@ export let HAZARDS: HazardItem[] = [
 ]
 
 export async function fetchHazards(): Promise<HazardItem[]> {
-    await new Promise((resolve) => setTimeout(resolve, 500))
+
     return [...HAZARDS]
 }
 

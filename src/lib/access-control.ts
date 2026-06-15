@@ -104,7 +104,7 @@ export let ACCESS_USERS: AccessUserRow[] = [
 ]
 
 export async function fetchAccessUsers(): Promise<AccessUserRow[]> {
-    await new Promise((resolve) => setTimeout(resolve, 600))
+
     return [...ACCESS_USERS]
 }
 

@@ -75,6 +75,7 @@ const staticContentApi = {
 function TermsAndConditionsTab() {
     const queryClient = useQueryClient();
     const [content, setContent] = useState<string>("");
+    const [isInitialized, setIsInitialized] = useState(false);
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["static-content", "terms-and-conditions"],
@@ -99,7 +100,10 @@ function TermsAndConditionsTab() {
     });
 
     useEffect(() => {
-        setContent(data?.content ?? "");
+        if (data) {
+            setContent(data.content ?? "");
+            setIsInitialized(true);
+        }
     }, [data]);
 
     const config = useMemo(
@@ -136,7 +140,7 @@ function TermsAndConditionsTab() {
         []
     );
 
-    if (isLoading) {
+    if (isLoading || !isInitialized) {
         return (
             <div className="flex flex-col justify-center items-center h-96 gap-4 text-muted-foreground">
                 <Loader2 className="size-8 animate-spin" />
@@ -197,6 +201,7 @@ function TermsAndConditionsTab() {
 function PrivacyPolicyTab() {
     const queryClient = useQueryClient();
     const [content, setContent] = useState<string>("");
+    const [isInitialized, setIsInitialized] = useState(false);
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["static-content", "privacy-policy"],
@@ -221,7 +226,10 @@ function PrivacyPolicyTab() {
     });
 
     useEffect(() => {
-        setContent(data?.content ?? "");
+        if (data) {
+            setContent(data.content ?? "");
+            setIsInitialized(true);
+        }
     }, [data]);
 
     const config = useMemo(
@@ -258,7 +266,7 @@ function PrivacyPolicyTab() {
         []
     );
 
-    if (isLoading) {
+    if (isLoading || !isInitialized) {
         return (
             <div className="flex flex-col justify-center items-center h-96 gap-4 text-muted-foreground">
                 <Loader2 className="size-8 animate-spin" />
