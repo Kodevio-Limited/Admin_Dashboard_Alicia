@@ -103,7 +103,7 @@ function ManagementPage() {
                 render: (resident: ResidentRow) => (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="">
+                            <Button variant="outline">
                                 <Eye className="size-4" />
                                 Action
                             </Button>
@@ -159,12 +159,23 @@ function ManagementPage() {
             {
                 key: 'action',
                 header: 'ACTION',
-                className: 'py-2 text-right pr-4',
-                headerClassName: 'text-right pr-4',
-                render: () => (
-                    <Button variant="secondary" className="size-8 rounded-md bg-muted/80 hover:bg-muted" size="icon">
-                        <Eye className="size-4 text-muted-foreground" />
-                    </Button>
+                className: 'py-2 text-left pr-4',
+                headerClassName: 'text-left pr-4',
+                render: (hub: HubRow) => (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline">
+                                <Eye className="size-4" />
+                                Action
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" sideOffset={8}>
+                            <DropdownMenuItem onSelect={() => console.log('View', hub.name)}>View details</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onSelect={() => console.log('Edit', hub.name)}>Edit hub</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => console.log('Restart', hub.name)}>Restart hub</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 ),
             },
         ],
@@ -212,7 +223,7 @@ function ManagementPage() {
                 render: (coordinator: CoordinatorRow) => (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="gap-2">
+                            <Button variant="outline">
                                 <Eye className="size-4" />
                                 Action
                             </Button>
@@ -244,20 +255,20 @@ function ManagementPage() {
                         </TabsList>
 
                         {activeTab === 'hubs' && (
-                            <Button className="rounded-full px-5 gap-2 bg-[#03063A] hover:bg-[#03063A]/90 text-white hidden md:flex h-10">
+                            <Button variant="default">
                                 <Plus className="size-4" />
                                 Create Hub
                             </Button>
                         )}
                         {activeTab === 'coordinators' && (
-                            <Button className="rounded-full px-5 gap-2 bg-[#03063A] hover:bg-[#03063A]/90 text-white hidden md:flex h-10">
+                            <Button variant="default">
                                 <Plus className="size-4" />
                                 Invite Coordinator
                             </Button>
                         )}
                     </div>
 
-                    <TabsContent value="residents" className="rounded-[12px] outline-none flex-1 data-[state=active]:flex flex-col mt-4">
+                    <TabsContent value="residents" className="rounded-[12px] outline-none flex-1 data-[state=active]:flex flex-col mt-0">
                         <Card className="flex-1 overflow-hidden shadow-sm flex flex-col min-h-100">
                             <CardContent className="p-4 pb-[6px] flex-1 flex flex-col">
                                 {isLoading ? (
@@ -275,7 +286,7 @@ function ManagementPage() {
                         </Card>
                     </TabsContent>
                     
-                    <TabsContent value="hubs" className="m-0 border-0 p-0 outline-none flex-1 data-[state=active]:flex flex-col mt-4">
+                    <TabsContent value="hubs" className="m-0 border-0 p-0 outline-none flex-1 data-[state=active]:flex flex-col mt-0">
                         <Card className="flex-1 overflow-hidden shadow-sm flex flex-col min-h-0">
                             <CardContent className="p-4 pb-[6px] flex-1 flex flex-col">
                                 {isLoadingHubs ? (
@@ -293,7 +304,7 @@ function ManagementPage() {
                         </Card>
                     </TabsContent>
                     
-                    <TabsContent value="coordinators" className="m-0 border-0 p-0 outline-none flex-1 data-[state=active]:flex flex-col mt-4">
+                    <TabsContent value="coordinators" className="m-0 border-0 p-0 outline-none flex-1 data-[state=active]:flex flex-col mt-0">
                         <Card className="flex-1 overflow-hidden shadow-sm flex flex-col min-h-0">
                             <CardContent className="p-4 pb-[6px] flex-1 flex flex-col">
                                 {isLoadingCoordinators ? (

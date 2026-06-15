@@ -48,7 +48,7 @@ function SecurityTab() {
                 <PasswordField label="New Password" />
                 <PasswordField label="Confirm Password" />
                 <div className="mt-8">
-                    <Button size="lg" className="w-full" onClick={() => toast.success('Password updated successfully')}>
+                    <Button variant="default" className="w-full" onClick={() => toast.success('Password updated successfully')}>
                         Update Password
                     </Button>
                 </div>
@@ -103,7 +103,7 @@ function TwoFactorTab() {
                 </div>
 
                 <div className="mt-8 flex justify-end">
-                    <Button size="lg" className="w-full" onClick={() => toast.success('2FA settings saved')}>
+                    <Button variant="default" className="w-full" onClick={() => toast.success('2FA settings saved')}>
                         Save Changes
                     </Button>
                 </div>
@@ -173,7 +173,7 @@ function ProfileTab() {
 
                     {/* Save Button */}
                     <div className="mt-4 w-full">
-                        <Button size="lg" className="w-full" onClick={() => toast.success('Profile changes saved')}>
+                        <Button variant="default" className="w-full" onClick={() => toast.success('Profile changes saved')}>
                             Save Changes
                         </Button>
                     </div>
@@ -231,6 +231,7 @@ function NotificationsTab() {
                         </div>
                         <Switch
                             checked={toggles[row.key]}
+                            onClick={() => toast.success('Notifications settings Updated')}
                             onCheckedChange={(v) => setToggles((prev) => ({ ...prev, [row.key]: v }))}
                             className="data-[state=checked]:bg-primary scale-125"
                         />

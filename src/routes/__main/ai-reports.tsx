@@ -6,6 +6,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { PageHeader } from '@/components/sections/page-header'
 import { Switch } from '@/components/ui/switch'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -81,11 +88,21 @@ function MessageReviewTab() {
                 header: 'ACTION',
                 className: 'py-2 text-left pr-4',
                 headerClassName: 'text-left pr-4',
-                render: () => (
-                    <Button variant="outline" className="gap-2">
-                        <Eye className="size-4" />
-                        Action
-                    </Button>
+                render: (row: MessageReviewRow) => (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="gap-2">
+                                <Eye className="size-4" />
+                                Action
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" sideOffset={8}>
+                            <DropdownMenuItem onSelect={() => console.log('View', row.resident)}>View details</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onSelect={() => console.log('Edit', row.resident)}>Edit message</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => console.log('Resolve', row.resident)}>Mark as resolved</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 ),
             },
         ],
@@ -152,7 +169,7 @@ function ReportsCenterTab() {
                 className: 'py-5 text-right',
                 headerClassName: 'hidden',
                 render: () => (
-                    <Button variant="secondary" className="gap-2 bg-muted hover:bg-muted/80 text-muted-foreground text-xs font-semibold px-4 h-9">
+                    <Button variant="secondary">
                         <Download className="h-3.5 w-3.5" /> PDF
                     </Button>
                 ),
@@ -242,7 +259,7 @@ function AiReportsPage() {
     return (
         <>
             <PageHeader title="AI & Reports" description="Monitor AI performance and manage automated reporting" lastUpdated="05:41:15 PM">
-                <Button size="sm" className="gap-2 bg-[#03063A] hover:bg-[#03063A]/90 text-white rounded-full px-5">
+                <Button variant="default">
                     Generate Report
                 </Button>
             </PageHeader>
