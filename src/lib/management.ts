@@ -47,7 +47,7 @@ export function getResidentById(id: number): ResidentRow | undefined {
     return RESIDENTS.find((r) => r.id === id)
 }
 
-export function createResident(data: Omit<ResidentRow, 'id'>): ResidentRow {
+export function createResident(data: Omit<ResidentRow,'id'>): ResidentRow {
     const newResident = { id: Date.now(), ...data }
     RESIDENTS = [...RESIDENTS, newResident]
     return newResident
