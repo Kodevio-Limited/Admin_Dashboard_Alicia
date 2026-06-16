@@ -56,9 +56,9 @@ function RouteComponent() {
     return (
         <div className="flex flex-col gap-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
-            <div className="text-center flex flex-col gap-2 border-b pb-6 mb-2 border-muted/50">
-                <h1 className="text-2xl md:text-3xl text-foreground font-semibold tracking-tight">Sign In to Your Account</h1>
-                <p className="text-muted-foreground text-sm md:text-base">Access your dashboard and manage operations</p>
+            <div className="text-center flex flex-col gap-2 mb-8">
+                <h1 className="text-[28px] md:text-[32px] text-foreground font-bold tracking-tight">Sign In</h1>
+                <p className="text-muted-foreground text-[15px]">Access your account with correct information</p>
             </div>
 
             <form
@@ -71,19 +71,19 @@ function RouteComponent() {
                 <form.AppField name="email">
                     {(field) => (
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="email" className="text-base font-semibold text-foreground">
-                                Email Address
+                            <Label htmlFor="email" className="text-[15px] font-bold text-foreground">
+                                Email
                             </Label>
                             <div className="relative">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground size-5" />
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] size-5" />
                                 <Input
                                     id="email"
                                     type="email"
-                                    placeholder="Enter your email"
+                                    placeholder="Enter your email..."
                                     value={field.state.value}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                     onBlur={field.handleBlur}
-                                    className="pl-12 h-14 rounded-2xl bg-muted/30 border-2 border-transparent focus-visible:border-primary/50 focus-visible:ring-4 focus-visible:ring-primary/10 text-base transition-all"
+                                    className="pl-12 h-[52px] rounded-3xl bg-[#EEEEEE] border-0 focus-visible:ring-2 focus-visible:ring-primary/20 text-[15px] font-medium transition-all placeholder:text-[#888888]"
                                 />
                             </div>
                             {field.state.meta.errors ? (
@@ -99,36 +99,38 @@ function RouteComponent() {
                     {(field) => (
                         <div className="flex flex-col gap-2">
                             <div className="flex justify-between items-center">
-                                <Label htmlFor="password" className="text-base font-semibold text-foreground">
+                                <Label htmlFor="password" className="text-[15px] font-bold text-foreground">
                                     Password
                                 </Label>
-                                <Link
-                                    to="/forgot-password"
-                                    className="text-primary hover:text-primary/90 text-sm font-semibold hover:underline transition-colors"
-                                >
-                                    Forgot password?
-                                </Link>
                             </div>
                             <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground size-5" />
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] size-5" />
                                 <Input
                                     id="password"
                                     type={showPassword ? 'text' : 'password'}
-                                    placeholder="••••••••"
+                                    placeholder="********"
                                     value={field.state.value}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                     onBlur={field.handleBlur}
-                                    className="pl-12 pr-12 h-14 rounded-2xl bg-muted/30 border-2 border-transparent focus-visible:border-primary/50 focus-visible:ring-4 focus-visible:ring-primary/10 text-base transition-all"
+                                    className="pl-12 pr-12 h-[52px] rounded-3xl bg-[#EEEEEE] border-0 focus-visible:ring-2 focus-visible:ring-primary/20 text-[15px] font-medium transition-all placeholder:text-[#888888]"
                                 />
                                 <button
                                     type="button"
                                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                                     aria-pressed={showPassword}
                                     onClick={() => setShowPassword((v) => !v)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors outline-none focus-visible:text-foreground"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888] hover:text-foreground transition-colors outline-none"
                                 >
                                     {showPassword ? <Eye className="size-5" /> : <EyeOff className="size-5" />}
                                 </button>
+                            </div>
+                            <div className="flex justify-end mt-1">
+                                <Link
+                                    to="/forgot-password"
+                                    className="text-[#FFB800] hover:text-[#FFB800]/80 text-[13px] font-semibold transition-colors"
+                                >
+                                    Forgot password?
+                                </Link>
                             </div>
                             {field.state.meta.errors ? (
                                 <p className="text-destructive text-sm font-medium px-4 text-center">
@@ -144,8 +146,7 @@ function RouteComponent() {
                         <Button
                             type="submit"
                             disabled={isSubmitting}
-                            size="lg"
-                            className="w-full mt-2"
+                            className="w-full mt-4 h-14 rounded-full bg-[#03063A] hover:bg-[#03063A]/90 text-white text-[15px] font-semibold"
                         >
                             {isSubmitting ? 'Signing in...' : 'Sign In'}
                         </Button>

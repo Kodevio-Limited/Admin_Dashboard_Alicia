@@ -59,6 +59,10 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit coordinator</DropdownMenuItem>
                     </EditCoordinatorDialog>
                     <DropdownMenuSeparator />
+                    <ReassignCoordinatorDialog coordinator={coordinator}>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Reassign Area</DropdownMenuItem>
+                    </ReassignCoordinatorDialog>
+                    <DropdownMenuSeparator />
                     {isSuspended ? (
                         <DropdownMenuItem
                             onSelect={() => unsuspendMutation.mutate(coordinator.id)}

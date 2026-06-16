@@ -2,6 +2,9 @@ import { useAppForm } from '@/components/form/form-context'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Mail } from 'lucide-react'
 import { z } from 'zod'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 export const Route = createFileRoute('/__auth/forgot-password')({
     component: RouteComponent,
@@ -19,30 +22,20 @@ function RouteComponent() {
         validators: { onChange: forgotSchema },
         onSubmit: async ({ value }) => {
             console.log(value)
-            // await auth.requestPasswordReset(
-            //     {
-            //         email: value.email,
-            //         redirectTo: `${import.meta.env.VITE_APP_CLIENT}/reset-password`,
-            //     },
-            //     {
-            //         onSuccess: () => {
-            //             toast.success("Password reset link sent to your email!");
-            //             navigate({ to: "/verification", search: { user: value.email, type: "reset" } });
-            //         },
-            //     },
-            // );
+            // await auth.requestPasswordReset( ... )
         },
     })
 
     return (
-        <div className="flex flex-col gap-8 max-w-md w-full mx-auto">
-            <div className="text-center">
-                <h1 className="text-4xl text-foreground font-semibold tracking-tight">Forgot Password</h1>
-                <p className="mt-3 text-muted-foreground text-lg">Enter your email address and we'll send you a link to reset your password.</p>
+        <div className="flex flex-col gap-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Header */}
+            <div className="text-center flex flex-col gap-2 mb-8">
+                <h1 className="text-[28px] md:text-[32px] text-foreground font-bold tracking-tight">Forgot Password</h1>
+                <p className="text-muted-foreground text-[15px]">Enter your email address to get a reset link</p>
             </div>
 
             <form
-                className="flex flex-col gap-5"
+                className="flex flex-col gap-6"
                 onSubmit={(e) => {
                     e.preventDefault()
                     form.handleSubmit()
@@ -51,20 +44,25 @@ function RouteComponent() {
                 <form.AppField name="email">
                     {(field) => (
                         <div className="flex flex-col gap-2">
-                            <label className="text-foreground text-lg font-semibold">Email Address</label>
-                            <div className="flex items-center gap-3 bg-muted rounded-full px-5 py-4 transition-colors focus-within:ring-2 focus-within:ring-primary/20">
-                                <Mail className="text-muted-foreground shrink-0" size={22} />
-                                <input
+                            <Label htmlFor="email" className="text-[15px] font-bold text-foreground">
+                                Email
+                            </Label>
+                            <div className="relative">
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] size-5" />
+                                <Input
+                                    id="email"
                                     type="email"
-                                    placeholder="Enter your email"
+                                    placeholder="Enter your email..."
                                     value={field.state.value}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                     onBlur={field.handleBlur}
-                                    className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground text-[15px]"
+                                    className="pl-12 h-[52px] rounded-3xl bg-[#EEEEEE] border-0 focus-visible:ring-2 focus-visible:ring-primary/20 text-[15px] font-medium transition-all placeholder:text-[#888888]"
                                 />
                             </div>
                             {field.state.meta.errors ? (
-                                <p className="text-destructive text-sm font-medium">{field.state.meta.errors.join(', ')}</p>
+                                <p className="text-destructive text-sm font-medium px-4 text-center">
+                                    {field.state.meta.errors.join(', ')}
+                                </p>
                             ) : null}
                         </div>
                     )}
@@ -72,21 +70,21 @@ function RouteComponent() {
 
                 <form.Subscribe selector={(state) => [state.isSubmitting]}>
                     {([isSubmitting]) => (
-                        <button
+                        <Button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full bg-primary text-white rounded-full py-5 shadow-md hover:bg-primary/90 transition-colors font-semibold text-[18px] mt-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full mt-4 h-14 rounded-full bg-[#03063A] hover:bg-[#03063A]/90 text-white text-[15px] font-semibold"
                         >
                             {isSubmitting ? 'Sending...' : 'Send Reset Link'}
-                        </button>
+                        </Button>
                     )}
                 </form.Subscribe>
             </form>
 
             <div className="text-center mt-2">
-                <p className="text-muted-foreground text-sm">
+                <p className="text-muted-foreground text-[14px]">
                     Remember your password?{' '}
-                    <Link to="/signin" className="text-primary font-semibold hover:underline">
+                    <Link to="/signin" className="text-[#FFB800] font-semibold hover:underline transition-colors">
                         Sign In
                     </Link>
                 </p>

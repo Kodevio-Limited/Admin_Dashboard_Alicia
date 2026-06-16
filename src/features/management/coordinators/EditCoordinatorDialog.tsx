@@ -42,29 +42,18 @@ export function EditCoordinatorDialog({ children, coordinator }: EditCoordinator
                         />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div className="flex flex-col gap-2">
-                            <label className="text-sm font-medium text-foreground">Assigned Area</label>
-                            <Input
-                                defaultValue={coordinator.assignedArea}
-                                placeholder="e.g. Savanna-la-Mar Plaza"
-                                className="h-12 rounded-lg bg-muted/50 border-none px-4 shadow-none"
-                            />
-                        </div>
-
-                        <div className="flex flex-col gap-2">
-                            <label className="text-sm font-medium text-foreground">Status</label>
-                            <Select defaultValue={coordinator.status}>
-                                <SelectTrigger className="h-12 rounded-lg bg-muted/50 border-none px-4 shadow-none">
-                                    <SelectValue placeholder="Select Status" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl border-none shadow-md">
-                                    <SelectItem value="ACTIVE">Active</SelectItem>
-                                    <SelectItem value="INACTIVE">Inactive</SelectItem>
-                                    <SelectItem value="UNASSIGNED">Unassigned</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium text-foreground">Status</label>
+                        <Select defaultValue={coordinator.status}>
+                            <SelectTrigger className="h-12 rounded-lg bg-muted/50 border-none px-4 shadow-none">
+                                <SelectValue placeholder="Select Status" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl border-none shadow-md">
+                                <SelectItem value="ACTIVE">Active</SelectItem>
+                                <SelectItem value="INACTIVE">Inactive</SelectItem>
+                                <SelectItem value="UNASSIGNED">Unassigned</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
 

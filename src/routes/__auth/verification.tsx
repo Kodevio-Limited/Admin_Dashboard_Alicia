@@ -15,63 +15,41 @@ function TwoStepVerificationPage() {
     return (
         <div className="flex flex-col gap-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Header */}
-            <div className="text-center flex flex-col items-center gap-3 border-b pb-6 mb-2 border-muted/50">
-                <div className="size-16 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-2">
-                    <ShieldCheck className="size-8" />
-                </div>
-                <h1 className="text-2xl md:text-3xl text-foreground font-semibold tracking-tight">Two-Step Verification</h1>
-                <p className="text-muted-foreground text-sm md:text-base px-4">
-                    We sent a verification code to <span className="font-semibold text-foreground block mt-1">example@gmail.com</span>
+            <div className="text-center flex flex-col items-center gap-2 mb-8">
+                <h1 className="text-[28px] md:text-[32px] text-foreground font-bold tracking-tight">Verify Email</h1>
+                <p className="text-[#888888] text-[15px]">
+                    We've sent a 6-digit code to your email
                 </p>
             </div>
 
             {/* OTP */}
-            <div className="flex justify-center my-4">
-                <InputOTP maxLength={6} value={otp} onChange={setOtp} className="gap-2">
-                    <InputOTPGroup className="gap-2 sm:gap-4">
-                        <InputOTPSlot
-                            index={0}
-                            className="size-12 sm:size-14 rounded-2xl border-2 text-xl font-bold bg-muted/30 focus-visible:ring-4 focus-visible:ring-primary/10 focus-visible:border-primary/50 transition-all"
-                        />
-                        <InputOTPSlot
-                            index={1}
-                            className="size-12 sm:size-14 rounded-2xl border-2 text-xl font-bold bg-muted/30 focus-visible:ring-4 focus-visible:ring-primary/10 focus-visible:border-primary/50 transition-all"
-                        />
-                        <InputOTPSlot
-                            index={2}
-                            className="size-12 sm:size-14 rounded-2xl border-2 text-xl font-bold bg-muted/30 focus-visible:ring-4 focus-visible:ring-primary/10 focus-visible:border-primary/50 transition-all"
-                        />
-                        <InputOTPSlot
-                            index={3}
-                            className="size-12 sm:size-14 rounded-2xl border-2 text-xl font-bold bg-muted/30 focus-visible:ring-4 focus-visible:ring-primary/10 focus-visible:border-primary/50 transition-all"
-                        />
-                        <InputOTPSlot
-                            index={4}
-                            className="size-12 sm:size-14 rounded-2xl border-2 text-xl font-bold bg-muted/30 focus-visible:ring-4 focus-visible:ring-primary/10 focus-visible:border-primary/50 transition-all"
-                        />
-                        <InputOTPSlot
-                            index={5}
-                            className="size-12 sm:size-14 rounded-2xl border-2 text-xl font-bold bg-muted/30 focus-visible:ring-4 focus-visible:ring-primary/10 focus-visible:border-primary/50 transition-all"
-                        />
-                    </InputOTPGroup>
-                </InputOTP>
+            <div className="flex flex-col gap-3 w-full">
+                <label className="text-[15px] font-bold text-foreground">Verify OTP</label>
+                <div className="flex justify-between items-center w-full">
+                    <InputOTP maxLength={6} value={otp} onChange={setOtp} className="w-full">
+                        <InputOTPGroup className="w-full flex justify-between gap-2 sm:gap-3">
+                            <InputOTPSlot index={0} className="w-full aspect-[4/5] sm:aspect-square sm:h-14 sm:w-14 rounded-[14px] border-0 text-lg font-bold bg-[#EEEEEE] focus-visible:ring-2 focus-visible:ring-primary/20 transition-all" />
+                            <InputOTPSlot index={1} className="w-full aspect-[4/5] sm:aspect-square sm:h-14 sm:w-14 rounded-[14px] border-0 text-lg font-bold bg-[#EEEEEE] focus-visible:ring-2 focus-visible:ring-primary/20 transition-all" />
+                            <InputOTPSlot index={2} className="w-full aspect-[4/5] sm:aspect-square sm:h-14 sm:w-14 rounded-[14px] border-0 text-lg font-bold bg-[#EEEEEE] focus-visible:ring-2 focus-visible:ring-primary/20 transition-all" />
+                            <InputOTPSlot index={3} className="w-full aspect-[4/5] sm:aspect-square sm:h-14 sm:w-14 rounded-[14px] border-0 text-lg font-bold bg-[#EEEEEE] focus-visible:ring-2 focus-visible:ring-primary/20 transition-all" />
+                            <InputOTPSlot index={4} className="w-full aspect-[4/5] sm:aspect-square sm:h-14 sm:w-14 rounded-[14px] border-0 text-lg font-bold bg-[#EEEEEE] focus-visible:ring-2 focus-visible:ring-primary/20 transition-all" />
+                            <InputOTPSlot index={5} className="w-full aspect-[4/5] sm:aspect-square sm:h-14 sm:w-14 rounded-[14px] border-0 text-lg font-bold bg-[#EEEEEE] focus-visible:ring-2 focus-visible:ring-primary/20 transition-all" />
+                        </InputOTPGroup>
+                    </InputOTP>
+                </div>
+                <div className="flex justify-end mt-1">
+                    <button className="text-[#FFB800] hover:text-[#FFB800]/80 text-[11px] font-semibold transition-all">Send again</button>
+                </div>
             </div>
 
             {/* Button */}
             <Button
-                size="lg"
-                className="w-full"
+                className="w-full mt-4 h-14 rounded-full bg-[#03063A] hover:bg-[#03063A]/90 text-white text-[15px] font-semibold"
                 onClick={() => navigate({ to: '/' })}
                 disabled={otp.length !== 6}
             >
-                Verify Account
+                Verify
             </Button>
-
-            {/* Resend */}
-            <p className="text-center text-muted-foreground text-sm font-medium mt-2">
-                Didn't receive the code?{' '}
-                <button className="text-primary hover:text-primary/90 font-bold hover:underline transition-all">Resend code</button>
-            </p>
         </div>
     )
 }

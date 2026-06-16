@@ -75,7 +75,7 @@ function InviteUserDialog({ open, onOpenChange }: { open: boolean, onOpenChange:
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[13px] font-bold text-foreground">System Role</label>
                         <Select>
-                            <SelectTrigger className="bg-[#EEEEEE] border-0 h-12 rounded-xl text-foreground font-medium">
+                            <SelectTrigger className="w-full bg-[#EEEEEE] border-0 h-12 rounded-xl text-foreground font-medium">
                                 <SelectValue placeholder="Coordinator" />
                             </SelectTrigger>
                             <SelectContent>
@@ -86,8 +86,18 @@ function InviteUserDialog({ open, onOpenChange }: { open: boolean, onOpenChange:
                         </Select>
                     </div>
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-[13px] font-bold text-foreground">Assign Area</label>
-                        <Input placeholder="Zone 3" className="bg-[#EEEEEE] border-0 h-12 rounded-xl text-foreground font-medium placeholder:text-muted-foreground/60" />
+                        <label className="text-[13px] font-bold text-foreground">Assign to Area/Hub</label>
+                        <Select>
+                            <SelectTrigger className="w-full bg-[#EEEEEE] border-0 h-12 rounded-xl text-foreground font-medium">
+                                <SelectValue placeholder="Select hub" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="zone-1">Zone 1</SelectItem>
+                                <SelectItem value="zone-2">Zone 2</SelectItem>
+                                <SelectItem value="zone-3">Zone 3</SelectItem>
+                                <SelectItem value="headquarters">Headquarters</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                     
                     <div className="flex items-center justify-between mt-2 mb-2">
@@ -166,7 +176,7 @@ function EditUserDialog({
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[13px] font-bold text-foreground">Role Assignment</label>
                         <Select defaultValue={user.role.toLowerCase()}>
-                            <SelectTrigger className="bg-[#EEEEEE] border-0 h-11 rounded-xl text-foreground font-medium">
+                            <SelectTrigger className="w-full bg-[#EEEEEE] border-0 h-11 rounded-xl text-foreground font-medium">
                                 <SelectValue placeholder="Select role" />
                             </SelectTrigger>
                             <SelectContent>
@@ -180,7 +190,7 @@ function EditUserDialog({
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[13px] font-bold text-foreground">Assign to Area/Hub</label>
                         <Select defaultValue={user.area.toLowerCase()}>
-                            <SelectTrigger className="bg-[#EEEEEE] border-0 h-11 rounded-xl text-foreground font-medium">
+                            <SelectTrigger className="w-full bg-[#EEEEEE] border-0 h-11 rounded-xl text-foreground font-medium">
                                 <SelectValue placeholder="Search hub" />
                             </SelectTrigger>
                             <SelectContent>
@@ -209,7 +219,7 @@ function EditUserDialog({
                     {isActive ? (
                         <Button 
                             variant="destructive"
-                            className="flex-1 h-11 rounded-full font-semibold"
+                            className="flex-1"
                             onClick={() => {
                                 onStatusChange(user.id, 'SUSPEND')
                                 onOpenChange(null)
@@ -219,7 +229,7 @@ function EditUserDialog({
                         </Button>
                     ) : (
                         <Button 
-                            className="flex-1 h-11 rounded-full font-semibold bg-[#0B8910] hover:bg-[#09730E] text-white"
+                            className="flex-1"
                             onClick={() => {
                                 onStatusChange(user.id, 'ACTIVE')
                                 onOpenChange(null)
@@ -229,7 +239,7 @@ function EditUserDialog({
                         </Button>
                     )}
                     <Button 
-                        className="flex-1 h-11 rounded-full font-semibold bg-[#03063A] hover:bg-[#02042A] text-white"
+                        className="flex-1"
                         onClick={() => {
                             toast.success('Changes saved')
                             onOpenChange(null)

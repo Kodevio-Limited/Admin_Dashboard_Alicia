@@ -3,6 +3,9 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Lock, Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 import * as z from 'zod'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 const searchSchema = z.object({
     token: z.string().optional(),
@@ -38,39 +41,37 @@ function RouteComponent() {
             //     toast.error('Reset link is invalid or has expired. Please request a new one.')
             //     return
             // }
-            // await auth.resetPassword(
-            //     { token, newPassword: value.password },
-            //     {
-            //         onSuccess: () => {
-            //             toast.success('Password reset successfully!')
-            //             navigate({ to: '/signin' })
-            //         },
-            //     },
-            // )
+            // await auth.resetPassword( ... )
         },
     })
 
     if (error || !token) {
         return (
-            <p className="text-center text-sm text-muted-foreground">
-                Reset link is invalid or has expired.{' '}
-                <a href="/forgot-password" className="underline">
-                    Request a new one
-                </a>
-                .
-            </p>
+            <div className="flex flex-col gap-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="text-center flex flex-col gap-2 mb-8">
+                    <h1 className="text-[28px] md:text-[32px] text-foreground font-bold tracking-tight">Invalid Link</h1>
+                    <p className="text-muted-foreground text-[15px]">
+                        Reset link is invalid or has expired.{' '}
+                        <a href="/forgot-password" className="text-[#FFB800] font-semibold hover:underline transition-colors">
+                            Request a new one
+                        </a>
+                        .
+                    </p>
+                </div>
+            </div>
         )
     }
 
     return (
-        <div className="flex flex-col gap-8 max-w-md w-full mx-auto">
-            <div className="text-center">
-                <h1 className="text-4xl text-foreground font-semibold tracking-tight">Reset Password</h1>
-                <p className="mt-3 text-muted-foreground text-lg">Enter your new password below.</p>
+        <div className="flex flex-col gap-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Header */}
+            <div className="text-center flex flex-col gap-2 mb-8">
+                <h1 className="text-[28px] md:text-[32px] text-foreground font-bold tracking-tight">Reset Password</h1>
+                <p className="text-muted-foreground text-[15px]">Enter your new password below</p>
             </div>
 
             <form
-                className="flex flex-col gap-5"
+                className="flex flex-col gap-6"
                 onSubmit={(e) => {
                     e.preventDefault()
                     form.handleSubmit()
@@ -79,27 +80,34 @@ function RouteComponent() {
                 <form.AppField name="password">
                     {(field) => (
                         <div className="flex flex-col gap-2">
-                            <label className="text-foreground text-lg font-semibold">New Password</label>
-                            <div className="flex items-center gap-3 bg-muted rounded-full px-5 py-4 transition-colors focus-within:ring-2 focus-within:ring-primary/20">
-                                <Lock className="text-muted-foreground shrink-0" size={22} />
-                                <input
+                            <Label htmlFor="password" className="text-[15px] font-bold text-foreground">
+                                New Password
+                            </Label>
+                            <div className="relative">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] size-5" />
+                                <Input
+                                    id="password"
                                     type={showPassword ? 'text' : 'password'}
-                                    placeholder="••••••••"
+                                    placeholder="********"
                                     value={field.state.value}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                     onBlur={field.handleBlur}
-                                    className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground text-[15px]"
+                                    className="pl-12 pr-12 h-[52px] rounded-3xl bg-[#EEEEEE] border-0 focus-visible:ring-2 focus-visible:ring-primary/20 text-[15px] font-medium transition-all placeholder:text-[#888888]"
                                 />
                                 <button
                                     type="button"
+                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    aria-pressed={showPassword}
                                     onClick={() => setShowPassword((v) => !v)}
-                                    className="text-muted-foreground shrink-0 hover:text-foreground transition-colors"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888] hover:text-foreground transition-colors outline-none"
                                 >
-                                    {showPassword ? <Eye size={22} /> : <EyeOff size={22} />}
+                                    {showPassword ? <Eye className="size-5" /> : <EyeOff className="size-5" />}
                                 </button>
                             </div>
                             {field.state.meta.errors ? (
-                                <p className="text-destructive text-sm font-medium">{field.state.meta.errors.join(', ')}</p>
+                                <p className="text-destructive text-sm font-medium px-4 text-center">
+                                    {field.state.meta.errors.join(', ')}
+                                </p>
                             ) : null}
                         </div>
                     )}
@@ -108,27 +116,34 @@ function RouteComponent() {
                 <form.AppField name="confirmPassword">
                     {(field) => (
                         <div className="flex flex-col gap-2">
-                            <label className="text-foreground text-lg font-semibold">Confirm Password</label>
-                            <div className="flex items-center gap-3 bg-muted rounded-full px-5 py-4 transition-colors focus-within:ring-2 focus-within:ring-primary/20">
-                                <Lock className="text-muted-foreground shrink-0" size={22} />
-                                <input
+                            <Label htmlFor="confirmPassword" className="text-[15px] font-bold text-foreground">
+                                Confirm Password
+                            </Label>
+                            <div className="relative">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] size-5" />
+                                <Input
+                                    id="confirmPassword"
                                     type={showConfirmPassword ? 'text' : 'password'}
-                                    placeholder="••••••••"
+                                    placeholder="********"
                                     value={field.state.value}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                     onBlur={field.handleBlur}
-                                    className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground text-[15px]"
+                                    className="pl-12 pr-12 h-[52px] rounded-3xl bg-[#EEEEEE] border-0 focus-visible:ring-2 focus-visible:ring-primary/20 text-[15px] font-medium transition-all placeholder:text-[#888888]"
                                 />
                                 <button
                                     type="button"
+                                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                                    aria-pressed={showConfirmPassword}
                                     onClick={() => setShowConfirmPassword((v) => !v)}
-                                    className="text-muted-foreground shrink-0 hover:text-foreground transition-colors"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888] hover:text-foreground transition-colors outline-none"
                                 >
-                                    {showConfirmPassword ? <Eye size={22} /> : <EyeOff size={22} />}
+                                    {showConfirmPassword ? <Eye className="size-5" /> : <EyeOff className="size-5" />}
                                 </button>
                             </div>
                             {field.state.meta.errors ? (
-                                <p className="text-destructive text-sm font-medium">{field.state.meta.errors.join(', ')}</p>
+                                <p className="text-destructive text-sm font-medium px-4 text-center">
+                                    {field.state.meta.errors.join(', ')}
+                                </p>
                             ) : null}
                         </div>
                     )}
@@ -136,13 +151,13 @@ function RouteComponent() {
 
                 <form.Subscribe selector={(state) => [state.isSubmitting]}>
                     {([isSubmitting]) => (
-                        <button
+                        <Button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full bg-primary text-white rounded-full py-5 shadow-md hover:bg-primary/90 transition-colors font-semibold text-[18px] mt-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full mt-4 h-14 rounded-full bg-[#03063A] hover:bg-[#03063A]/90 text-white text-[15px] font-semibold"
                         >
                             {isSubmitting ? 'Resetting...' : 'Submit'}
-                        </button>
+                        </Button>
                     )}
                 </form.Subscribe>
             </form>

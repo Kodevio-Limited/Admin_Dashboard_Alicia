@@ -286,33 +286,52 @@ function ReportsCenterTab() {
         <div className="flex-1 flex flex-col md:flex-row gap-6 min-h-0 w-full overflow-y-auto md:overflow-hidden pb-6 md:pb-0">
             <Card className="flex-[4] rounded-[20px] bg-white p-6 shadow-sm flex flex-col gap-8 h-max md:h-full md:overflow-y-auto border-0">
                 <div className="flex items-center gap-4">
-                    <div className="flex-1 bg-muted/50 rounded-xl p-4 flex flex-col gap-1.5">
-                        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">GENERATED</span>
-                        <span className="text-3xl font-bold text-foreground">124</span>
+                    <div className="flex-1 bg-[#EBEBEB] rounded-xl p-5 flex flex-col gap-1.5">
+                        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">GENERATED</span>
+                        <span className="text-[32px] leading-none font-bold text-foreground mt-1">124</span>
                     </div>
-                    <div className="flex-1 bg-muted/50 rounded-xl p-4 flex flex-col gap-1.5">
-                        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">NEXT AUTO</span>
-                        <span className="text-2xl font-bold text-foreground pt-1">Tomorrow</span>
+                    <div className="flex-1 bg-[#EBEBEB] rounded-xl p-5 flex flex-col gap-1.5">
+                        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">NEXT AUTO</span>
+                        <span className="text-[26px] leading-none font-bold text-foreground mt-2.5 tracking-tight">Tomorrow</span>
                     </div>
                 </div>
 
                 <div className="flex flex-col gap-6">
-                    <div className="flex flex-col gap-4 mt-2">
-                        <div className="flex items-center gap-3">
-                            <Checkbox id="activity" defaultChecked className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black" />
-                            <label htmlFor="activity" className="text-sm font-medium leading-none cursor-pointer">Activity Summary</label>
+                    <div className="flex items-center justify-between">
+                        <span className="text-[17px] font-bold text-foreground">Auto Reporting</span>
+                        <Switch defaultChecked className="data-[state=checked]:bg-[#03063A] scale-125 origin-right" />
+                    </div>
+
+                    <div className="flex flex-col gap-2.5">
+                        <span className="text-[13px] font-medium text-muted-foreground">Frequency</span>
+                        <Select defaultValue="weekly">
+                            <SelectTrigger className="w-full bg-[#EBEBEB] border-0 rounded-3xl h-[52px] text-[15px] font-medium px-5 shadow-none">
+                                <SelectValue placeholder="Select frequency" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="daily">Daily</SelectItem>
+                                <SelectItem value="weekly">Weekly</SelectItem>
+                                <SelectItem value="monthly">Monthly</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="flex flex-col gap-6 mt-4">
+                        <div className="flex items-center gap-4">
+                            <Checkbox id="activity" defaultChecked className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5" />
+                            <label htmlFor="activity" className="text-[15px] font-medium leading-none cursor-pointer">Activity Summary</label>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <Checkbox id="hubs" defaultChecked className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black" />
-                            <label htmlFor="hubs" className="text-sm font-medium leading-none cursor-pointer">Hubs Summary</label>
+                        <div className="flex items-center gap-4">
+                            <Checkbox id="hubs" defaultChecked className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5" />
+                            <label htmlFor="hubs" className="text-[15px] font-medium leading-none cursor-pointer">Hubs Summary</label>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <Checkbox id="alerts" defaultChecked className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black" />
-                            <label htmlFor="alerts" className="text-sm font-medium leading-none cursor-pointer">Alerts Summary</label>
+                        <div className="flex items-center gap-4">
+                            <Checkbox id="alerts" defaultChecked className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5" />
+                            <label htmlFor="alerts" className="text-[15px] font-medium leading-none cursor-pointer">Alerts Summary</label>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <Checkbox id="ai" defaultChecked className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black" />
-                            <label htmlFor="ai" className="text-sm font-medium leading-none cursor-pointer">AI Performance</label>
+                        <div className="flex items-center gap-4">
+                            <Checkbox id="ai" defaultChecked className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5" />
+                            <label htmlFor="ai" className="text-[15px] font-medium leading-none cursor-pointer">AI Performance</label>
                         </div>
                     </div>
                 </div>

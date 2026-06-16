@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { Plus, Search, BadgeCheck } from 'lucide-react'
+import { Plus, Search, BadgeCheck, Check } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -23,6 +23,7 @@ export function AssignCoordinatorDialog({ children, hub: initialHub }: AssignCoo
     const { data: hubs = [] } = useQuery({ queryKey: ['management-hubs'], queryFn: fetchHubs })
 
     const [search, setSearch] = useState('')
+    const [searchHub, setSearchHub] = useState('')
     const [selected, setSelected] = useState<CoordinatorRow | null>(null)
     const [selectedHub, setSelectedHub] = useState<HubRow | null>(initialHub || null)
 
@@ -39,12 +40,21 @@ export function AssignCoordinatorDialog({ children, hub: initialHub }: AssignCoo
         [search, coordinators]
     )
 
+    const filteredHubs = useMemo(() =>
+        hubs.filter((h) =>
+            h.name.toLowerCase().includes(searchHub.toLowerCase()) ||
+            h.location.toLowerCase().includes(searchHub.toLowerCase())
+        ),
+        [searchHub, hubs]
+    )
+
     const handleOpenChange = (val: boolean) => {
         setOpen(val)
         if (!val) {
             setTimeout(() => {
                 setStep('select')
                 setSearch('')
+                setSearchHub('')
                 setSelected(null)
                 if (!initialHub) setSelectedHub(null)
             }, 300)
@@ -99,6 +109,11 @@ export function AssignCoordinatorDialog({ children, hub: initialHub }: AssignCoo
                                         <span className="text-base font-medium text-foreground">{person.name}</span>
                                         <span className="text-sm text-muted-foreground">{person.assignedArea}</span>
                                     </div>
+                                    {selected?.id === person.id && (
+                                        <div className="ml-auto bg-primary rounded-full size-5 flex items-center justify-center text-primary-foreground">
+                                            <Check className="size-3" strokeWidth={3} />
+                                        </div>
+                                    )}
                                 </div>
                             )) : (
                                 <div className="p-4 text-center text-sm text-muted-foreground">No coordinators found.</div>
@@ -107,20 +122,37 @@ export function AssignCoordinatorDialog({ children, hub: initialHub }: AssignCoo
 
                         {!initialHub && (
                             <div className="flex flex-col gap-2 w-full mt-2">
-                                <label className="text-sm font-medium text-foreground">Select Hub</label>
-                                <Select
-                                    value={selectedHub?.id.toString() || ''}
-                                    onValueChange={(val) => setSelectedHub(hubs.find((h) => h.id.toString() === val) || null)}
-                                >
-                                    <SelectTrigger className="h-12 rounded-lg bg-muted/50 border-none px-4 shadow-none">
-                                        <SelectValue placeholder="Select a hub" />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-xl border-none shadow-md max-h-[200px]">
-                                        {hubs.map((h) => (
-                                            <SelectItem key={h.id} value={h.id.toString()}>{h.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <label className="text-sm font-medium text-foreground">Assign to Area/Hub</label>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Search Hub"
+                                        className="h-12 rounded-lg bg-muted/50 border-none pl-10 pr-4 shadow-none"
+                                        value={searchHub}
+                                        onChange={(e) => setSearchHub(e.target.value)}
+                                    />
+                                </div>
+                                <div className="w-full bg-muted/30 rounded-xl p-2 flex flex-col gap-1 max-h-[240px] overflow-y-auto">
+                                    {filteredHubs.length > 0 ? filteredHubs.map((h) => (
+                                        <div
+                                            key={h.id}
+                                            className={`flex items-center gap-4 p-3 rounded-lg cursor-pointer transition-colors ${selectedHub?.id === h.id ? 'bg-primary/10 border border-primary/20' : 'hover:bg-muted/50 border border-transparent'}`}
+                                            onClick={() => setSelectedHub(h)}
+                                        >
+                                            <div className="flex flex-col">
+                                                <span className="text-base font-medium text-foreground">{h.name}</span>
+                                                <span className="text-sm text-muted-foreground">{h.location}</span>
+                                            </div>
+                                            {selectedHub?.id === h.id && (
+                                                <div className="ml-auto bg-primary rounded-full size-5 flex items-center justify-center text-primary-foreground">
+                                                    <Check className="size-3" strokeWidth={3} />
+                                                </div>
+                                            )}
+                                        </div>
+                                    )) : (
+                                        <div className="p-4 text-center text-sm text-muted-foreground">No hubs found.</div>
+                                    )}
+                                </div>
                             </div>
                         )}
 

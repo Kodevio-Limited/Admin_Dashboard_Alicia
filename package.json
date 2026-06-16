@@ -26,6 +26,7 @@
         "better-auth": "^1.6.14",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
+        "cmdk": "^1.1.1",
         "input-otp": "^1.4.2",
         "jodit-react": "^5.3.21",
         "lucide-react": "^0.545.0",
@@ -58,6 +59,9 @@
         "vite": "^8.0.0"
     },
     "overrides": {
-        "uuid": "^11.1.1"
+        "uuid": "^11.1.1",
+        "js-yaml": "^4.2.0",
+        "launch-editor": "^2.14.1",
+        "@babel/core": "^7.29.6"
     }
 }

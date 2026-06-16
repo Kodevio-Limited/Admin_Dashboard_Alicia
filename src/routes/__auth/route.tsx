@@ -1,39 +1,48 @@
-import { Outlet, createFileRoute } from '@tanstack/react-router'
-import { Zap } from 'lucide-react'
+import { Outlet, createFileRoute, useLocation } from '@tanstack/react-router'
+
 
 export const Route = createFileRoute('/__auth')({
     component: RouteComponent,
 })
 
+// Map your different images to each specific route here!
+const routeImages: Record<string, string> = {
+    '/signin': '/auth/signin.png',           // Change to e.g. '/signin-bg.jpg'
+    '/verification': '/auth/verification.png',     // Change to e.g. '/verify-bg.jpg'
+    '/forgot-password': '/auth/forgot-password.png',  // Change to e.g. '/forgot-bg.jpg'
+    '/reset-password': '/auth/reset-password.png',   // Change to e.g. '/reset-bg.jpg'
+}
+
 function RouteComponent() {
+    const location = useLocation()
+    
+    // Get the image for the current path, fallback to placeholder if not found
+    const bgImage = routeImages[location.pathname] || '/placeholder.jpg'
+
     return (
-        <main className="min-h-screen w-full flex items-center justify-center bg-slate-50 relative overflow-hidden p-4 md:p-8">
-            {/* Symmetrical Background Elements */}
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-3xl" />
-                <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-3xl" />
+        <main className="min-h-screen w-full flex bg-white">
+            {/* Left Column: Image (Sticky to prevent clipping on scroll) */}
+            <div className="hidden lg:block w-1/2 p-4 sticky top-0 h-screen">
+                <div className="w-full h-full rounded-3xl overflow-hidden relative bg-muted">
+                    <img 
+                        src={bgImage} 
+                        alt="Disaster Management Operations" 
+                        className="w-full h-full object-cover"
+                    />
+                </div>
             </div>
 
-            <div className="w-full max-w-xl bg-white rounded-3xl shadow-2xl ring-1 ring-black/5 flex flex-col items-center justify-center p-8 sm:p-12 md:p-16 relative z-10">
-                {/* Branding Header (Centered & Symmetrical) */}
-                <div className="flex flex-col items-center justify-center text-center w-full mb-10">
-                    <div className="size-20 rounded-2xl bg-primary flex items-center justify-center mb-6 shadow-xl ring-4 ring-primary/10">
-                        <Zap className="size-10 text-[#febd09]" fill="#febd09" />
-                    </div>
-                    <h2 className="text-lg md:text-4xl font-bold mb-3 tracking-tight text-primary">ChargeSafe</h2>
-                    <p className="text-base text-muted-foreground max-w-sm leading-relaxed">
-                        Intelligent infrastructure monitoring and crisis management platform.
-                    </p>
-                </div>
-
-                {/* Form Outlet */}
-                <div className="w-full">
+            {/* Right Column: Form */}
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 md:p-16 relative min-h-screen">
+                {/* Form Container */}
+                <div className="w-full max-w-md flex flex-col">
+                    {/* Form Outlet */}
                     <Outlet />
-                </div>
-
-                {/* Footer text */}
-                <div className="mt-12 text-center text-muted-foreground/60 text-sm w-full">
-                    &copy; {new Date().getFullYear()} ChargeSafe. All rights reserved.
+                    
+                    {/* Footer text */}
+                    <div className="mt-16 text-center text-muted-foreground/60 text-sm w-full">
+                        &copy; {new Date().getFullYear()} ChargeSafe. All rights reserved.
+                    </div>
                 </div>
             </div>
         </main>
