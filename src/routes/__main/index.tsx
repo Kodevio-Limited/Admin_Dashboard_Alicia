@@ -21,71 +21,11 @@ import { StatCard } from '#/components/sections/stat-card'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export const Route = createFileRoute('/__main/')({
+    loader: async () => await fetchOverviewData(),
     component: Dashboard,
 })
 
-const checkInTrendData = [
-    { time: '00:00', value: 8500 },
-    { time: '01:00', value: 7200 },
-    { time: '02:00', value: 6800 },
-    { time: '03:00', value: 9200 },
-    { time: '04:00', value: 15000 },
-    { time: '05:00', value: 22000 },
-    { time: '06:00', value: 26000 },
-    { time: '07:00', value: 28000 },
-    { time: '08:00', value: 24000 },
-    { time: '09:00', value: 25500 },
-    { time: '10:00', value: 22000 },
-    { time: '11:00', value: 23000 },
-]
-
-const hazardData = [
-    { name: 'Flood', value: 120 },
-    { name: 'Fire', value: 90 },
-    { name: 'Medical', value: 70 },
-    { name: 'Infrastructure', value: 55 },
-]
-
-const workloadData = [
-    { name: 'Check in', value: 51, color: '#8979FF' },
-    { name: 'Alerts', value: 14, color: '#FF928A' },
-    { name: 'AI Sync', value: 35, color: '#3CC3DF' },
-]
-
-const urgentFlags = [
-    {
-        id: 1,
-        type: 'Medical',
-        location: 'Haining Road, Kingston 5, Jamaica',
-        time: '12 mins ago',
-        color: '#DC2626',
-        icon: 'medical',
-    },
-    {
-        id: 2,
-        type: 'Road Block',
-        location: 'Haining Road, Kingston 5, Jamaica',
-        time: '12 mins ago',
-        color: '#FEBD09',
-        icon: 'warning',
-    },
-    {
-        id: 3,
-        type: 'Flooding',
-        location: 'Haining Road, Kingston 5, Jamaica',
-        time: '12 mins ago',
-        color: '#30A2F3',
-        icon: 'flood',
-    },
-    {
-        id: 4,
-        type: 'Hub',
-        location: 'Haining Road, Kingston 5, Jamaica',
-        time: '12 mins ago',
-        color: '#008A00',
-        icon: 'battery',
-    },
-]
+import { fetchOverviewData } from '#/lib/dashboard'
 
 function FlagIcon({ type, color }: { type: string; color: string }) {
     return (
@@ -105,6 +45,7 @@ function FlagIcon({ type, color }: { type: string; color: string }) {
 }
 
 function Dashboard() {
+    const { checkinData, hazardData, workloadData, urgentFlags, statCards } = Route.useLoaderData()
     const [currentTime, setCurrentTime] = useState('')
 
     useEffect(() => {
@@ -128,15 +69,17 @@ function Dashboard() {
             <PageHeader title="Dashboard" description="System status overview" lastUpdated={currentTime} />
             {/* Stat cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 shrink-0">
-                {[
-                    { label: 'Residents Checked-in', value: '1,250', trend: { value: '12.5%', direction: 'up', label: 'vs Last Period' }, icon: Users, color: 'emerald' },
-                    { label: 'Active Hubs', value: '18/20', trend: { value: '12.5%', direction: 'up', label: 'vs Last Period' }, icon: Activity, color: 'blue' },
-                    { label: 'Coordinators Active', value: '24', trend: { value: '12.5%', direction: 'up', label: 'vs Last Period' }, icon: CheckCircle, color: 'amber' },
-                    { label: 'Gov/NGO Licenses', value: '5', icon: ShieldCheck, color: 'slate' },
-                    { label: 'Open Alerts', value: '3', trend: { value: '12.5%', direction: 'up', label: 'vs Last Period' }, icon: AlertCircle, color: 'rose' },
-                ].map((card) => (
-                    <StatCard key={card.label} {...card as any} />
-                ))}
+                {statCards.map((card) => {
+                    const icons: Record<string, any> = {
+                        Users,
+                        Activity,
+                        CheckCircle,
+                        ShieldCheck,
+                        AlertCircle,
+                    }
+                    const IconComponent = icons[card.iconName] || AlertCircle
+                    return <StatCard key={card.label} {...card as any} icon={IconComponent} />
+                })}
             </div>
 
             {/* Charts row 1 */}
@@ -149,7 +92,7 @@ function Dashboard() {
                     </CardHeader>
                     <CardContent className="p-0 flex-1 min-h-75 lg:min-h-0">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={checkInTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <AreaChart data={checkinData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="checkinGradient" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#03045E" stopOpacity={0.15} />
