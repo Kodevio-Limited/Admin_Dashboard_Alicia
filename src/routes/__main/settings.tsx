@@ -4,7 +4,6 @@ import { toast } from 'sonner'
 import { Lock, EyeOff, User, Building, Briefcase, MapPin, Mail, Edit, Loader2 } from 'lucide-react'
 import JoditEditor from 'jodit-react'
 import { Button } from '@/components/ui/button' 
-import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PageHeader } from '@/components/sections/page-header'
 import { Field, FieldLabel } from '@/components/ui/field'
@@ -12,6 +11,7 @@ import { InputGroup, InputGroupAddon, InputGroupText, InputGroupInput, InputGrou
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import imgProfile3D from '@/assets/male_profile.png'
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query'
+import { staticContentApi, fetchProfileData } from '@/lib/settings'
 
 export const Route = createFileRoute('/__main/settings')({
     component: SettingsPage,
@@ -57,20 +57,6 @@ function SecurityTab() {
         </div>
     )
 }
-
-const staticContentApi = {
-    get: async (key: string) => {
-
-        if (key === "terms-and-conditions") {
-            return { content: "<p>This is the default Terms & Conditions content. You can edit this text using the rich text editor below.</p>" };
-        }
-        return { content: "<p>This is the default Privacy Policy content. You can edit this text using the rich text editor below.</p>" };
-    },
-    update: async (key: string, content: string) => {
-
-        return true;
-    }
-};
 
 function TermsAndConditionsTab() {
     const queryClient = useQueryClient();
@@ -347,6 +333,20 @@ function FormInput({ label, icon: Icon, defaultValue }: FormInputProps) {
 }
 
 function ProfileTab() {
+    const { data: profile, isLoading } = useQuery({
+        queryKey: ['settings-profile'],
+        queryFn: fetchProfileData,
+    })
+
+    if (isLoading || !profile) {
+        return (
+            <div className="flex flex-col justify-center items-center h-96 gap-4 text-muted-foreground w-full">
+                <Loader2 className="size-8 animate-spin" />
+                <p>Loading Profile...</p>
+            </div>
+        )
+    }
+
     return (
         <div className="w-full flex flex-col items-center flex-1">
             <div className="flex flex-col items-center gap-8 md:gap-10 w-full mt-4">
@@ -368,19 +368,19 @@ function ProfileTab() {
                 <div className="flex flex-col gap-6 w-full max-w-4xl">
                     {/* Row 1: Full Name + Organization */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-                        <FormInput label="Full Name" defaultValue="David Plummer" icon={User} />
-                        <FormInput label="Organization" defaultValue="Stem Spark Solutions" icon={Building} />
+                        <FormInput label="Full Name" defaultValue={profile.fullName} icon={User} />
+                        <FormInput label="Organization" defaultValue={profile.organization} icon={Building} />
                     </div>
 
                     {/* Row 2: Role + Licensed Territory */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-                        <FormInput label="Role" defaultValue="System Administrator" icon={Briefcase} />
-                        <FormInput label="Licensed Territory" defaultValue="Jamaica" icon={MapPin} />
+                        <FormInput label="Role" defaultValue={profile.role} icon={Briefcase} />
+                        <FormInput label="Licensed Territory" defaultValue={profile.licensedTerritory} icon={MapPin} />
                     </div>
 
                     {/* Email */}
                     <div className="w-full">
-                        <FormInput label="Email" defaultValue="hello@stemsparksolutions.com" icon={Mail} />
+                        <FormInput label="Email" defaultValue={profile.email} icon={Mail} />
                     </div>
 
                     {/* Save Button */}
@@ -390,65 +390,6 @@ function ProfileTab() {
                         </Button>
                     </div>
                 </div>
-            </div>
-        </div>
-    )
-}
-
-type NotifRow = {
-    key: string
-    title: string
-    description: string
-    defaultOn: boolean
-}
-
-const notifRows = [
-    {
-        key: 'silence',
-        title: 'Silence Alerts',
-        description: 'Temporarily mute all non-critical push and email notifications.',
-        defaultOn: false,
-    },
-    {
-        key: 'medical',
-        title: 'Urgent Medical Flags',
-        description: 'Receive immediate alerts when AI detects potential medical emergencies.',
-        defaultOn: true,
-    },
-    {
-        key: 'battery',
-        title: 'Hub Battery Critical',
-        description: 'Get notified when any infrastructure hub drops below 20% battery capacity.',
-        defaultOn: true,
-    },
-    {
-        key: 'report',
-        title: 'New AI Situation Report Available',
-        description: 'Be alerted the moment a new scheduled or ad-hoc AI report is generated.',
-        defaultOn: true,
-    },
-] satisfies Array<NotifRow>
-
-function NotificationsTab() {
-    const [toggles, setToggles] = useState<{ [key: string]: boolean }>(Object.fromEntries(notifRows.map((r) => [r.key, r.defaultOn])))
-
-    return (
-        <div className="w-full flex justify-center flex-1">
-            <div className="flex flex-col gap-8 w-full max-w-4xl mt-8">
-                {notifRows.map((row) => (
-                    <div key={row.key} className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-4">
-                        <div className="flex flex-col gap-1.5 flex-1 pr-8">
-                            <p className="font-semibold text-lg text-foreground">{row.title}</p>
-                            <p className="text-muted-foreground text-sm leading-relaxed">{row.description}</p>
-                        </div>
-                        <Switch
-                            checked={toggles[row.key]}
-                            onClick={() => toast.success('Notifications settings Updated')}
-                            onCheckedChange={(v) => setToggles((prev) => ({ ...prev, [row.key]: v }))}
-                            className="data-[state=checked]:bg-primary scale-125"
-                        />
-                    </div>
-                ))}
             </div>
         </div>
     )

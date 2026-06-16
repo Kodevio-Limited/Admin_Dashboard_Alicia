@@ -207,7 +207,6 @@ function MessageReviewTab() {
                             </div>
                         </div>
                     </div>
-
                     <div className="flex flex-col gap-3 mt-2">
                         <Button 
                             variant="default"
