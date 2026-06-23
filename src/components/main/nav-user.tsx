@@ -21,7 +21,7 @@ import {
 import { useSidebar } from '@/components/ui/sidebar'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { BadgeCheckIcon, LogOutIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useLogout } from '@/hooks/use-logout'
 
 export function NavUser({
     user,

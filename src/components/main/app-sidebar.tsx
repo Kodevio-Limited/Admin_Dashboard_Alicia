@@ -13,17 +13,11 @@ import {
 } from '@/components/ui/sidebar'
 import { LayoutDashboard, BrainCircuit, Settings, LogOutIcon, Users, Shield } from 'lucide-react'
 import * as React from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { useLogout } from '@/hooks/use-logout'
 
-import imgProfile3D from '@/assets/male_profile.png'
+
 
 export const data = {
-    user: {
-        name: 'David Plummer',
-        email: 'hello@stemsparksolutions.com',
-        avatar: imgProfile3D,
-        role: 'System Administrator',
-    },
     navMain: [
         {
             title: 'Overview',
@@ -54,7 +48,7 @@ export const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    const navigate = useNavigate()
+    const { logout } = useLogout()
 
     return (
         <Sidebar
@@ -77,7 +71,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarFooter className="bg-transparent pb-4 px-2 ">
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton onClick={() => navigate({ to: '/signin' })}>
+                        <SidebarMenuButton onClick={logout}>
                             <LogOutIcon />
                             <span>Log out</span>
                         </SidebarMenuButton>

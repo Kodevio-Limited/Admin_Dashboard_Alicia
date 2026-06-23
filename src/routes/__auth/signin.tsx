@@ -1,7 +1,7 @@
 import { useAppForm } from '@/components/form/form-context'
-import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Link, createFileRoute, redirect } from '@tanstack/react-router'
 import * as z from 'zod'
-import { auth } from '@/lib/auth-client'
+import { useLogin } from '@/lib/api/login'
 import { toast } from 'sonner'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
@@ -10,6 +10,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
 export const Route = createFileRoute('/__auth/signin')({
+    beforeLoad: () => {
+        if (localStorage.getItem('access_token')) {
+            throw redirect({ to: '/' })
+        }
+    },
     component: RouteComponent,
 })
 
@@ -20,36 +25,21 @@ const signinSchema = z.object({
 })
 
 function RouteComponent() {
-    const navigate = useNavigate()
     const [showPassword, setShowPassword] = useState(false)
+    const loginMutation = useLogin()
 
     const form = useAppForm({
         defaultValues: { email: '', password: '', remember: false },
         validators: { onChange: signinSchema },
         onSubmit: async ({ value }) => {
-            await auth.signIn.email(
-                {
-                    email: value.email,
-                    password: value.password,
-                    rememberMe: value.remember,
-                },
-                {
-                    onSuccess: async ({ data }) => {
-                        if (!data.user.emailVerified) {
-                            navigate({ to: '/verification', search: { user: data.user.email, type: 'signup' } as any })
-                        } else if (data.user.role !== 'admin' && data.user.role !== 'superadmin') {
-                            await auth.signOut()
-                            toast.error('No access')
-                            navigate({ to: '/signin' } as any)
-                        } else {
-                            navigate({ to: '/' })
-                        }
-                    },
-                    onError: (ctx) => {
-                        toast.error(ctx.error.message || 'Failed to sign in')
-                    },
-                },
-            )
+            loginMutation.mutate({
+                username: value.email,
+                password: value.password,
+            }, {
+                onError: (error: any) => {
+                    toast.error(error.message || 'Failed to sign in')
+                }
+            })
         },
     })
 
