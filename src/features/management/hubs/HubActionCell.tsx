@@ -11,11 +11,11 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
-import type { HubRow } from '@/lib/management'
+import type { HubAPIResult } from '@/lib/api/management'
 import { CreateHubDialog } from './CreateHubDialog'
 import { AssignCoordinatorDialog } from '../coordinators/AssignCoordinatorDialog'
 
-export function HubActionCell({ hub }: { hub: HubRow }) {
+export function HubActionCell({ hub }: { hub: HubAPIResult }) {
     const [open, setOpen] = useState(false)
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -42,10 +42,10 @@ export function HubActionCell({ hub }: { hub: HubRow }) {
                 <div className="flex flex-col items-center pt-2 pb-6 px-2">
                     <h2 className="text-2xl font-bold mb-3 text-foreground">{hub.name}</h2>
                     <Badge
-                        variant={hub.status === 'ONLINE' ? 'success' : 'destructive'}
-                        className={`uppercase px-4 py-1 tracking-wider text-xs font-medium ${hub.status === 'ONLINE' ? 'bg-[#99F6E4]/50 text-[#16A34A] hover:bg-[#99F6E4]/50' : ''}`}
+                        variant={hub.status === 'open' ? 'success' : hub.status === 'low_battery' || hub.status === 'critical' ? 'destructive' : 'warning'}
+                        className={`uppercase px-4 py-1 tracking-wider text-xs font-medium ${hub.status === 'open' ? 'bg-[#99F6E4]/50 text-[#16A34A] hover:bg-[#99F6E4]/50' : ''}`}
                     >
-                        {hub.status}
+                        {hub.status.replace('_', ' ')}
                     </Badge>
                 </div>
 
@@ -53,11 +53,11 @@ export function HubActionCell({ hub }: { hub: HubRow }) {
                     <p className="text-sm text-muted-foreground font-medium">Hub Telemetry</p>
                     <div className="bg-[#F3F4F6] rounded-xl p-4 flex flex-col gap-4">
                         {[
-                            { icon: <MapPin className="size-[18px]" />, label: 'Location', value: hub.location },
-                            { icon: <Battery className="size-[18px]" />, label: 'Battery', value: '85%' },
-                            { icon: <Wifi className="size-[18px]" />, label: 'Satellite Internet', value: 'Active' },
-                            { icon: <Users className="size-[18px]" />, label: 'Linked Residents', value: '1250' },
-                            { icon: <Clock className="size-[18px]" />, label: 'Last Sync', value: hub.lastSync, green: true },
+                            { icon: <MapPin className="size-[18px]" />, label: 'Location', value: hub.address },
+                            { icon: <Battery className="size-[18px]" />, label: 'Battery', value: `${hub.battery_percentage}%` },
+                            { icon: <Wifi className="size-[18px]" />, label: 'Satellite Internet', value: hub.starlink_status ? 'Active' : 'Offline' },
+                            { icon: <Users className="size-[18px]" />, label: 'Linked Residents', value: hub.residents_count },
+                            { icon: <Clock className="size-[18px]" />, label: 'Coordinator', value: hub.coordinator_name || 'Unassigned', green: true },
                         ].map(({ icon, label, value, green }) => (
                             <div key={label} className="flex items-center justify-between text-sm">
                                 <div className="flex items-center gap-2 text-muted-foreground">

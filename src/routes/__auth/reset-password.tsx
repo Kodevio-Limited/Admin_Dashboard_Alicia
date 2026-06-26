@@ -1,5 +1,5 @@
 import { useAppForm } from '@/components/form/form-context'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Lock, Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 import * as z from 'zod'
@@ -11,6 +11,9 @@ const searchSchema = z.object({
     token: z.string().optional(),
     error: z.string().optional(),
 })
+
+import { resetPassword } from '@/lib/api/auth'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/__auth/reset-password')({
     validateSearch: searchSchema,
@@ -28,6 +31,7 @@ const resetSchema = z
     })
 
 function RouteComponent() {
+    const navigate = useNavigate()
     const { token, error } = Route.useSearch()
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -36,12 +40,21 @@ function RouteComponent() {
         defaultValues: { password: '', confirmPassword: '' },
         validators: { onChange: resetSchema },
         onSubmit: async ({ value }) => {
-            console.log(value)
-            // if (!token) {
-            //     toast.error('Reset link is invalid or has expired. Please request a new one.')
-            //     return
-            // }
-            // await auth.resetPassword( ... )
+            if (!token) {
+                toast.error('Reset link is invalid or has expired. Please request a new one.')
+                return
+            }
+            try {
+                await resetPassword({
+                    new_password: value.password,
+                    confirm_password: value.confirmPassword
+                }, token)
+                
+                toast.success('Password reset successfully. Please sign in with your new password.')
+                navigate({ to: '/signin' })
+            } catch (error: any) {
+                toast.error(error.message || 'Failed to reset password')
+            }
         },
     })
 

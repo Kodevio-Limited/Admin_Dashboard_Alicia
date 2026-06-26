@@ -6,17 +6,18 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import { fetchHubs } from '@/lib/management'
-import type { CoordinatorRow } from '@/lib/management'
+import { useHubs } from '@/hooks/use-management'
+import type { CoordinatorAPIResult } from '@/lib/api/management'
 
 interface ReassignCoordinatorDialogProps {
     children?: React.ReactNode
-    coordinator: CoordinatorRow
+    coordinator: CoordinatorAPIResult
 }
 
 export function ReassignCoordinatorDialog({ children, coordinator }: ReassignCoordinatorDialogProps) {
     const [open, setOpen] = useState(false)
-    const { data: hubs = [] } = useQuery({ queryKey: ['management-hubs'], queryFn: fetchHubs })
+    const { data: hubsData } = useHubs({ limit: 100 })
+    const hubs = hubsData?.results || []
 
     const [selectedHubs, setSelectedHubs] = useState<number[]>([])
     const [search, setSearch] = useState('')
@@ -28,7 +29,8 @@ export function ReassignCoordinatorDialog({ children, coordinator }: ReassignCoo
     const filteredHubs = useMemo(() =>
         hubs.filter((h) =>
             h.name.toLowerCase().includes(search.toLowerCase()) ||
-            h.location.toLowerCase().includes(search.toLowerCase())
+            h.location?.toLowerCase().includes(search.toLowerCase()) ||
+            h.address?.toLowerCase().includes(search.toLowerCase())
         ),
         [hubs, search]
     )
@@ -44,14 +46,13 @@ export function ReassignCoordinatorDialog({ children, coordinator }: ReassignCoo
                     <div className="flex flex-col items-center gap-4">
                         <div className="relative">
                             <Avatar className="size-24 md:size-28 bg-[#D1D5DB] border-none">
-                                <AvatarImage src={coordinator.avatar} />
-                                <AvatarFallback className="text-4xl text-white font-medium bg-[#D1D5DB]">{coordinator.name.charAt(0)}</AvatarFallback>
+                                <AvatarFallback className="text-4xl text-white font-medium bg-[#D1D5DB]">{coordinator.full_name.charAt(0)}</AvatarFallback>
                             </Avatar>
-                            {coordinator.status === 'ACTIVE' && (
+                            {coordinator.is_active && (
                                 <div className="absolute bottom-1 right-2 size-5 bg-[#34D399] rounded-full border-2 border-white" />
                             )}
                         </div>
-                        <h3 className="text-2xl font-medium text-foreground">{coordinator.name}</h3>
+                        <h3 className="text-2xl font-medium text-foreground">{coordinator.full_name}</h3>
                     </div>
                 </div>
 
@@ -81,7 +82,7 @@ export function ReassignCoordinatorDialog({ children, coordinator }: ReassignCoo
                                 >
                                     <div className="flex flex-col gap-1">
                                         <span className="text-[15px] font-medium text-foreground">{hub.name}</span>
-                                        <span className="text-xs text-[#888888]">{hub.location}</span>
+                                        <span className="text-xs text-[#888888]">{hub.address}</span>
                                     </div>
                                     {isSelected && (
                                         <div className="flex items-center justify-center size-5 rounded-full bg-[#111111]">

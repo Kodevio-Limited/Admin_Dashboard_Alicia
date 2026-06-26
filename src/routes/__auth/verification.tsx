@@ -4,13 +4,42 @@ import { Button } from '@/components/ui/button'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
 import { ShieldCheck } from 'lucide-react'
 
+import { z } from 'zod'
+import { verifyPassword } from '@/lib/api/auth'
+import { toast } from 'sonner'
+
 export const Route = createFileRoute('/__auth/verification')({
     component: TwoStepVerificationPage,
+    validateSearch: z.object({
+        identifier: z.string().optional(),
+    }),
 })
 
 function TwoStepVerificationPage() {
     const navigate = useNavigate()
+    const { identifier } = Route.useSearch()
     const [otp, setOtp] = useState('')
+    const [isVerifying, setIsVerifying] = useState(false)
+
+    const handleVerify = async () => {
+        if (otp.length !== 6) return
+        if (!identifier) {
+            toast.error('Missing identifier (email/phone). Please request a new code.')
+            return
+        }
+        try {
+            setIsVerifying(true)
+            const res = await verifyPassword(identifier, otp)
+            // Assuming the backend returns an access token in the response
+            const token = res?.data?.access || res?.data?.access_token || res?.data?.token || res?.access || res?.access_token || res?.token || otp
+            toast.success('Code verified successfully')
+            navigate({ to: '/reset-password', search: { token } })
+        } catch (error: any) {
+            toast.error(error.message || 'Invalid or expired code')
+        } finally {
+            setIsVerifying(false)
+        }
+    }
 
     return (
         <div className="flex flex-col gap-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -18,7 +47,7 @@ function TwoStepVerificationPage() {
             <div className="text-center flex flex-col items-center gap-2 mb-8">
                 <h1 className="text-[28px] md:text-[32px] text-foreground font-bold tracking-tight">Verify Email</h1>
                 <p className="text-[#888888] text-[15px]">
-                    We've sent a 6-digit code to your email
+                    We've sent a 6-digit code to {identifier || 'your email'}
                 </p>
             </div>
 
@@ -45,10 +74,10 @@ function TwoStepVerificationPage() {
             {/* Button */}
             <Button
                 className="w-full mt-4 h-14 rounded-full bg-[#03063A] hover:bg-[#03063A]/90 text-white text-[15px] font-semibold"
-                onClick={() => navigate({ to: '/' })}
-                disabled={otp.length !== 6}
+                onClick={handleVerify}
+                disabled={otp.length !== 6 || isVerifying}
             >
-                Verify
+                {isVerifying ? 'Verifying...' : 'Verify'}
             </Button>
         </div>
     )

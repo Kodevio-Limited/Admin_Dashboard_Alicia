@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 import { Eye, Clock, Users, Activity } from 'lucide-react'
 import { toast } from 'sonner'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,24 +13,24 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
-import { updateCoordinator } from '@/lib/management'
-import type { CoordinatorRow, CoordinatorStatus } from '@/lib/management'
+import type { CoordinatorAPIResult } from '@/lib/api/management'
 import { ReassignCoordinatorDialog } from './ReassignCoordinatorDialog'
 import { EditCoordinatorDialog } from './EditCoordinatorDialog'
 
-export function CoordinatorActionCell({ coordinator }: { coordinator: CoordinatorRow }) {
+export function CoordinatorActionCell({ coordinator }: { coordinator: CoordinatorAPIResult }) {
     const [open, setOpen] = useState(false)
     const queryClient = useQueryClient()
 
-    const createStatusMutation = (status: CoordinatorStatus) =>
+    const createStatusMutation = (status: 'ACTIVE' | 'INACTIVE') =>
         useMutation({
-            mutationFn: (id: number) => {
-                const updated = updateCoordinator(id, { status })
-                if (!updated) throw new Error('Coordinator not found')
-                return Promise.resolve(updated)
+            mutationFn: () => {
+                // TODO: Actual API call for suspend/activate coordinator
+                return Promise.resolve()
+            },
+            onSettled: () => {
+                queryClient.invalidateQueries({ queryKey: ['management'] })
             },
             onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: ['management-coordinators'] })
                 setOpen(false)
                 toast.success(`Coordinator status updated to ${status}`)
             },
@@ -39,7 +39,7 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
     const suspendMutation = createStatusMutation('INACTIVE')
     const unsuspendMutation = createStatusMutation('ACTIVE')
 
-    const isSuspended = coordinator.status === 'INACTIVE'
+    const isSuspended = !coordinator.is_active
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -65,7 +65,7 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                     <DropdownMenuSeparator />
                     {isSuspended ? (
                         <DropdownMenuItem
-                            onSelect={() => unsuspendMutation.mutate(coordinator.id)}
+                            onSelect={() => unsuspendMutation.mutate(coordinator.phone_number)}
                             disabled={unsuspendMutation.isPending}
                             className="text-green-600 focus:text-green-600"
                         >
@@ -73,7 +73,7 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                         </DropdownMenuItem>
                     ) : (
                         <DropdownMenuItem
-                            onSelect={() => suspendMutation.mutate(coordinator.id)}
+                            onSelect={() => suspendMutation.mutate(coordinator.phone_number)}
                             disabled={suspendMutation.isPending}
                             className="text-destructive focus:text-destructive"
                         >
@@ -87,20 +87,19 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                 <div className="flex flex-col items-center pt-10 pb-4 px-6 relative">
                     <div className="relative mb-4">
                         <Avatar className="size-24 md:size-32">
-                            <AvatarImage src={coordinator.avatar} />
-                            <AvatarFallback className="text-3xl bg-muted">{coordinator.name.charAt(0)}</AvatarFallback>
+                            <AvatarFallback className="text-3xl bg-muted">{coordinator.full_name.charAt(0)}</AvatarFallback>
                         </Avatar>
-                        {coordinator.status === 'ACTIVE' && (
+                        {coordinator.is_active && (
                             <div className="absolute bottom-1.5 right-1.5 size-6 bg-[#34D399] rounded-full border-4 border-white" />
                         )}
                     </div>
-                    <h2 className="text-2xl font-medium text-foreground">{coordinator.name}</h2>
-                    <span className="text-sm text-muted-foreground mb-3">{coordinator.email}</span>
+                    <h2 className="text-2xl font-medium text-foreground">{coordinator.full_name}</h2>
+                    <span className="text-sm text-muted-foreground mb-3">{coordinator.email || coordinator.phone_number}</span>
                     <Badge
-                        variant={coordinator.status === 'ACTIVE' ? 'success' : coordinator.status === 'UNASSIGNED' ? 'warning' : 'secondary'}
-                        className={`uppercase px-4 py-1 tracking-wider text-xs font-medium ${coordinator.status === 'ACTIVE' ? 'bg-[#99F6E4]/50 text-[#16A34A] hover:bg-[#99F6E4]/50' : ''}`}
+                        variant={coordinator.is_active ? 'success' : 'secondary'}
+                        className={`uppercase px-4 py-1 tracking-wider text-xs font-medium ${coordinator.is_active ? 'bg-[#99F6E4]/50 text-[#16A34A] hover:bg-[#99F6E4]/50' : ''}`}
                     >
-                        {coordinator.status}
+                        {coordinator.is_active ? 'ACTIVE' : 'INACTIVE'}
                     </Badge>
                 </div>
 
@@ -108,8 +107,8 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                     <p className="text-sm text-muted-foreground font-medium">Assignment Details</p>
                     <div className="bg-[#F3F4F6] rounded-xl p-4 flex flex-col gap-4">
                         {[
-                            { icon: <Users className="size-[18px]" />, label: 'Assigned Area', value: coordinator.assignedArea },
-                            { icon: <Clock className="size-[18px]" />, label: 'Managed Hubs', value: `${coordinator.activeHubs} Active`, green: true },
+                            { icon: <Users className="size-[18px]" />, label: 'Assigned Area', value: coordinator.hub_name || 'Unassigned' },
+                            { icon: <Clock className="size-[18px]" />, label: 'Phone Number', value: coordinator.phone_number, green: true },
                             { icon: <Activity className="size-[18px]" />, label: 'Last Active', value: '10 mins ago' },
                         ].map(({ icon, label, value, green }) => (
                             <div key={label} className="flex items-center justify-between text-sm">
@@ -129,7 +128,7 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                             variant="secondary"
                             className="flex-1"
                             disabled={unsuspendMutation.isPending}
-                            onClick={() => unsuspendMutation.mutate(coordinator.id)}
+                            onClick={() => unsuspendMutation.mutate(coordinator.phone_number)}
                         >
                             {unsuspendMutation.isPending ? 'Restoring...' : 'Unsuspend'}
                         </Button>
@@ -138,7 +137,7 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                             variant="secondary"
                             className="flex-1"
                             disabled={suspendMutation.isPending}
-                            onClick={() => suspendMutation.mutate(coordinator.id)}
+                            onClick={() => suspendMutation.mutate(coordinator.phone_number)}
                         >
                             {suspendMutation.isPending ? 'Suspending...' : 'Suspend Coordinator'}
                         </Button>

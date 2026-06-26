@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type { ResidentRow } from '@/lib/management'
+import type { ResidentAPIResult } from '@/lib/api/management'
 
 const COMMUNITIES = [
     'Savanna-la-Mar', 'Frome', 'Petersfield', 'Little London',
@@ -12,7 +12,7 @@ const COMMUNITIES = [
 
 interface EditResidentDialogProps {
     children?: React.ReactNode
-    resident: ResidentRow
+    resident: ResidentAPIResult
 }
 
 export function EditResidentDialog({ children, resident }: EditResidentDialogProps) {
@@ -31,7 +31,7 @@ export function EditResidentDialog({ children, resident }: EditResidentDialogPro
                     <div className="flex flex-col gap-2">
                         <label className="text-sm font-medium text-foreground">Name</label>
                         <Input
-                            defaultValue={resident.name}
+                            defaultValue={resident.full_name}
                             placeholder="e.g. John Doe"
                             className="h-12 rounded-lg bg-muted/50 border-none px-4 shadow-none"
                         />
@@ -40,17 +40,17 @@ export function EditResidentDialog({ children, resident }: EditResidentDialogPro
                     <div className="flex flex-col gap-2">
                         <label className="text-sm font-medium text-foreground">Email</label>
                         <Input
-                            defaultValue={resident.email}
+                            defaultValue={resident.email || resident.phone_number}
                             placeholder="e.g. john@example.com"
                             className="h-12 rounded-lg bg-muted/50 border-none px-4 shadow-none"
-                            type="email"
+                            type="text"
                         />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div className="flex flex-col gap-2">
                             <label className="text-sm font-medium text-foreground">Community</label>
-                            <Select defaultValue={resident.community}>
+                            <Select defaultValue={resident.community || undefined}>
                                 <SelectTrigger className="h-12 rounded-lg bg-muted/50 border-none px-4 shadow-none">
                                     <SelectValue placeholder="Select Community" />
                                 </SelectTrigger>
@@ -64,7 +64,7 @@ export function EditResidentDialog({ children, resident }: EditResidentDialogPro
 
                         <div className="flex flex-col gap-2">
                             <label className="text-sm font-medium text-foreground">Status</label>
-                            <Select defaultValue={resident.status}>
+                            <Select defaultValue={resident.is_active ? 'ACTIVE' : 'INACTIVE'}>
                                 <SelectTrigger className="h-12 rounded-lg bg-muted/50 border-none px-4 shadow-none">
                                     <SelectValue placeholder="Select Status" />
                                 </SelectTrigger>

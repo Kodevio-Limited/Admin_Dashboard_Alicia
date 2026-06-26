@@ -1,5 +1,5 @@
 import { useAppForm } from '@/components/form/form-context'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { Mail } from 'lucide-react'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
@@ -10,19 +10,27 @@ export const Route = createFileRoute('/__auth/forgot-password')({
     component: RouteComponent,
 })
 
+import { forgotPassword } from '@/lib/api/auth'
+import { toast } from 'sonner'
+
 const forgotSchema = z.object({
-    email: z.email('Enter your email address'),
+    identifier: z.string().min(1, 'Enter your email or phone number'),
 })
 
 function RouteComponent() {
-    // const navigate = useNavigate()
+    const navigate = useNavigate()
 
     const form = useAppForm({
-        defaultValues: { email: '' },
+        defaultValues: { identifier: '' },
         validators: { onChange: forgotSchema },
         onSubmit: async ({ value }) => {
-            console.log(value)
-            // await auth.requestPasswordReset( ... )
+            try {
+                await forgotPassword(value.identifier)
+                toast.success('Reset code sent successfully')
+                navigate({ to: '/verification', search: { identifier: value.identifier } })
+            } catch (error: any) {
+                toast.error(error.message || 'Failed to send reset code')
+            }
         },
     })
 
@@ -41,27 +49,27 @@ function RouteComponent() {
                     form.handleSubmit()
                 }}
             >
-                <form.AppField name="email">
+                <form.AppField name="identifier">
                     {(field) => (
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="email" className="text-[15px] font-bold text-foreground">
-                                Email
+                            <Label htmlFor="identifier" className="text-[15px] font-bold text-foreground">
+                                Email or Phone Number
                             </Label>
                             <div className="relative">
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] size-5" />
                                 <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="Enter your email..."
+                                    id="identifier"
+                                    type="text"
+                                    placeholder="Enter your email or phone..."
                                     value={field.state.value}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                     onBlur={field.handleBlur}
                                     className="pl-12 h-[52px] rounded-3xl bg-[#EEEEEE] border-0 focus-visible:ring-2 focus-visible:ring-primary/20 text-[15px] font-medium transition-all placeholder:text-[#888888]"
                                 />
                             </div>
-                            {field.state.meta.errors ? (
+                            {field.state.meta.errors && field.state.meta.errors.length > 0 ? (
                                 <p className="text-destructive text-sm font-medium px-4 text-center">
-                                    {field.state.meta.errors.join(', ')}
+                                    {field.state.meta.errors.map((e: any) => typeof e === 'string' ? e : e?.message || JSON.stringify(e)).join(', ')}
                                 </p>
                             ) : null}
                         </div>

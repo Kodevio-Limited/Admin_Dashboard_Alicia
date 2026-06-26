@@ -1,12 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchProfileData } from '@/lib/settings';
-import { adminKeys } from '@/lib/query-keys';
+import type {  UseQueryResult } from '@tanstack/react-query';
+import { currentUserQueryOptions } from '@/queries/auth';
+import type { ProfileData } from '@/lib/settings';
 
-export const useCurrentUser = () => {
-    return useQuery({
-        queryKey: [...adminKeys.all, 'profile'],
-        queryFn: fetchProfileData,
-        retry: false,
-        enabled: !!localStorage.getItem('access_token'),
-    });
+export const useCurrentUser = (): UseQueryResult<ProfileData, Error> => {
+    const query = useQuery(currentUserQueryOptions());
+    return query as UseQueryResult<ProfileData, Error>;
 };

@@ -1,9 +1,9 @@
 import { useAppForm } from '@/components/form/form-context'
 import { Link, createFileRoute, redirect } from '@tanstack/react-router'
 import * as z from 'zod'
-import { useLogin } from '@/lib/api/login'
+import { useLogin } from '@/hooks/use-login'
 import { toast } from 'sonner'
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
+import { Phone, Lock, Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,7 +19,7 @@ export const Route = createFileRoute('/__auth/signin')({
 })
 
 const signinSchema = z.object({
-    email: z.email('Please enter a valid email address'),
+    phone: z.string().min(10, 'Please enter a valid phone number'),
     password: z.string().min(8, 'Password must be at least 8 characters').max(32, 'Password must be at most 32 characters'),
     remember: z.boolean(),
 })
@@ -29,11 +29,11 @@ function RouteComponent() {
     const loginMutation = useLogin()
 
     const form = useAppForm({
-        defaultValues: { email: '', password: '', remember: false },
+        defaultValues: { phone: '', password: '', remember: false },
         validators: { onChange: signinSchema },
         onSubmit: async ({ value }) => {
             loginMutation.mutate({
-                username: value.email,
+                username: value.phone,
                 password: value.password,
             }, {
                 onError: (error: any) => {
@@ -58,18 +58,18 @@ function RouteComponent() {
                     form.handleSubmit()
                 }}
             >
-                <form.AppField name="email">
+                <form.AppField name="phone">
                     {(field) => (
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="email" className="text-[15px] font-bold text-foreground">
-                                Email
+                            <Label htmlFor="phone" className="text-[15px] font-bold text-foreground">
+                                Phone Number
                             </Label>
                             <div className="relative">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] size-5" />
+                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] size-5" />
                                 <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="Enter your email..."
+                                    id="phone"
+                                    type="tel"
+                                    placeholder="Enter your phone number..."
                                     value={field.state.value}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                     onBlur={field.handleBlur}

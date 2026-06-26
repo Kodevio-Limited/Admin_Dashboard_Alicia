@@ -1,9 +1,9 @@
 import { Badge } from '@/components/ui/badge'
 import type { DataTableColumn } from '@/components/ui/data-table'
-import type { HubRow } from '@/lib/management'
+import type { HubAPIResult } from '@/lib/api/management'
 import { HubActionCell } from './HubActionCell'
 
-export const hubColumns: DataTableColumn<HubRow>[] = [
+export const hubColumns: DataTableColumn<HubAPIResult>[] = [
     {
         key: 'hub',
         header: 'HUB DETAILS',
@@ -16,15 +16,15 @@ export const hubColumns: DataTableColumn<HubRow>[] = [
         className: 'py-2 text-center',
         headerClassName: 'text-center',
         render: (hub) => (
-            <div className="whitespace-normal max-w-[120px] mx-auto leading-tight">{hub.location}</div>
+            <div className="whitespace-normal max-w-[120px] mx-auto leading-tight">{hub.address}</div>
         ),
     },
     {
-        key: 'lastSync',
-        header: 'LAST SYNC',
+        key: 'battery',
+        header: 'BATTERY',
         className: 'py-2 text-center',
         headerClassName: 'text-center',
-        render: (hub) => hub.lastSync,
+        render: (hub) => `${hub.battery_percentage}%`,
     },
     {
         key: 'status',
@@ -33,10 +33,10 @@ export const hubColumns: DataTableColumn<HubRow>[] = [
         headerClassName: 'text-center',
         render: (hub) => (
             <Badge
-                variant={hub.status === 'ONLINE' ? 'success' : 'destructive'}
+                variant={hub.status === 'open' ? 'success' : hub.status === 'low_battery' || hub.status === 'critical' ? 'destructive' : 'warning'}
                 className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider"
             >
-                {hub.status}
+                {hub.status.replace('_', ' ')}
             </Badge>
         ),
     },

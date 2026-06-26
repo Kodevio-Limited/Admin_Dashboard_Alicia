@@ -32,7 +32,7 @@ export let PROFILE_DATA: ProfileData = {
     role: "System Administrator",
     licensedTerritory: "Jamaica",
     email: "hello@stemsparksolutions.com",
-    avatar: "/avatars/male_profile.png"
+    avatar: "/avatars/profile_dummy.png"
 }
 
 export async function fetchProfileData(): Promise<ProfileData> {

@@ -19,8 +19,9 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useSidebar } from '@/components/ui/sidebar'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { BadgeCheckIcon, LogOutIcon } from 'lucide-react'
+import { useState } from 'react'
 import { useLogout } from '@/hooks/use-logout'
 
 export function NavUser({
@@ -29,16 +30,16 @@ export function NavUser({
     user: {
         name: string
         email: string
-        avatar: string
+        avatar?: string
     }
 }) {
     const { isMobile } = useSidebar()
-    const navigate = useNavigate()
+    const { logout } = useLogout()
     const [logoutOpen, setLogoutOpen] = useState(false)
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         setLogoutOpen(false)
-        navigate({ to: '/signin' })
+        await logout()
     }
 
     return (
@@ -46,13 +47,10 @@ export function NavUser({
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <button className="flex items-center gap-2.5 bg-transparent border-none cursor-pointer focus:outline-none hover:opacity-80 transition-opacity">
-                        <div className="relative rounded-full size-8 shrink-0 ring-2 ring-[#f0f0f0]">
-                            <img
-                                src={user.avatar}
-                                alt={user.name}
-                                className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-full size-full"
-                            />
-                        </div>
+                        <Avatar className="size-8 ring-2 ring-[#f0f0f0]">
+                            <AvatarImage src={user.avatar || undefined} alt={user.name} />
+                            <AvatarFallback>{user.name ? user.name.substring(0, 2).toUpperCase() : 'U'}</AvatarFallback>
+                        </Avatar>
                         <div className="flex flex-col text-left hidden md:flex">
                             <p className="font-semibold text-foreground text-[13px] leading-tight">{user.name}</p>
                             <p className="text-muted-foreground text-[11px] leading-tight">{user.email}</p>
@@ -68,8 +66,8 @@ export function NavUser({
                     <DropdownMenuLabel className="p-0 font-normal">
                         <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                             <Avatar className="h-8 w-8 rounded-lg">
-                                <AvatarImage src={user.avatar} alt={user.name} />
-                                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                                <AvatarImage src={user.avatar || undefined} alt={user.name} />
+                                <AvatarFallback className="rounded-lg">{user.name ? user.name.substring(0, 2).toUpperCase() : 'U'}</AvatarFallback>
                             </Avatar>
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <span className="truncate font-medium">{user.name}</span>

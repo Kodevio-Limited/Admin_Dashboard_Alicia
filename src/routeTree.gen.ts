@@ -9,51 +9,52 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as _mainRouteRouteImport } from './routes/__main/route'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as _authRouteRouteImport } from './routes/__auth/route'
-import { Route as _mainIndexRouteImport } from './routes/__main/index'
-import { Route as _mainSettingsRouteImport } from './routes/__main/settings'
-import { Route as _mainManagementRouteImport } from './routes/__main/management'
-import { Route as _mainAiReportsRouteImport } from './routes/__main/ai-reports'
-import { Route as _mainAccessControlRouteImport } from './routes/__main/access-control'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedManagementRouteImport } from './routes/_authenticated/management'
+import { Route as AuthenticatedAiReportsRouteImport } from './routes/_authenticated/ai-reports'
+import { Route as AuthenticatedAccessControlRouteImport } from './routes/_authenticated/access-control'
 import { Route as _authVerificationRouteImport } from './routes/__auth/verification'
 import { Route as _authSigninRouteImport } from './routes/__auth/signin'
 import { Route as _authResetPasswordRouteImport } from './routes/__auth/reset-password'
 import { Route as _authForgotPasswordRouteImport } from './routes/__auth/forgot-password'
 
-const _mainRouteRoute = _mainRouteRouteImport.update({
-  id: '/__main',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const _authRouteRoute = _authRouteRouteImport.update({
   id: '/__auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const _mainIndexRoute = _mainIndexRouteImport.update({
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => _mainRouteRoute,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const _mainSettingsRoute = _mainSettingsRouteImport.update({
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => _mainRouteRoute,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const _mainManagementRoute = _mainManagementRouteImport.update({
+const AuthenticatedManagementRoute = AuthenticatedManagementRouteImport.update({
   id: '/management',
   path: '/management',
-  getParentRoute: () => _mainRouteRoute,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const _mainAiReportsRoute = _mainAiReportsRouteImport.update({
+const AuthenticatedAiReportsRoute = AuthenticatedAiReportsRouteImport.update({
   id: '/ai-reports',
   path: '/ai-reports',
-  getParentRoute: () => _mainRouteRoute,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const _mainAccessControlRoute = _mainAccessControlRouteImport.update({
-  id: '/access-control',
-  path: '/access-control',
-  getParentRoute: () => _mainRouteRoute,
-} as any)
+const AuthenticatedAccessControlRoute =
+  AuthenticatedAccessControlRouteImport.update({
+    id: '/access-control',
+    path: '/access-control',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const _authVerificationRoute = _authVerificationRouteImport.update({
   id: '/verification',
   path: '/verification',
@@ -76,40 +77,40 @@ const _authForgotPasswordRoute = _authForgotPasswordRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof _mainIndexRoute
+  '/': typeof AuthenticatedIndexRoute
   '/forgot-password': typeof _authForgotPasswordRoute
   '/reset-password': typeof _authResetPasswordRoute
   '/signin': typeof _authSigninRoute
   '/verification': typeof _authVerificationRoute
-  '/access-control': typeof _mainAccessControlRoute
-  '/ai-reports': typeof _mainAiReportsRoute
-  '/management': typeof _mainManagementRoute
-  '/settings': typeof _mainSettingsRoute
+  '/access-control': typeof AuthenticatedAccessControlRoute
+  '/ai-reports': typeof AuthenticatedAiReportsRoute
+  '/management': typeof AuthenticatedManagementRoute
+  '/settings': typeof AuthenticatedSettingsRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof _mainIndexRoute
+  '/': typeof AuthenticatedIndexRoute
   '/forgot-password': typeof _authForgotPasswordRoute
   '/reset-password': typeof _authResetPasswordRoute
   '/signin': typeof _authSigninRoute
   '/verification': typeof _authVerificationRoute
-  '/access-control': typeof _mainAccessControlRoute
-  '/ai-reports': typeof _mainAiReportsRoute
-  '/management': typeof _mainManagementRoute
-  '/settings': typeof _mainSettingsRoute
+  '/access-control': typeof AuthenticatedAccessControlRoute
+  '/ai-reports': typeof AuthenticatedAiReportsRoute
+  '/management': typeof AuthenticatedManagementRoute
+  '/settings': typeof AuthenticatedSettingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/__auth': typeof _authRouteRouteWithChildren
-  '/__main': typeof _mainRouteRouteWithChildren
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/__auth/forgot-password': typeof _authForgotPasswordRoute
   '/__auth/reset-password': typeof _authResetPasswordRoute
   '/__auth/signin': typeof _authSigninRoute
   '/__auth/verification': typeof _authVerificationRoute
-  '/__main/access-control': typeof _mainAccessControlRoute
-  '/__main/ai-reports': typeof _mainAiReportsRoute
-  '/__main/management': typeof _mainManagementRoute
-  '/__main/settings': typeof _mainSettingsRoute
-  '/__main/': typeof _mainIndexRoute
+  '/_authenticated/access-control': typeof AuthenticatedAccessControlRoute
+  '/_authenticated/ai-reports': typeof AuthenticatedAiReportsRoute
+  '/_authenticated/management': typeof AuthenticatedManagementRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -137,30 +138,30 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/__auth'
-    | '/__main'
+    | '/_authenticated'
     | '/__auth/forgot-password'
     | '/__auth/reset-password'
     | '/__auth/signin'
     | '/__auth/verification'
-    | '/__main/access-control'
-    | '/__main/ai-reports'
-    | '/__main/management'
-    | '/__main/settings'
-    | '/__main/'
+    | '/_authenticated/access-control'
+    | '/_authenticated/ai-reports'
+    | '/_authenticated/management'
+    | '/_authenticated/settings'
+    | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   _authRouteRoute: typeof _authRouteRouteWithChildren
-  _mainRouteRoute: typeof _mainRouteRouteWithChildren
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/__main': {
-      id: '/__main'
+    '/_authenticated': {
+      id: '/_authenticated'
       path: ''
       fullPath: '/'
-      preLoaderRoute: typeof _mainRouteRouteImport
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/__auth': {
@@ -170,40 +171,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof _authRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/__main/': {
-      id: '/__main/'
+    '/_authenticated/': {
+      id: '/_authenticated/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof _mainIndexRouteImport
-      parentRoute: typeof _mainRouteRoute
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/__main/settings': {
-      id: '/__main/settings'
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
       path: '/settings'
       fullPath: '/settings'
-      preLoaderRoute: typeof _mainSettingsRouteImport
-      parentRoute: typeof _mainRouteRoute
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/__main/management': {
-      id: '/__main/management'
+    '/_authenticated/management': {
+      id: '/_authenticated/management'
       path: '/management'
       fullPath: '/management'
-      preLoaderRoute: typeof _mainManagementRouteImport
-      parentRoute: typeof _mainRouteRoute
+      preLoaderRoute: typeof AuthenticatedManagementRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/__main/ai-reports': {
-      id: '/__main/ai-reports'
+    '/_authenticated/ai-reports': {
+      id: '/_authenticated/ai-reports'
       path: '/ai-reports'
       fullPath: '/ai-reports'
-      preLoaderRoute: typeof _mainAiReportsRouteImport
-      parentRoute: typeof _mainRouteRoute
+      preLoaderRoute: typeof AuthenticatedAiReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/__main/access-control': {
-      id: '/__main/access-control'
+    '/_authenticated/access-control': {
+      id: '/_authenticated/access-control'
       path: '/access-control'
       fullPath: '/access-control'
-      preLoaderRoute: typeof _mainAccessControlRouteImport
-      parentRoute: typeof _mainRouteRoute
+      preLoaderRoute: typeof AuthenticatedAccessControlRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/__auth/verification': {
       id: '/__auth/verification'
@@ -254,29 +255,28 @@ const _authRouteRouteWithChildren = _authRouteRoute._addFileChildren(
   _authRouteRouteChildren,
 )
 
-interface _mainRouteRouteChildren {
-  _mainAccessControlRoute: typeof _mainAccessControlRoute
-  _mainAiReportsRoute: typeof _mainAiReportsRoute
-  _mainManagementRoute: typeof _mainManagementRoute
-  _mainSettingsRoute: typeof _mainSettingsRoute
-  _mainIndexRoute: typeof _mainIndexRoute
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAccessControlRoute: typeof AuthenticatedAccessControlRoute
+  AuthenticatedAiReportsRoute: typeof AuthenticatedAiReportsRoute
+  AuthenticatedManagementRoute: typeof AuthenticatedManagementRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
-const _mainRouteRouteChildren: _mainRouteRouteChildren = {
-  _mainAccessControlRoute: _mainAccessControlRoute,
-  _mainAiReportsRoute: _mainAiReportsRoute,
-  _mainManagementRoute: _mainManagementRoute,
-  _mainSettingsRoute: _mainSettingsRoute,
-  _mainIndexRoute: _mainIndexRoute,
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAccessControlRoute: AuthenticatedAccessControlRoute,
+  AuthenticatedAiReportsRoute: AuthenticatedAiReportsRoute,
+  AuthenticatedManagementRoute: AuthenticatedManagementRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 
-const _mainRouteRouteWithChildren = _mainRouteRoute._addFileChildren(
-  _mainRouteRouteChildren,
-)
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   _authRouteRoute: _authRouteRouteWithChildren,
-  _mainRouteRoute: _mainRouteRouteWithChildren,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -48,9 +48,10 @@ export interface StatCardProps {
     color: StatCardColor
     trend?: StatCardTrend
     className?: string
+    isLoading?: boolean
 }
 
-export function StatCard({ label, value, icon: Icon, color, trend, className }: StatCardProps) {
+export function StatCard({ label, value, icon: Icon, color, trend, className, isLoading }: StatCardProps) {
     const colors = COLOR_MAP[color]
 
     return (
@@ -73,18 +74,27 @@ export function StatCard({ label, value, icon: Icon, color, trend, className }: 
 
             {/* Value + optional trend */}
             <div>
-                <div className="text-2xl font-bold tracking-tight">{value}</div>
-                {trend && (
-                    <div
-                        className={cn(
-                            'flex items-center gap-1 mt-1.5 text-xs font-medium',
-                            trend.direction === 'up' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400',
-                        )}
-                    >
-                        {trend.direction === 'up' ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
-                        <span>{trend.value}</span>
-                        {trend.label && <span className="text-muted-foreground font-normal ml-0.5">{trend.label}</span>}
+                {isLoading ? (
+                    <div className="flex flex-col gap-2 mt-1">
+                        <div className="h-8 w-20 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-md" />
+                        {trend && <div className="h-4 w-28 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-md mt-0.5" />}
                     </div>
+                ) : (
+                    <>
+                        <div className="text-2xl font-bold tracking-tight">{value}</div>
+                        {trend && (
+                            <div
+                                className={cn(
+                                    'flex items-center gap-1 mt-1.5 text-xs font-medium',
+                                    trend.direction === 'up' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400',
+                                )}
+                            >
+                                {trend.direction === 'up' ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
+                                <span>{trend.value}</span>
+                                {trend.label && <span className="text-muted-foreground font-normal ml-0.5">{trend.label}</span>}
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </div>

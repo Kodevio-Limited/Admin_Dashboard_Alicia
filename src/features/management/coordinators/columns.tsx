@@ -1,29 +1,29 @@
 import { Badge } from '@/components/ui/badge'
 import type { DataTableColumn } from '@/components/ui/data-table'
-import type { CoordinatorRow } from '@/lib/management'
+import type { CoordinatorAPIResult } from '@/lib/api/management'
 import { UserProfile } from '../shared/UserProfile'
 import { CoordinatorActionCell } from './CoordinatorActionCell'
 
-export const coordinatorColumns: DataTableColumn<CoordinatorRow>[] = [
+export const coordinatorColumns: DataTableColumn<CoordinatorAPIResult>[] = [
     {
         key: 'user',
         header: 'COORDINATOR',
         className: 'font-medium py-2 px-2 text-sm',
-        render: (coordinator) => <UserProfile name={coordinator.name} email={coordinator.email} avatar={coordinator.avatar} />,
+        render: (coordinator) => <UserProfile name={coordinator.full_name} email={coordinator.email || coordinator.phone_number} avatar="" />,
     },
     {
         key: 'assignedArea',
-        header: 'ASSIGNED AREA',
+        header: 'HUB',
         className: 'py-2 text-center text-muted-foreground',
         headerClassName: 'text-center',
-        render: (coordinator) => coordinator.assignedArea,
+        render: (coordinator) => coordinator.hub_name || 'Unassigned',
     },
     {
-        key: 'activeHubs',
-        header: 'ACTIVE HUBS',
+        key: 'phone',
+        header: 'PHONE',
         className: 'py-2 text-center text-muted-foreground',
         headerClassName: 'text-center',
-        render: (coordinator) => coordinator.activeHubs,
+        render: (coordinator) => coordinator.phone_number,
     },
     {
         key: 'status',
@@ -32,10 +32,10 @@ export const coordinatorColumns: DataTableColumn<CoordinatorRow>[] = [
         headerClassName: 'text-center',
         render: (coordinator) => (
             <Badge
-                variant={coordinator.status === 'ACTIVE' ? 'success' : coordinator.status === 'UNASSIGNED' ? 'warning' : 'secondary'}
+                variant={coordinator.is_active ? 'success' : 'secondary'}
                 className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider"
             >
-                {coordinator.status}
+                {coordinator.is_active ? 'ACTIVE' : 'INACTIVE'}
             </Badge>
         ),
     },

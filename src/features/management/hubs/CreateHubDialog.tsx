@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type { HubRow } from '@/lib/management'
+import type { HubAPIResult } from '@/lib/api/management'
 
 interface CreateHubDialogProps {
     children?: React.ReactNode
     mode?: 'create' | 'edit'
-    hub?: HubRow
+    hub?: HubAPIResult
 }
 
 export function CreateHubDialog({ children, mode = 'create', hub }: CreateHubDialogProps) {
@@ -46,7 +46,7 @@ export function CreateHubDialog({ children, mode = 'create', hub }: CreateHubDia
                         <div className="relative">
                             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
                             <Input
-                                defaultValue={hub?.location || ''}
+                                defaultValue={hub?.address || ''}
                                 placeholder="Search Address"
                                 className="h-12 rounded-lg bg-muted/50 border-none pl-10 pr-4 shadow-none"
                             />

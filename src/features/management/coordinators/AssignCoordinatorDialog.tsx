@@ -7,12 +7,14 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import { fetchCoordinators, fetchHubs } from '@/lib/management'
-import type { CoordinatorRow, HubRow } from '@/lib/management'
+import { fetchCoordinators } from '@/lib/management'
+import type { CoordinatorRow } from '@/lib/management'
+import { useHubs } from '@/hooks/use-management'
+import type { HubAPIResult } from '@/lib/api/management'
 
 interface AssignCoordinatorDialogProps {
     children?: React.ReactNode
-    hub?: HubRow
+    hub?: HubAPIResult
 }
 
 export function AssignCoordinatorDialog({ children, hub: initialHub }: AssignCoordinatorDialogProps) {
@@ -20,12 +22,13 @@ export function AssignCoordinatorDialog({ children, hub: initialHub }: AssignCoo
     const [step, setStep] = useState<'select' | 'success'>('select')
 
     const { data: coordinators = [] } = useQuery({ queryKey: ['management-coordinators'], queryFn: fetchCoordinators })
-    const { data: hubs = [] } = useQuery({ queryKey: ['management-hubs'], queryFn: fetchHubs })
+    const { data: hubsData } = useHubs({ limit: 100 })
+    const hubs = hubsData?.results || []
 
     const [search, setSearch] = useState('')
     const [searchHub, setSearchHub] = useState('')
     const [selected, setSelected] = useState<CoordinatorRow | null>(null)
-    const [selectedHub, setSelectedHub] = useState<HubRow | null>(initialHub || null)
+    const [selectedHub, setSelectedHub] = useState<HubAPIResult | null>(initialHub || null)
 
     useEffect(() => {
         if (initialHub) setSelectedHub(initialHub)
@@ -43,7 +46,7 @@ export function AssignCoordinatorDialog({ children, hub: initialHub }: AssignCoo
     const filteredHubs = useMemo(() =>
         hubs.filter((h) =>
             h.name.toLowerCase().includes(searchHub.toLowerCase()) ||
-            h.location.toLowerCase().includes(searchHub.toLowerCase())
+            h.address.toLowerCase().includes(searchHub.toLowerCase())
         ),
         [searchHub, hubs]
     )
@@ -141,7 +144,7 @@ export function AssignCoordinatorDialog({ children, hub: initialHub }: AssignCoo
                                         >
                                             <div className="flex flex-col">
                                                 <span className="text-base font-medium text-foreground">{h.name}</span>
-                                                <span className="text-sm text-muted-foreground">{h.location}</span>
+                                                <span className="text-sm text-muted-foreground">{h.address}</span>
                                             </div>
                                             {selectedHub?.id === h.id && (
                                                 <div className="ml-auto bg-primary rounded-full size-5 flex items-center justify-center text-primary-foreground">
@@ -186,7 +189,7 @@ export function AssignCoordinatorDialog({ children, hub: initialHub }: AssignCoo
                             </div>
                             <div className="flex flex-col gap-1">
                                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Location</span>
-                                <span className="text-base font-medium text-foreground">{selectedHub?.location}</span>
+                                <span className="text-base font-medium text-foreground">{selectedHub?.address}</span>
                             </div>
                         </div>
 

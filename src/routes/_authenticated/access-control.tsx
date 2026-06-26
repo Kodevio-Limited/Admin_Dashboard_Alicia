@@ -31,7 +31,7 @@ import type { DataTableColumn } from '@/components/ui/data-table'
 import { fetchAccessUsers, updateAccessUser } from '@/lib/access-control'
 import type { AccessUserRow, UserStatus } from '@/lib/access-control'
 
-export const Route = createFileRoute('/__main/access-control')({
+export const Route = createFileRoute('/_authenticated/access-control')({
     component: AccessControlPage,
 })
 function UserProfile({ name, email, avatar }: { name: string; email: string; avatar: string }) {

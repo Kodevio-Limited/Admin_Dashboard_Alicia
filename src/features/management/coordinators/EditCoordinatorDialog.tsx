@@ -3,11 +3,11 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type { CoordinatorRow } from '@/lib/management'
+import type { CoordinatorAPIResult } from '@/lib/api/management'
 
 interface EditCoordinatorDialogProps {
     children?: React.ReactNode
-    coordinator: CoordinatorRow
+    coordinator: CoordinatorAPIResult
 }
 
 export function EditCoordinatorDialog({ children, coordinator }: EditCoordinatorDialogProps) {
@@ -26,7 +26,7 @@ export function EditCoordinatorDialog({ children, coordinator }: EditCoordinator
                     <div className="flex flex-col gap-2">
                         <label className="text-sm font-medium text-foreground">Name</label>
                         <Input
-                            defaultValue={coordinator.name}
+                            defaultValue={coordinator.full_name}
                             placeholder="e.g. John Doe"
                             className="h-12 rounded-lg bg-muted/50 border-none px-4 shadow-none"
                         />
@@ -35,7 +35,7 @@ export function EditCoordinatorDialog({ children, coordinator }: EditCoordinator
                     <div className="flex flex-col gap-2">
                         <label className="text-sm font-medium text-foreground">Email</label>
                         <Input
-                            defaultValue={coordinator.email}
+                            defaultValue={coordinator.email || ''}
                             placeholder="e.g. john@example.com"
                             className="h-12 rounded-lg bg-muted/50 border-none px-4 shadow-none"
                             type="email"
@@ -44,7 +44,7 @@ export function EditCoordinatorDialog({ children, coordinator }: EditCoordinator
 
                     <div className="flex flex-col gap-2">
                         <label className="text-sm font-medium text-foreground">Status</label>
-                        <Select defaultValue={coordinator.status}>
+                        <Select defaultValue={coordinator.is_active ? 'ACTIVE' : 'INACTIVE'}>
                             <SelectTrigger className="h-12 rounded-lg bg-muted/50 border-none px-4 shadow-none">
                                 <SelectValue placeholder="Select Status" />
                             </SelectTrigger>

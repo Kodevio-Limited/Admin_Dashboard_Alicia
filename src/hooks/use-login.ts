@@ -1,16 +1,14 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { loginApi } from '@/lib/api/auth';
-import { fetchProfileData } from '@/lib/settings';
-import { adminKeys } from '@/lib/query-keys';
-import type { AxiosError } from 'axios';
 import type { LoginResponse } from '@/lib/api/auth';
+import { profileQueryOptions } from '@/hooks/use-users';
 
 export const useLogin = () => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
 
-    return useMutation<LoginResponse, AxiosError, any>({
+    return useMutation<LoginResponse, Error, any>({
         mutationFn: loginApi,
         onSuccess: async (response) => {
             const tokenData = response.data;
@@ -20,12 +18,10 @@ export const useLogin = () => {
             if (tokenData?.refresh) {
                 localStorage.setItem('refresh_token', tokenData.refresh);
             }
-            try {
-                const profile = await fetchProfileData();
-                queryClient.setQueryData([...adminKeys.all, 'profile'], profile);
-            } catch (error) {
-                console.error("Failed to fetch admin profile post-login", error);
-            }
+            
+            // Prefetch the user data instantly
+            await queryClient.ensureQueryData(profileQueryOptions());
+            
             navigate({ to: '/' });
         },
     });

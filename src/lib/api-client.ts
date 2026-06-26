@@ -1,68 +1,135 @@
-import axios, { AxiosError } from 'axios';
-import type { InternalAxiosRequestConfig } from 'axios';
-
 export const baseURL = (import.meta.env.VITE_APP_SERVER as string) || '';
 export const apiPrefix = (import.meta.env.VITE_API_PREFIX as string) || '/api/v1';
 
-export const apiClient = axios.create({
-    baseURL: `${baseURL}${apiPrefix}`,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
+let isRefreshing = false;
+let refreshPromise: Promise<string> | null = null;
 
-// Request Interceptor to inject the access token
-apiClient.interceptors.request.use(
-    (config: any) => {
-        const token = localStorage.getItem('access_token');
-        if (token && config.headers) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
-
-// Response Interceptor to handle 401 Unauthorized and refresh the token
-apiClient.interceptors.response.use(
-    (response) => response,
-    async (error: AxiosError) => {
-        const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
-        
-        // If the error is 401 and we haven't already retried
-        if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
-            originalRequest._retry = true;
-            try {
-                const refreshToken = localStorage.getItem('refresh_token');
-                if (!refreshToken) {
-                    throw new Error('No refresh token available');
-                }
-                
-                // Attempt to refresh the token
-                const refreshResponse = await axios.post(`${baseURL}${apiPrefix}/auth/refresh/`, {
-                    refresh: refreshToken,
-                });
-                
-                const { access } = refreshResponse.data;
-                
-                // Save the new access token
-                localStorage.setItem('access_token', access);
-                
-                // Update the Authorization header and retry the original request
-                if (originalRequest.headers) {
-                    originalRequest.headers.Authorization = `Bearer ${access}`;
-                }
-                return apiClient(originalRequest);
-            } catch (refreshError) {
-                // If refresh fails, clear tokens and redirect to login
-                localStorage.removeItem('access_token');
-                localStorage.removeItem('refresh_token');
-                // Optional: Dispatch a custom event or redirect here if needed
-                window.location.href = '/login';
-                return Promise.reject(refreshError);
-            }
-        }
-        
-        return Promise.reject(error);
+export function toQuery(params: Record<string, any>) {
+    const usp = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) {
+        if (v === undefined || v === null || v === '') continue;
+        usp.set(k, String(v));
     }
-);
+    const s = usp.toString();
+    return s ? `?${s}` : '';
+}
+
+export async function client<T>(
+    endpoint: string,
+    { data, ...customConfig }: RequestInit & { data?: any } = {}
+): Promise<T> {
+    const token = localStorage.getItem('access_token');
+    const isFormData = data instanceof FormData;
+    
+    const headers: HeadersInit = {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...customConfig.headers,
+    };
+    
+    // Automatically set Content-Type to JSON if data is not FormData
+    if (!isFormData && data !== undefined) {
+        (headers as Record<string, string>)['Content-Type'] = 'application/json';
+    }
+
+    const config: RequestInit = {
+        method: customConfig.method || (data ? 'POST' : 'GET'),
+        ...customConfig,
+        headers,
+    };
+
+    if (data !== undefined) {
+        config.body = isFormData ? data : JSON.stringify(data);
+    }
+
+    const url = `${baseURL}${apiPrefix}${endpoint}`;
+    
+    let response = await fetch(url, config);
+
+    // Handle 401 Unauthorized
+    if (response.status === 401) {
+        const refreshToken = localStorage.getItem('refresh_token');
+        if (!refreshToken) {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            window.location.href = '/login';
+            throw new Error('Unauthorized');
+        }
+
+        if (!isRefreshing) {
+            isRefreshing = true;
+            refreshPromise = (async () => {
+                try {
+                    const refreshRes = await fetch(`${baseURL}${apiPrefix}/auth/refresh/`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ refresh: refreshToken }),
+                    });
+                    
+                    if (!refreshRes.ok) {
+                        throw new Error('Refresh failed');
+                    }
+                    
+                    const refreshData = await refreshRes.json();
+                    const newAccess = refreshData?.data?.access || refreshData?.access;
+                    
+                    if (!newAccess) throw new Error('No access token returned');
+                    
+                    localStorage.setItem('access_token', newAccess);
+                    return newAccess;
+                } catch (error) {
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('refresh_token');
+                    window.location.href = '/login';
+                    throw error;
+                } finally {
+                    isRefreshing = false;
+                    refreshPromise = null;
+                }
+            })();
+        }
+
+        try {
+            // Wait for the new token
+            const newToken = await refreshPromise;
+            // Retry the original request
+            const newHeaders = new Headers(config.headers);
+            newHeaders.set('Authorization', `Bearer ${newToken}`);
+            
+            response = await fetch(url, {
+                ...config,
+                headers: newHeaders,
+            });
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        const errorMessage = (errorData && (errorData.message || errorData.error)) || `Request failed with status ${response.status}`;
+        
+        if (typeof errorMessage === 'object' && !Array.isArray(errorMessage) && errorMessage !== null) {
+             const messages = Object.entries(errorMessage).map(([k, v]) => `${k}: ${v}`);
+             throw new Error(messages.join(' | '));
+        }
+
+        throw new Error(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage);
+    }
+    
+    if (response.status === 204) {
+        return undefined as T;
+    }
+    
+    const responseData = await response.json().catch(() => null);
+    
+    if (responseData && responseData.status === 'error') {
+        const errorMessage = responseData.message || responseData.error || 'An error occurred';
+        if (typeof errorMessage === 'object' && !Array.isArray(errorMessage) && errorMessage !== null) {
+             const messages = Object.entries(errorMessage).map(([k, v]) => `${k}: ${v}`);
+             throw new Error(messages.join(' | '));
+        }
+        throw new Error(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage);
+    }
+    
+    return responseData as T;
+}

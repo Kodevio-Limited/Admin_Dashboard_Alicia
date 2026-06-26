@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { useQueryClient, useMutation } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
+import { useActivateResident, useSuspendResident } from '@/hooks/use-management'
 import { Eye, Ban, Clock, MapPin } from 'lucide-react'
 import { toast } from 'sonner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -13,37 +14,53 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
-import { updateResident } from '@/lib/management'
-import type { ResidentRow, ResidentStatus } from '@/lib/management'
+import type { ResidentAPIResult } from '@/lib/api/management'
 import { EditResidentDialog } from './EditResidentDialog'
 
-function statusVariant(status: ResidentStatus): 'success' | 'warning' | 'destructive' {
+function statusVariant(status: string): 'success' | 'warning' | 'destructive' {
     if (status === 'ACTIVE') return 'success'
     if (status === 'DELAYED') return 'warning'
     return 'destructive'
 }
 
-export function ResidentActionCell({ resident }: { resident: ResidentRow }) {
+export function ResidentActionCell({ resident }: { resident: ResidentAPIResult }) {
     const [open, setOpen] = useState(false)
-    const queryClient = useQueryClient()
 
-    const createStatusMutation = (status: ResidentStatus) =>
-        useMutation({
-            mutationFn: (id: number) => {
-                const updated = updateResident(id, { status })
-                if (!updated) throw new Error('Resident not found')
-                return Promise.resolve(updated)
-            },
+    // TODO: Implement actual delay API when available
+    const delayMutation = useMutation({
+        mutationFn: (id: string) => Promise.resolve(),
+        onSuccess: () => {
+            setOpen(false)
+            toast.success(`Resident status updated to DELAYED`)
+        },
+    })
+
+    const { mutate: suspend, isPending: isSuspending } = useSuspendResident()
+    const { mutate: activate, isPending: isActivating } = useActivateResident()
+
+    const handleSuspend = (id: string) => {
+        suspend(id, {
             onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: ['management-residents'] })
                 setOpen(false)
-                toast.success(`Resident status updated to ${status}`)
+                toast.success('Resident account suspended')
             },
+            onError: (err) => {
+                toast.error(`Failed to suspend account: ${err.message}`)
+            }
         })
+    }
 
-    const delayMutation = createStatusMutation('DELAYED')
-    const suspendMutation = createStatusMutation('SILENT')
-    const unsuspendMutation = createStatusMutation('ACTIVE')
+    const handleActivate = (id: string) => {
+        activate(id, {
+            onSuccess: () => {
+                setOpen(false)
+                toast.success('Resident account activated')
+            },
+            onError: (err) => {
+                toast.error(`Failed to activate account: ${err.message}`)
+            }
+        })
+    }
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -63,21 +80,21 @@ export function ResidentActionCell({ resident }: { resident: ResidentRow }) {
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit resident</DropdownMenuItem>
                     </EditResidentDialog>
                     <DropdownMenuSeparator />
-                    {resident.status === 'SILENT' ? (
+                    {resident.is_active ? (
                         <DropdownMenuItem
-                            onSelect={() => unsuspendMutation.mutate(resident.id)}
-                            disabled={unsuspendMutation.isPending}
-                            className="text-green-600 focus:text-green-600"
-                        >
-                            Unsuspend resident
-                        </DropdownMenuItem>
-                    ) : (
-                        <DropdownMenuItem
-                            onSelect={() => suspendMutation.mutate(resident.id)}
-                            disabled={suspendMutation.isPending}
+                            onSelect={() => handleSuspend(resident.phone_number)}
+                            disabled={isSuspending}
                             className="text-destructive focus:text-destructive"
                         >
                             Suspend resident
+                        </DropdownMenuItem>
+                    ) : (
+                        <DropdownMenuItem
+                            onSelect={() => handleActivate(resident.phone_number)}
+                            disabled={isActivating}
+                            className="text-green-600 focus:text-green-600"
+                        >
+                            Unsuspend resident
                         </DropdownMenuItem>
                     )}
                 </DropdownMenuContent>
@@ -87,19 +104,19 @@ export function ResidentActionCell({ resident }: { resident: ResidentRow }) {
                 <div className="flex flex-col items-center pt-10 pb-4 px-6">
                     <div className="relative mb-4">
                         <Avatar className="size-24 md:size-32">
-                            <AvatarImage src={resident.avatar} />
-                            <AvatarFallback className="text-3xl bg-muted">{resident.name.charAt(0)}</AvatarFallback>
+                            <AvatarImage src={resident.profile_photo || undefined} />
+                            <AvatarFallback className="text-3xl bg-muted">{resident.full_name.charAt(0)}</AvatarFallback>
                         </Avatar>
-                        {resident.status === 'ACTIVE' && (
+                        {resident.is_active && (
                             <div className="absolute bottom-1.5 right-1.5 size-6 bg-[#34D399] rounded-full border-4 border-white" />
                         )}
                     </div>
-                    <h2 className="text-2xl font-medium mb-3 text-foreground">{resident.name}</h2>
+                    <h2 className="text-2xl font-medium mb-3 text-foreground">{resident.full_name}</h2>
                     <Badge
-                        variant={statusVariant(resident.status)}
-                        className={`uppercase px-4 py-1 tracking-wider text-xs font-medium ${resident.status === 'ACTIVE' ? 'bg-[#99F6E4]/50 text-[#16A34A] hover:bg-[#99F6E4]/50' : ''}`}
+                        variant={statusVariant(resident.is_active ? 'ACTIVE' : 'INACTIVE')}
+                        className={`uppercase px-4 py-1 tracking-wider text-xs font-medium ${resident.is_active ? 'bg-[#99F6E4]/50 text-[#16A34A] hover:bg-[#99F6E4]/50' : ''}`}
                     >
-                        {resident.status}
+                        {resident.is_active ? 'ACTIVE' : 'INACTIVE'}
                     </Badge>
                 </div>
 
@@ -111,14 +128,14 @@ export function ResidentActionCell({ resident }: { resident: ResidentRow }) {
                                 <MapPin className="size-[18px]" />
                                 <span>Community</span>
                             </div>
-                            <span className="font-medium text-foreground">{resident.community}</span>
+                            <span className="font-medium text-foreground">{resident.community || 'Unassigned'}</span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
                             <div className="flex items-center gap-2 text-muted-foreground">
                                 <Clock className="size-[18px]" />
                                 <span>Last Check In</span>
                             </div>
-                            <span className="font-medium text-[#16A34A]">{resident.lastCheckIn}</span>
+                            <span className="font-medium text-[#16A34A]">{resident.last_checkin ? new Date(resident.last_checkin).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Never'}</span>
                         </div>
                     </div>
                 </div>
@@ -127,21 +144,31 @@ export function ResidentActionCell({ resident }: { resident: ResidentRow }) {
                     <Button
                         variant="secondary"
                         className="w-full"
-                        disabled={delayMutation.isPending || resident.status === 'DELAYED'}
-                        onClick={() => delayMutation.mutate(resident.id)}
+                        disabled={delayMutation.isPending || !resident.is_active}
+                        onClick={() => delayMutation.mutate(resident.phone_number)}
                     >
                         <Clock className="mr-2 size-4" />
-                        {delayMutation.isPending ? 'Marking...' : resident.status === 'DELAYED' ? 'Already Delayed' : 'Mark as Delayed'}
+                        {delayMutation.isPending ? 'Marking...' : !resident.is_active ? 'Already Inactive' : 'Mark as Delayed'}
                     </Button>
-                    <Button
-                        variant="destructive"
-                        className="w-full"
-                        disabled={suspendMutation.isPending || resident.status === 'SILENT'}
-                        onClick={() => suspendMutation.mutate(resident.id)}
-                    >
-                        <Ban className="mr-2 size-4" />
-                        {suspendMutation.isPending ? 'Suspending...' : resident.status === 'SILENT' ? 'Already Suspended' : 'Suspend Account'}
-                    </Button>
+                    {resident.is_active ? (
+                        <Button
+                            variant="destructive"
+                            className="w-full"
+                            disabled={isSuspending}
+                            onClick={() => handleSuspend(resident.phone_number)}
+                        >
+                            <Ban className="mr-2 size-4" />
+                            {isSuspending ? 'Suspending...' : 'Suspend Account'}
+                        </Button>
+                    ) : (
+                        <Button
+                            className="w-full bg-green-600 hover:bg-green-700 text-white"
+                            disabled={isActivating}
+                            onClick={() => handleActivate(resident.phone_number)}
+                        >
+                            {isActivating ? 'Activating...' : 'Activate Account'}
+                        </Button>
+                    )}
                 </div>
             </DialogContent>
         </Dialog>
