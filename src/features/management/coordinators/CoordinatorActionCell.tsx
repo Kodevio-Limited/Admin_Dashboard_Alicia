@@ -23,7 +23,7 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
 
     const createStatusMutation = (status: 'ACTIVE' | 'INACTIVE') =>
         useMutation({
-            mutationFn: () => {
+            mutationFn: (id: string) => {
                 // TODO: Actual API call for suspend/activate coordinator
                 return Promise.resolve()
             },

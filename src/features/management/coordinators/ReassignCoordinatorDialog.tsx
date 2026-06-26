@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { Check, ChevronDown } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -29,7 +28,6 @@ export function ReassignCoordinatorDialog({ children, coordinator }: ReassignCoo
     const filteredHubs = useMemo(() =>
         hubs.filter((h) =>
             h.name.toLowerCase().includes(search.toLowerCase()) ||
-            h.location?.toLowerCase().includes(search.toLowerCase()) ||
             h.address?.toLowerCase().includes(search.toLowerCase())
         ),
         [hubs, search]

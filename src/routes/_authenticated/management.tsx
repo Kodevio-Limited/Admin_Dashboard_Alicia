@@ -5,6 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
 import { PageHeader } from '@/components/sections/page-header'
 import { ServerDataTable } from '@/components/shared/server-data-table'
+import { type HubAPIResult, type CoordinatorAPIResult } from '@/lib/api/management'
 import { useResidents, useHubs, useCoordinators } from '@/hooks/use-management'
 import {
     residentColumns,
@@ -99,9 +100,9 @@ function ManagementPage() {
                                 <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
                                     <div className="flex-1 overflow-y-auto">
                                         <div className="flex flex-col gap-4 min-h-min">
-                                            <ServerDataTable 
+                                            <ServerDataTable<HubAPIResult>
                                                 columns={hubColumns} 
-                                                data={hubsData?.results || []} 
+                                                data={hubsData?.results || ([] as HubAPIResult[])} 
                                                 searchKey="name"
                                                 pageCount={hubsData ? Math.ceil(hubsData.count / hubLimit) : 1}
                                                 pageIndex={hubPage - 1}
@@ -123,30 +124,26 @@ function ManagementPage() {
                     <TabsContent value="coordinators" className="m-0 border-0 p-0 outline-none flex-1 data-[state=active]:flex flex-col mt-0">
                         <Card className="flex-1 overflow-hidden shadow-sm flex flex-col min-h-0">
                             <CardContent className="p-4 pb-[6px] flex-1 flex flex-col">
-                                {isLoadingCoordinators ? (
-                                    <div className="flex-1 flex items-center justify-center text-muted-foreground">Loading coordinators data...</div>
-                                ) : (
-                                    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                                        <div className="flex-1 overflow-y-auto">
-                                            <div className="flex flex-col gap-4 min-h-min">
-                                                <ServerDataTable 
-                                                    columns={coordinatorColumns} 
-                                                    data={coordinatorsData?.results || []} 
-                                                    searchKey="name"
-                                                    pageCount={coordinatorsData ? Math.ceil(coordinatorsData.count / coordinatorLimit) : 1}
-                                                    pageIndex={coordinatorPage - 1}
-                                                    pageSize={coordinatorLimit}
-                                                    onPageChange={(newPageIndex: number) => setCoordinatorPage(newPageIndex + 1)}
-                                                    onPageSizeChange={(newSize: number) => {
-                                                        setCoordinatorLimit(newSize)
-                                                        setCoordinatorPage(1)
-                                                    }}
-                                                    isLoading={isLoadingCoordinators}
-                                                />
-                                            </div>
+                                <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                                    <div className="flex-1 overflow-y-auto">
+                                        <div className="flex flex-col gap-4 min-h-min">
+                                            <ServerDataTable<CoordinatorAPIResult>
+                                                columns={coordinatorColumns} 
+                                                data={coordinatorsData?.results || ([] as CoordinatorAPIResult[])} 
+                                                searchKey="name"
+                                                pageCount={coordinatorsData ? Math.ceil(coordinatorsData.count / coordinatorLimit) : 1}
+                                                pageIndex={coordinatorPage - 1}
+                                                pageSize={coordinatorLimit}
+                                                onPageChange={(newPageIndex: number) => setCoordinatorPage(newPageIndex + 1)}
+                                                onPageSizeChange={(newSize: number) => {
+                                                    setCoordinatorLimit(newSize)
+                                                    setCoordinatorPage(1)
+                                                }}
+                                                isLoading={isLoadingCoordinators}
+                                            />
                                         </div>
                                     </div>
-                                )}
+                                </div>
                             </CardContent>
                         </Card>
                     </TabsContent>
