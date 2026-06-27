@@ -110,7 +110,7 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                         {[
                             {
                                 icon: <Users className="size-[18px]" />,
-                                label: 'Assigned Area',
+                                label: 'Assigned Area/Hub',
                                 value: coordinator.hub_name || 'Unassigned',
                             },
                             {

@@ -89,7 +89,14 @@ export function HubActionCell({ hub }: { hub: HubAPIResult }) {
 
                 <div className="flex flex-col gap-3 mt-6">
                     <AssignCoordinatorDialog hub={hub}>
-                        <Button className="w-full">Assign Coordinator</Button>
+                        <Button className="w-full">
+                            {hub.coordinator_name &&
+                            hub.coordinator_name.trim() !== '' &&
+                            hub.coordinator_name.toLowerCase() !== 'unassigned' &&
+                            hub.coordinator_name.toLowerCase() !== 'none'
+                                ? 'Reassign Coordinator'
+                                : 'Assign Coordinator'}
+                        </Button>
                     </AssignCoordinatorDialog>
                     <div className="flex gap-3">
                         <Button

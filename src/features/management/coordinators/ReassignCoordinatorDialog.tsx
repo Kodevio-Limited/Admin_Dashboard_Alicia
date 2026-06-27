@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import { useHubs } from '@/hooks/use-management'
+import { useHubs, useAssignCoordinator, useReassignCoordinator } from '@/hooks/use-management'
 import type { CoordinatorAPIResult } from '@/lib/api/management'
+import { toast } from 'sonner'
 
 interface ReassignCoordinatorDialogProps {
     children?: React.ReactNode
@@ -18,12 +19,11 @@ export function ReassignCoordinatorDialog({ children, coordinator }: ReassignCoo
     const { data: hubsData } = useHubs({ limit: 100 })
     const hubs = hubsData?.results || []
 
-    const [selectedHubs, setSelectedHubs] = useState<number[]>([])
+    const [selectedHubId, setSelectedHubId] = useState<number | null>(null)
     const [search, setSearch] = useState('')
 
-    const toggleHub = (id: number) => {
-        setSelectedHubs((prev) => (prev.includes(id) ? prev.filter((hId) => hId !== id) : [...prev, id]))
-    }
+    const assignMutation = useAssignCoordinator()
+    const reassignMutation = useReassignCoordinator()
 
     const filteredHubs = useMemo(
         () =>
@@ -33,16 +33,62 @@ export function ReassignCoordinatorDialog({ children, coordinator }: ReassignCoo
         [hubs, search],
     )
 
+    const handleConfirm = () => {
+        if (!selectedHubId) {
+            toast.error('Please select a hub')
+            return
+        }
+
+        const chosenHub = hubs.find((h) => h.id === selectedHubId)
+        if (!chosenHub) return
+
+        const needsReassign = !!chosenHub.coordinator_name
+
+        if (needsReassign) {
+            reassignMutation.mutate(
+                {
+                    hubId: chosenHub.id,
+                    newCoordinatorId: coordinator.phone_number,
+                },
+                {
+                    onSuccess: () => {
+                        toast.success(`Successfully reassigned coordinator ${coordinator.full_name} to hub ${chosenHub.name}`)
+                        setOpen(false)
+                    },
+                    onError: (err: any) => {
+                        toast.error(err?.message || 'Failed to reassign coordinator')
+                    },
+                },
+            )
+        } else {
+            assignMutation.mutate(
+                {
+                    hubId: chosenHub.id,
+                    coordinatorId: coordinator.phone_number,
+                },
+                {
+                    onSuccess: () => {
+                        toast.success(`Successfully assigned coordinator ${coordinator.full_name} to hub ${chosenHub.name}`)
+                        setOpen(false)
+                    },
+                    onError: (err: any) => {
+                        toast.error(err?.message || 'Failed to assign coordinator')
+                    },
+                },
+            )
+        }
+    }
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-md p-6 md:p-8 rounded-[32px] border-none shadow-xl gap-6 bg-white">
+            <DialogContent className="sm:max-w-md p-6 md:p-8 rounded-[32px] border-none shadow-xl gap-6 bg-white overflow-y-auto max-h-[90vh]">
                 <div className="flex flex-col items-center gap-6 mt-2">
                     <h2 className="text-2xl font-bold text-foreground">Reassign Coordinator</h2>
                     <div className="flex flex-col items-center gap-4">
                         <div className="relative">
                             <Avatar className="size-24 md:size-28 bg-muted border-none">
-                                <AvatarFallback className="text-4xl text-white font-medium bg-muted">
+                                <AvatarFallback className="text-4xl text-white font-medium bg-muted flex items-center justify-center rounded-full">
                                     {coordinator.full_name.charAt(0)}
                                 </AvatarFallback>
                             </Avatar>
@@ -68,7 +114,7 @@ export function ReassignCoordinatorDialog({ children, coordinator }: ReassignCoo
 
                     <div className="w-full flex flex-col gap-2 mt-2 max-h-[220px] overflow-y-auto pr-1">
                         {filteredHubs.map((hub) => {
-                            const isSelected = selectedHubs.includes(hub.id)
+                            const isSelected = selectedHubId === hub.id
                             return (
                                 <div
                                     key={hub.id}
@@ -76,7 +122,7 @@ export function ReassignCoordinatorDialog({ children, coordinator }: ReassignCoo
                                         'flex items-center justify-between p-4 rounded-xl cursor-pointer transition-colors',
                                         isSelected ? 'bg-muted' : 'bg-secondary hover:bg-secondary/80',
                                     )}
-                                    onClick={() => toggleHub(hub.id)}
+                                    onClick={() => setSelectedHubId(hub.id)}
                                 >
                                     <div className="flex flex-col gap-1">
                                         <span className="text-[15px] font-medium text-foreground">{hub.name}</span>
@@ -102,10 +148,11 @@ export function ReassignCoordinatorDialog({ children, coordinator }: ReassignCoo
                         Cancel
                     </Button>
                     <Button
-                        onClick={() => setOpen(false)}
+                        onClick={handleConfirm}
                         className="flex-1 h-12 rounded-[16px] text-base font-medium bg-primary hover:bg-primary/90 text-primary-foreground"
+                        disabled={!selectedHubId || assignMutation.isPending || reassignMutation.isPending}
                     >
-                        Confirm Assignment
+                        {assignMutation.isPending || reassignMutation.isPending ? 'Confirming...' : 'Confirm Assignment'}
                     </Button>
                 </div>
             </DialogContent>

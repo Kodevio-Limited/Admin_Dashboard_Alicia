@@ -23,6 +23,49 @@ function statusVariant(status: string): 'success' | 'warning' | 'destructive' {
     return 'destructive'
 }
 
+function formatRelativeTime(dateString: string): string {
+    try {
+        const date = new Date(dateString)
+        const now = new Date()
+        const diffMs = now.getTime() - date.getTime()
+
+        if (diffMs < 0) {
+            return 'Just now'
+        }
+
+        const diffMins = Math.floor(diffMs / (1000 * 60))
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+        if (diffDays > 0) {
+            const hours = diffHours % 24
+            const dayText = diffDays === 1 ? 'day' : 'days'
+            if (hours > 0) {
+                const hourText = hours === 1 ? 'hr' : 'hrs'
+                return `${diffDays} ${dayText} ${hours} ${hourText} ago`
+            }
+            return `${diffDays} ${dayText} ago`
+        }
+
+        if (diffHours > 0) {
+            const mins = diffMins % 60
+            const hourText = diffHours === 1 ? 'hour' : 'hours'
+            if (mins > 0) {
+                return `${diffHours} ${hourText} ${mins} min ago`
+            }
+            return `${diffHours} ${hourText} ago`
+        }
+
+        if (diffMins > 0) {
+            return `${diffMins} min ago`
+        }
+
+        return 'Just now'
+    } catch {
+        return dateString
+    }
+}
+
 export function ResidentActionCell({ resident }: { resident: ResidentAPIResult }) {
     const [open, setOpen] = useState(false)
     const activateMutation = useActivateResident()
@@ -111,9 +154,7 @@ export function ResidentActionCell({ resident }: { resident: ResidentAPIResult }
                                 <span>Last Check In</span>
                             </div>
                             <span className="font-medium text-emerald-600">
-                                {resident.last_checkin
-                                    ? new Date(resident.last_checkin).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                                    : 'Never'}
+                                {resident.last_checkin ? formatRelativeTime(resident.last_checkin) : 'Never'}
                             </span>
                         </div>
                     </div>

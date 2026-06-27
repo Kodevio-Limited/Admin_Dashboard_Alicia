@@ -1,16 +1,13 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Search, BadgeCheck, Check } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import { fetchCoordinators } from '@/lib/management'
-import type { CoordinatorRow } from '@/lib/management'
-import { useHubs } from '@/hooks/use-management'
-import type { HubAPIResult } from '@/lib/api/management'
+import { useHubs, useCoordinators, useAssignCoordinator, useReassignCoordinator } from '@/hooks/use-management'
+import type { HubAPIResult, CoordinatorAPIResult } from '@/lib/api/management'
+import { toast } from 'sonner'
 
 interface AssignCoordinatorDialogProps {
     children?: React.ReactNode
@@ -21,37 +18,30 @@ export function AssignCoordinatorDialog({ children, hub: initialHub }: AssignCoo
     const [open, setOpen] = useState(false)
     const [step, setStep] = useState<'select' | 'success'>('select')
 
-    const { data: coordinators = [] } = useQuery({ queryKey: ['management-coordinators'], queryFn: fetchCoordinators })
-    const { data: hubsData } = useHubs({ limit: 100 })
-    const hubs = hubsData?.results || []
-
     const [search, setSearch] = useState('')
     const [searchHub, setSearchHub] = useState('')
-    const [selected, setSelected] = useState<CoordinatorRow | null>(null)
+    const [selected, setSelected] = useState<CoordinatorAPIResult | null>(null)
     const [selectedHub, setSelectedHub] = useState<HubAPIResult | null>(initialHub || null)
+
+    const { data: coordinatorsData } = useCoordinators({ search: search || undefined, limit: 100 })
+    const coordinatorsList = coordinatorsData?.results || []
+
+    const { data: hubsData } = useHubs({ search: searchHub || undefined, limit: 100 })
+    const hubs = hubsData?.results || []
+
+    const assignMutation = useAssignCoordinator()
+    const reassignMutation = useReassignCoordinator()
+
+    const isReassign = !!(
+        selectedHub?.coordinator_name &&
+        selectedHub.coordinator_name.trim() !== '' &&
+        selectedHub.coordinator_name.toLowerCase() !== 'unassigned' &&
+        selectedHub.coordinator_name.toLowerCase() !== 'none'
+    )
 
     useEffect(() => {
         if (initialHub) setSelectedHub(initialHub)
     }, [initialHub])
-
-    const filteredCoordinators = useMemo(
-        () =>
-            coordinators.filter(
-                (c) =>
-                    c.name.toLowerCase().includes(search.toLowerCase()) ||
-                    c.email.toLowerCase().includes(search.toLowerCase()) ||
-                    c.assignedArea.toLowerCase().includes(search.toLowerCase()),
-            ),
-        [search, coordinators],
-    )
-
-    const filteredHubs = useMemo(
-        () =>
-            hubs.filter(
-                (h) => h.name.toLowerCase().includes(searchHub.toLowerCase()) || h.address.toLowerCase().includes(searchHub.toLowerCase()),
-            ),
-        [searchHub, hubs],
-    )
 
     const handleOpenChange = (val: boolean) => {
         setOpen(val)
@@ -66,26 +56,64 @@ export function AssignCoordinatorDialog({ children, hub: initialHub }: AssignCoo
         }
     }
 
+    const handleConfirm = () => {
+        if (!selected || !selectedHub) return
+
+        if (isReassign) {
+            reassignMutation.mutate(
+                {
+                    hubId: selectedHub.id,
+                    newCoordinatorId: selected.phone_number,
+                },
+                {
+                    onSuccess: () => {
+                        setStep('success')
+                    },
+                    onError: (err: any) => {
+                        toast.error(err?.message || 'Failed to reassign coordinator')
+                    },
+                },
+            )
+        } else {
+            assignMutation.mutate(
+                {
+                    hubId: selectedHub.id,
+                    coordinatorId: selected.phone_number,
+                },
+                {
+                    onSuccess: () => {
+                        setStep('success')
+                    },
+                    onError: (err: any) => {
+                        toast.error(err?.message || 'Failed to assign coordinator')
+                    },
+                },
+            )
+        }
+    }
+
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 {children || (
                     <Button variant="default">
                         <Plus className="size-4 mr-2" />
-                        Assign Coordinator
+                        {isReassign ? 'Reassign Coordinator' : 'Assign Coordinator'}
                     </Button>
                 )}
             </DialogTrigger>
             <DialogContent
                 className={cn(
-                    'border-none shadow-xl flex flex-col p-6 md:p-8 rounded-2xl gap-6 transition-all duration-300',
+                    'border-none shadow-xl flex flex-col p-6 md:p-8 rounded-2xl gap-6 transition-all duration-300 overflow-y-auto max-h-[90vh]',
                     step === 'select' ? 'sm:max-w-xl' : 'sm:max-w-md items-center text-center',
                 )}
             >
                 {step === 'select' ? (
                     <>
                         <div className="flex flex-col items-start mb-2 w-full">
-                            <h2 className="text-2xl md:text-3xl font-semibold text-foreground">Assign Coordinator</h2>
+                            <h2 className="text-2xl md:text-3xl font-semibold text-foreground">
+                                {isReassign ? 'Reassign Coordinator' : 'Assign Coordinator'}
+                            </h2>
                         </div>
 
                         <div className="flex flex-col gap-2 w-full">
@@ -102,24 +130,30 @@ export function AssignCoordinatorDialog({ children, hub: initialHub }: AssignCoo
                         </div>
 
                         <div className="w-full bg-muted/30 rounded-xl p-2 flex flex-col gap-1 max-h-[240px] overflow-y-auto">
-                            {filteredCoordinators.length > 0 ? (
-                                filteredCoordinators.map((person) => (
+                            {coordinatorsList.length > 0 ? (
+                                coordinatorsList.map((person) => (
                                     <div
-                                        key={person.id}
-                                        className={`flex items-center gap-4 p-2 rounded-lg cursor-pointer transition-colors ${selected?.id === person.id ? 'bg-primary/10 border border-primary/20' : 'hover:bg-muted/50 border border-transparent'}`}
+                                        key={person.phone_number}
+                                        className={cn(
+                                            'flex items-center gap-4 p-2 rounded-lg cursor-pointer transition-colors border',
+                                            selected?.phone_number === person.phone_number
+                                                ? 'bg-primary/10 border-primary/20'
+                                                : 'hover:bg-muted/50 border-transparent',
+                                        )}
                                         onClick={() => setSelected(person)}
                                     >
                                         <Avatar className="size-12 bg-muted flex items-center justify-center border-none">
-                                            <AvatarImage src={person.avatar} />
-                                            <AvatarFallback className="text-muted-foreground font-medium">
-                                                {person.name.charAt(0)}
+                                            <AvatarFallback className="text-muted-foreground font-medium bg-muted-foreground/10 size-full flex items-center justify-center rounded-full">
+                                                {person.full_name.charAt(0)}
                                             </AvatarFallback>
                                         </Avatar>
                                         <div className="flex flex-col">
-                                            <span className="text-base font-medium text-foreground">{person.name}</span>
-                                            <span className="text-sm text-muted-foreground">{person.assignedArea}</span>
+                                            <span className="text-base font-medium text-foreground">{person.full_name}</span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {person.phone_number} {person.hub_name ? `(${person.hub_name})` : '(Unassigned)'}
+                                            </span>
                                         </div>
-                                        {selected?.id === person.id && (
+                                        {selected?.phone_number === person.phone_number && (
                                             <div className="ml-auto bg-primary rounded-full size-5 flex items-center justify-center text-primary-foreground">
                                                 <Check className="size-3" strokeWidth={3} />
                                             </div>
@@ -144,11 +178,16 @@ export function AssignCoordinatorDialog({ children, hub: initialHub }: AssignCoo
                                     />
                                 </div>
                                 <div className="w-full bg-muted/30 rounded-xl p-2 flex flex-col gap-1 max-h-[240px] overflow-y-auto">
-                                    {filteredHubs.length > 0 ? (
-                                        filteredHubs.map((h) => (
+                                    {hubs.length > 0 ? (
+                                        hubs.map((h) => (
                                             <div
                                                 key={h.id}
-                                                className={`flex items-center gap-4 p-3 rounded-lg cursor-pointer transition-colors ${selectedHub?.id === h.id ? 'bg-primary/10 border border-primary/20' : 'hover:bg-muted/50 border border-transparent'}`}
+                                                className={cn(
+                                                    'flex items-center gap-4 p-3 rounded-lg cursor-pointer transition-colors border',
+                                                    selectedHub?.id === h.id
+                                                        ? 'bg-primary/10 border-primary/20'
+                                                        : 'hover:bg-muted/50 border-transparent',
+                                                )}
                                                 onClick={() => setSelectedHub(h)}
                                             >
                                                 <div className="flex flex-col">
@@ -173,8 +212,12 @@ export function AssignCoordinatorDialog({ children, hub: initialHub }: AssignCoo
                             <Button onClick={() => handleOpenChange(false)} variant="secondary" className="flex-1">
                                 Cancel
                             </Button>
-                            <Button onClick={() => setStep('success')} className="flex-1" disabled={!selected || !selectedHub}>
-                                Confirm Assignment
+                            <Button
+                                onClick={handleConfirm}
+                                className="flex-1"
+                                disabled={!selected || !selectedHub || assignMutation.isPending || reassignMutation.isPending}
+                            >
+                                {assignMutation.isPending || reassignMutation.isPending ? 'Confirming...' : 'Confirm Assignment'}
                             </Button>
                         </div>
                     </>
@@ -183,10 +226,12 @@ export function AssignCoordinatorDialog({ children, hub: initialHub }: AssignCoo
                         <div className="flex flex-col items-center gap-6 mt-4 w-full">
                             <BadgeCheck className="size-24 text-primary" strokeWidth={1.5} />
                             <div className="flex flex-col gap-3 items-center">
-                                <h2 className="text-2xl md:text-3xl font-semibold text-foreground">Successfully Assigned!</h2>
+                                <h2 className="text-2xl md:text-3xl font-semibold text-foreground">
+                                    {isReassign ? 'Successfully Reassigned!' : 'Successfully Assigned!'}
+                                </h2>
                                 <p className="text-base text-muted-foreground max-w-sm text-center">
-                                    <span className="font-medium text-foreground">{selected?.name}</span> has been successfully assigned to
-                                    coordinate the following hub:
+                                    <span className="font-medium text-foreground">{selected?.full_name}</span> has been successfully
+                                    assigned to coordinate the following hub:
                                 </p>
                             </div>
                         </div>

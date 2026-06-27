@@ -14,6 +14,49 @@ function statusVariant(status: string): 'success' | 'warning' | 'destructive' {
     return 'destructive'
 }
 
+function formatRelativeTime(dateString: string): string {
+    try {
+        const date = new Date(dateString)
+        const now = new Date()
+        const diffMs = now.getTime() - date.getTime()
+
+        if (diffMs < 0) {
+            return 'Just now'
+        }
+
+        const diffMins = Math.floor(diffMs / (1000 * 60))
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+        if (diffDays > 0) {
+            const hours = diffHours % 24
+            const dayText = diffDays === 1 ? 'day' : 'days'
+            if (hours > 0) {
+                const hourText = hours === 1 ? 'hr' : 'hrs'
+                return `${diffDays} ${dayText} ${hours} ${hourText} ago`
+            }
+            return `${diffDays} ${dayText} ago`
+        }
+
+        if (diffHours > 0) {
+            const mins = diffMins % 60
+            const hourText = diffHours === 1 ? 'hour' : 'hours'
+            if (mins > 0) {
+                return `${diffHours} ${hourText} ${mins} min ago`
+            }
+            return `${diffHours} ${hourText} ago`
+        }
+
+        if (diffMins > 0) {
+            return `${diffMins} min ago`
+        }
+
+        return 'Just now'
+    } catch {
+        return dateString
+    }
+}
+
 export const residentColumns: DataTableColumn<ResidentAPIResult>[] = [
     {
         key: 'user',
@@ -37,13 +80,7 @@ export const residentColumns: DataTableColumn<ResidentAPIResult>[] = [
         headerClassName: 'text-left pr-4',
         render: (resident) => {
             if (!resident.last_checkin) return 'Never'
-            try {
-                return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric', month: 'short', day: 'numeric' }).format(
-                    new Date(resident.last_checkin),
-                )
-            } catch {
-                return resident.last_checkin
-            }
+            return formatRelativeTime(resident.last_checkin)
         },
     },
     {

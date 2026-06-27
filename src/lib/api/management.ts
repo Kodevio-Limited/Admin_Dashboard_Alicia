@@ -139,3 +139,85 @@ export async function getCoordinators(params: GetCoordinatorsParams = {}): Promi
 
     return client<PaginatedResponse<CoordinatorAPIResult>>(endpoint)
 }
+
+export interface CreateHubPayload {
+    name: string
+    address: string
+    latitude: number
+    longitude: number
+    max_concurrent_bookings: number
+    coordinator_id?: string
+}
+
+export async function createHub(payload: CreateHubPayload): Promise<ApiResponse<HubAPIResult>> {
+    return client<ApiResponse<HubAPIResult>>('/admin/hubs/create/', {
+        method: 'POST',
+        data: payload,
+    })
+}
+
+export interface AssignCoordinatorPayload {
+    coordinator_id: string
+}
+
+export async function assignCoordinator(hubId: number, payload: AssignCoordinatorPayload): Promise<ApiResponse<any>> {
+    return client<ApiResponse<any>>(`/admin/hubs/${hubId}/assign-coordinator/`, {
+        method: 'PATCH',
+        data: payload,
+    })
+}
+
+export interface ReassignCoordinatorPayload {
+    new_coordinator_id: string
+}
+
+export async function reassignCoordinator(hubId: number, payload: ReassignCoordinatorPayload): Promise<ApiResponse<any>> {
+    return client<ApiResponse<any>>(`/admin/hubs/${hubId}/reassign-coordinator/`, {
+        method: 'PATCH',
+        data: payload,
+    })
+}
+
+export interface UserAPIResult {
+    phone_number: string
+    full_name: string
+    email: string | null
+    role: string
+    is_active: boolean
+    hub_name: string | null
+    created_at: string
+}
+
+export interface GetUsersParams {
+    page?: number
+    limit?: number
+    search?: string
+    role?: string
+    is_active?: boolean
+}
+
+export async function getUsers(params: GetUsersParams = {}): Promise<PaginatedResponse<UserAPIResult>> {
+    const urlParams = new URLSearchParams()
+
+    if (params.page) urlParams.set('page', params.page.toString())
+    if (params.limit) urlParams.set('limit', params.limit.toString())
+    if (params.search) urlParams.set('search', params.search)
+    if (params.role) urlParams.set('role', params.role)
+    if (params.is_active !== undefined) urlParams.set('is_active', params.is_active.toString())
+
+    const queryString = urlParams.toString()
+    const endpoint = `/admin/users/${queryString ? `?${queryString}` : ''}`
+
+    return client<PaginatedResponse<UserAPIResult>>(endpoint)
+}
+
+export interface UpdateUserPayload {
+    role?: string
+}
+
+export async function updateUser(phone: string, payload: UpdateUserPayload): Promise<ApiResponse<UserAPIResult>> {
+    return client<ApiResponse<UserAPIResult>>(`/admin/users/${phone}/`, {
+        method: 'PATCH',
+        data: payload,
+    })
+}
