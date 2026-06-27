@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useMemo, useState, useRef } from 'react'
 import { toast } from 'sonner'
-import { Lock, EyeOff, Eye, User, Building, Briefcase, MapPin, Mail, Edit, Loader2 } from 'lucide-react'
+import { Lock, EyeOff, Eye, User, Building, Briefcase, MapPin, Mail, Edit, Loader2, X, SlidersHorizontal } from 'lucide-react'
 import JoditEditor from 'jodit-react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -14,6 +14,7 @@ import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query'
 import { staticContentApi } from '@/lib/settings'
 import { useProfile, useUpdateProfile, useChangePassword } from '@/hooks/use-users'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Badge } from '@/components/ui/badge'
 
 export const Route = createFileRoute('/_authenticated/settings')({
     component: SettingsPage,
@@ -134,7 +135,7 @@ function TermsAndConditionsTab() {
     const updateContent = useMutation({
         mutationFn: () =>
             staticContentApi.update('terms-and-conditions', {
-                slug: data?.slug || 'terms',
+                slug: data?.slug || 'terms-and-conditions',
                 title: data?.title || 'Terms and Conditions',
                 content: content,
             }),
@@ -274,14 +275,50 @@ function TermsAndConditionsTab() {
             </div>
 
             <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-                <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto p-6 rounded-[32px]">
-                    <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold tracking-tight mb-4">Terms & Conditions Preview</DialogTitle>
-                    </DialogHeader>
-                    <div
-                        className="prose prose-sm max-w-none text-foreground leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: content }}
-                    />
+                <DialogContent
+                    showCloseButton={false}
+                    className="sm:max-w-5xl w-[92vw] h-[85vh] overflow-hidden flex flex-col p-0 rounded-3xl border-none shadow-2xl bg-slate-900 text-white outline-none"
+                >
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-slate-950">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-primary/20 text-primary p-2 rounded-xl">
+                                <SlidersHorizontal className="size-5" />
+                            </div>
+                            <div>
+                                <DialogTitle className="text-lg font-bold tracking-tight text-white">
+                                    Terms & Conditions Preview
+                                </DialogTitle>
+                                <p className="text-xs text-white/50">Draft Version (Live View)</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Badge className="bg-green-500/20 text-green-400 hover:bg-green-500/20 border-none font-semibold px-3 py-1 rounded-full text-xs">
+                                Ready to Publish
+                            </Badge>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                                onClick={() => setIsPreviewOpen(false)}
+                            >
+                                <X className="size-4" />
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 bg-slate-900/60 p-6 md:p-10 overflow-y-auto flex justify-center">
+                        <div className="w-full max-w-4xl bg-white text-slate-900 rounded-2xl shadow-2xl border border-slate-100 p-8 md:p-16 min-h-[60vh] h-fit relative">
+                            <div className="w-12 h-1 bg-primary rounded-full mx-auto mb-8" />
+                            <div className="prose prose-slate lg:prose-base max-w-none leading-relaxed text-slate-800">
+                                <div
+                                    dangerouslySetInnerHTML={{
+                                        __html:
+                                            content || '<p className="text-muted-foreground italic text-center">No content available.</p>',
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>
@@ -443,14 +480,48 @@ function PrivacyPolicyTab() {
             </div>
 
             <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-                <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto p-6 rounded-[32px]">
-                    <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold tracking-tight mb-4">Privacy Policy Preview</DialogTitle>
-                    </DialogHeader>
-                    <div
-                        className="prose prose-sm max-w-none text-foreground leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: content }}
-                    />
+                <DialogContent
+                    showCloseButton={false}
+                    className="sm:max-w-5xl w-[92vw] h-[85vh] overflow-hidden flex flex-col p-0 rounded-3xl border-none shadow-2xl bg-slate-900 text-white outline-none"
+                >
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-slate-950">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-primary/20 text-primary p-2 rounded-xl">
+                                <SlidersHorizontal className="size-5" />
+                            </div>
+                            <div>
+                                <DialogTitle className="text-lg font-bold tracking-tight text-white">Privacy Policy Preview</DialogTitle>
+                                <p className="text-xs text-white/50">Draft Version (Live View)</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Badge className="bg-green-500/20 text-green-400 hover:bg-green-500/20 border-none font-semibold px-3 py-1 rounded-full text-xs">
+                                Ready to Publish
+                            </Badge>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                                onClick={() => setIsPreviewOpen(false)}
+                            >
+                                <X className="size-4" />
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 bg-slate-900/60 p-6 md:p-10 overflow-y-auto flex justify-center">
+                        <div className="w-full max-w-4xl bg-white text-slate-900 rounded-2xl shadow-2xl border border-slate-100 p-8 md:p-16 min-h-[60vh] h-fit relative">
+                            <div className="w-12 h-1 bg-primary rounded-full mx-auto mb-8" />
+                            <div className="prose prose-slate lg:prose-base max-w-none leading-relaxed text-slate-800">
+                                <div
+                                    dangerouslySetInnerHTML={{
+                                        __html:
+                                            content || '<p className="text-muted-foreground italic text-center">No content available.</p>',
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>

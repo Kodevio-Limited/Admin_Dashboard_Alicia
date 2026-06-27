@@ -22,7 +22,7 @@ export const staticContentApi = {
             const isNotFound = err?.message?.toLowerCase().includes('not found') || err?.message?.includes('404')
             if (isNotFound) {
                 return {
-                    slug: key === 'privacy-policy' ? 'privacy-policy' : 'terms',
+                    slug: key === 'privacy-policy' ? 'privacy-policy' : 'terms-and-conditions',
                     title: key === 'privacy-policy' ? 'Privacy Policy' : 'Terms & Conditions',
                     content: '',
                 }
