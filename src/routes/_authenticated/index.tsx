@@ -46,7 +46,14 @@ function FlagIcon({ type, color }: { type: string; color: string }) {
 
 function Dashboard() {
     const { data: overviewData, isLoading } = useAdminOverview()
-    const { checkinData = [], hazardData = [], workloadData = [], urgentFlags = [], urgentFlagsCount = 0, statCards = [] } = overviewData || {}
+    const {
+        checkinData = [],
+        hazardData = [],
+        workloadData = [],
+        urgentFlags = [],
+        urgentFlagsCount = 0,
+        statCards = [],
+    } = overviewData || {}
     const [currentTime, setCurrentTime] = useState('')
 
     useEffect(() => {
@@ -79,7 +86,7 @@ function Dashboard() {
                         AlertCircle,
                     }
                     const IconComponent = icons[card.iconName] || AlertCircle
-                    return <StatCard key={card.label} {...card as any} icon={IconComponent} isLoading={isLoading} />
+                    return <StatCard key={card.label} {...(card as any)} icon={IconComponent} isLoading={isLoading} />
                 })}
             </div>
 
@@ -142,12 +149,14 @@ function Dashboard() {
                 <Card className="xl:col-span-4 p-5 md:p-6 flex flex-col">
                     <CardHeader className="px-0 pt-0 pb-2 flex flex-row items-center justify-between space-y-0">
                         <CardTitle className="text-[22px] font-bold">Urgent Flags</CardTitle>
-                        <span className="bg-rose-100/80 text-rose-600 text-[13px] font-bold px-4 py-1.5 rounded-full">{urgentFlagsCount} Active</span>
+                        <span className="bg-rose-100/80 text-rose-600 text-[13px] font-bold px-4 py-1.5 rounded-full">
+                            {urgentFlagsCount} Active
+                        </span>
                     </CardHeader>
                     <CardContent className="p-0 flex flex-col gap-6 flex-1 overflow-y-auto pr-2">
                         {isLoading ? (
                             <div className="w-full py-4 flex flex-col gap-4">
-                                {[1, 2, 3, 4].map(i => (
+                                {[1, 2, 3, 4].map((i) => (
                                     <div key={i} className="flex items-center gap-4 px-2">
                                         <Skeleton className="size-12 rounded-full shrink-0" />
                                         <div className="flex flex-col gap-2 w-full">
@@ -197,7 +206,7 @@ function Dashboard() {
                     <CardContent className="p-0 flex-1 min-h-[300px] lg:min-h-0 w-full relative">
                         {isLoading ? (
                             <div className="w-full h-full p-4 flex flex-col gap-6 justify-center">
-                                {[1, 2, 3, 4].map(i => (
+                                {[1, 2, 3, 4].map((i) => (
                                     <div key={i} className="flex items-center gap-4">
                                         <Skeleton className="h-4 w-20 shrink-0" />
                                         <Skeleton className="h-6 w-full" />
@@ -206,7 +215,12 @@ function Dashboard() {
                             </div>
                         ) : (
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={hazardData} layout="vertical" margin={{ top: 0, right: 30, left: 0, bottom: 0 }} barSize={32}>
+                                <BarChart
+                                    data={hazardData}
+                                    layout="vertical"
+                                    margin={{ top: 0, right: 30, left: 0, bottom: 0 }}
+                                    barSize={32}
+                                >
                                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
                                     <XAxis
                                         type="number"
@@ -288,7 +302,9 @@ function Dashboard() {
                                         ))}
                                     </Pie>
                                     <Legend
-                                        formatter={(value) => <span className="text-slate-800 font-semibold text-[15px] ml-2">{value}</span>}
+                                        formatter={(value) => (
+                                            <span className="text-slate-800 font-semibold text-[15px] ml-2">{value}</span>
+                                        )}
                                         iconType="circle"
                                         iconSize={14}
                                         verticalAlign="middle"

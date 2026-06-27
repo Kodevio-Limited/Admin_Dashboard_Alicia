@@ -35,6 +35,8 @@
     --font-brand: var(--font-brand);
     --color-brand: var(--brand);
     --color-brand-foreground: var(--brand-foreground);
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
     --color-card-mint: var(--card-mint);
     --color-card-mint-foreground: var(--card-mint-foreground);
     --color-card-blue: var(--card-blue);
@@ -91,6 +93,10 @@
     --input: rgba(0, 0, 0, 0.1);
     --ring: rgba(3, 4, 94, 0.3);
 
+    /* Warning */
+    --warning: #ffb800;
+    --warning-foreground: #ffffff;
+
     /* Brand */
     --brand: #03045e;
     --brand-foreground: #ffffff;
@@ -140,6 +146,8 @@
     --accent-foreground: oklch(0.985 0 0);
     --destructive: oklch(0.396 0.141 25.723);
     --destructive-foreground: oklch(0.637 0.237 25.331);
+    --warning: #ffb800;
+    --warning-foreground: #ffffff;
     --border: oklch(0.269 0 0);
     --input: oklch(0.269 0 0);
     --ring: oklch(0.439 0 0);

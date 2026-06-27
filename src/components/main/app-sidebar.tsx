@@ -15,8 +15,6 @@ import { LayoutDashboard, BrainCircuit, Settings, LogOutIcon, Users, Shield } fr
 import * as React from 'react'
 import { useLogout } from '@/hooks/use-logout'
 
-
-
 export const data = {
     navMain: [
         {
@@ -58,7 +56,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             {...props}
         >
             <SidebarHeader className="pt-6 pb-2 bg-transparent">
-                 <div className="flex justify-center w-full px-2">
+                <div className="flex justify-center w-full px-2">
                     <div className="h-12 w-full flex items-center justify-center gap-2 overflow-hidden">
                         <img src="/logo.png" alt="Logo" className="h-12 w-12 object-contain shrink" />
                         <h1 className="font-bold text-primary text-3xl truncate group-data-[collapsible=icon]:hidden">SPARK</h1>

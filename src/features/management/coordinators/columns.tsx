@@ -9,7 +9,9 @@ export const coordinatorColumns: DataTableColumn<CoordinatorAPIResult>[] = [
         key: 'user',
         header: 'COORDINATOR',
         className: 'font-medium py-2 px-2 text-sm',
-        render: (coordinator) => <UserProfile name={coordinator.full_name} email={coordinator.email || coordinator.phone_number} avatar="" />,
+        render: (coordinator) => (
+            <UserProfile name={coordinator.full_name} email={coordinator.email || coordinator.phone_number} avatar="" />
+        ),
     },
     {
         key: 'assignedArea',

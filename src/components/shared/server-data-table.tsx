@@ -40,7 +40,9 @@ export function ServerDataTable<T>({
                     <TableHeader>
                         <TableRow>
                             {columns.map((col) => (
-                                <TableHead key={col.key} className={col.headerClassName}>{col.header}</TableHead>
+                                <TableHead key={col.key} className={col.headerClassName}>
+                                    {col.header}
+                                </TableHead>
                             ))}
                         </TableRow>
                     </TableHeader>
@@ -94,7 +96,9 @@ export function ServerDataTable<T>({
                 <TableHeader>
                     <TableRow>
                         {columns.map((col) => (
-                            <TableHead key={col.key} className={col.headerClassName}>{col.header}</TableHead>
+                            <TableHead key={col.key} className={col.headerClassName}>
+                                {col.header}
+                            </TableHead>
                         ))}
                     </TableRow>
                 </TableHeader>

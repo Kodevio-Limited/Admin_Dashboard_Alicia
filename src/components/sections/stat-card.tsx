@@ -86,10 +86,16 @@ export function StatCard({ label, value, icon: Icon, color, trend, className, is
                             <div
                                 className={cn(
                                     'flex items-center gap-1 mt-1.5 text-xs font-medium',
-                                    trend.direction === 'up' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400',
+                                    trend.direction === 'up'
+                                        ? 'text-emerald-600 dark:text-emerald-400'
+                                        : 'text-rose-600 dark:text-rose-400',
                                 )}
                             >
-                                {trend.direction === 'up' ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
+                                {trend.direction === 'up' ? (
+                                    <ArrowUpRight className="h-3.5 w-3.5" />
+                                ) : (
+                                    <ArrowDownRight className="h-3.5 w-3.5" />
+                                )}
                                 <span>{trend.value}</span>
                                 {trend.label && <span className="text-muted-foreground font-normal ml-0.5">{trend.label}</span>}
                             </div>

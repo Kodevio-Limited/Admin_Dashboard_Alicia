@@ -99,7 +99,9 @@ export function CreateHubDialog({ children, mode = 'create', hub }: CreateHubDia
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 mt-4 w-full items-center justify-end">
-                    <Button onClick={() => setOpen(false)} variant="outline">Cancel</Button>
+                    <Button onClick={() => setOpen(false)} variant="outline">
+                        Cancel
+                    </Button>
                     <Button onClick={() => setOpen(false)} variant="default">
                         {mode === 'edit' ? 'Save Changes' : 'Create Hub'}
                     </Button>

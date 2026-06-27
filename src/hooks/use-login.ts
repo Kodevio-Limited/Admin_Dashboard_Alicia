@@ -1,28 +1,28 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
-import { loginApi } from '@/lib/api/auth';
-import type { LoginResponse } from '@/lib/api/auth';
-import { profileQueryOptions } from '@/hooks/use-users';
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
+import { loginApi } from '@/lib/api/auth'
+import type { LoginResponse } from '@/lib/api/auth'
+import { profileQueryOptions } from '@/hooks/use-users'
 
 export const useLogin = () => {
-    const queryClient = useQueryClient();
-    const navigate = useNavigate();
+    const queryClient = useQueryClient()
+    const navigate = useNavigate()
 
     return useMutation<LoginResponse, Error, any>({
         mutationFn: loginApi,
         onSuccess: async (response) => {
-            const tokenData = response.data;
+            const tokenData = response.data
             if (tokenData?.access) {
-                localStorage.setItem('access_token', tokenData.access);
+                localStorage.setItem('access_token', tokenData.access)
             }
             if (tokenData?.refresh) {
-                localStorage.setItem('refresh_token', tokenData.refresh);
+                localStorage.setItem('refresh_token', tokenData.refresh)
             }
-            
+
             // Prefetch the user data instantly
-            await queryClient.ensureQueryData(profileQueryOptions());
-            
-            navigate({ to: '/' });
+            await queryClient.ensureQueryData(profileQueryOptions())
+
+            navigate({ to: '/' })
         },
-    });
-};
+    })
+}

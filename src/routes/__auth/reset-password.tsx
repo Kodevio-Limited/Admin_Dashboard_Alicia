@@ -45,11 +45,14 @@ function RouteComponent() {
                 return
             }
             try {
-                await resetPassword({
-                    new_password: value.password,
-                    confirm_password: value.confirmPassword
-                }, token)
-                
+                await resetPassword(
+                    {
+                        new_password: value.password,
+                        confirm_password: value.confirmPassword,
+                    },
+                    token,
+                )
+
                 toast.success('Password reset successfully. Please sign in with your new password.')
                 navigate({ to: '/signin' })
             } catch (error: any) {
@@ -65,7 +68,7 @@ function RouteComponent() {
                     <h1 className="text-[28px] md:text-[32px] text-foreground font-bold tracking-tight">Invalid Link</h1>
                     <p className="text-muted-foreground text-[15px]">
                         Reset link is invalid or has expired.{' '}
-                        <a href="/forgot-password" className="text-[#FFB800] font-semibold hover:underline transition-colors">
+                        <a href="/forgot-password" className="text-warning font-semibold hover:underline transition-colors">
                             Request a new one
                         </a>
                         .
@@ -97,7 +100,7 @@ function RouteComponent() {
                                 New Password
                             </Label>
                             <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] size-5" />
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground size-5" />
                                 <Input
                                     id="password"
                                     type={showPassword ? 'text' : 'password'}
@@ -105,14 +108,14 @@ function RouteComponent() {
                                     value={field.state.value}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                     onBlur={field.handleBlur}
-                                    className="pl-12 pr-12 h-[52px] rounded-3xl bg-[#EEEEEE] border-0 focus-visible:ring-2 focus-visible:ring-primary/20 text-[15px] font-medium transition-all placeholder:text-[#888888]"
+                                    className="pl-12 pr-12 h-[52px] rounded-3xl bg-secondary border-0 focus-visible:ring-2 focus-visible:ring-primary/20 text-[15px] font-medium transition-all placeholder:text-muted-foreground"
                                 />
                                 <button
                                     type="button"
                                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                                     aria-pressed={showPassword}
                                     onClick={() => setShowPassword((v) => !v)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888] hover:text-foreground transition-colors outline-none"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors outline-none"
                                 >
                                     {showPassword ? <Eye className="size-5" /> : <EyeOff className="size-5" />}
                                 </button>
@@ -133,7 +136,7 @@ function RouteComponent() {
                                 Confirm Password
                             </Label>
                             <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] size-5" />
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground size-5" />
                                 <Input
                                     id="confirmPassword"
                                     type={showConfirmPassword ? 'text' : 'password'}
@@ -141,14 +144,14 @@ function RouteComponent() {
                                     value={field.state.value}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                     onBlur={field.handleBlur}
-                                    className="pl-12 pr-12 h-[52px] rounded-3xl bg-[#EEEEEE] border-0 focus-visible:ring-2 focus-visible:ring-primary/20 text-[15px] font-medium transition-all placeholder:text-[#888888]"
+                                    className="pl-12 pr-12 h-[52px] rounded-3xl bg-secondary border-0 focus-visible:ring-2 focus-visible:ring-primary/20 text-[15px] font-medium transition-all placeholder:text-muted-foreground"
                                 />
                                 <button
                                     type="button"
                                     aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                                     aria-pressed={showConfirmPassword}
                                     onClick={() => setShowConfirmPassword((v) => !v)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888] hover:text-foreground transition-colors outline-none"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors outline-none"
                                 >
                                     {showConfirmPassword ? <Eye className="size-5" /> : <EyeOff className="size-5" />}
                                 </button>
@@ -167,7 +170,7 @@ function RouteComponent() {
                         <Button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full mt-4 h-14 rounded-full bg-[#03063A] hover:bg-[#03063A]/90 text-white text-[15px] font-semibold"
+                            className="w-full mt-4 h-14 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-[15px] font-semibold"
                         >
                             {isSubmitting ? 'Resetting...' : 'Submit'}
                         </Button>

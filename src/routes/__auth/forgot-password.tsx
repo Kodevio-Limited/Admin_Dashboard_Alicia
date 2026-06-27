@@ -56,7 +56,7 @@ function RouteComponent() {
                                 Email or Phone Number
                             </Label>
                             <div className="relative">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] size-5" />
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground size-5" />
                                 <Input
                                     id="identifier"
                                     type="text"
@@ -64,12 +64,14 @@ function RouteComponent() {
                                     value={field.state.value}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                     onBlur={field.handleBlur}
-                                    className="pl-12 h-[52px] rounded-3xl bg-[#EEEEEE] border-0 focus-visible:ring-2 focus-visible:ring-primary/20 text-[15px] font-medium transition-all placeholder:text-[#888888]"
+                                    className="pl-12 h-[52px] rounded-3xl bg-secondary border-0 focus-visible:ring-2 focus-visible:ring-primary/20 text-[15px] font-medium transition-all placeholder:text-muted-foreground"
                                 />
                             </div>
                             {field.state.meta.errors && field.state.meta.errors.length > 0 ? (
                                 <p className="text-destructive text-sm font-medium px-4 text-center">
-                                    {field.state.meta.errors.map((e: any) => typeof e === 'string' ? e : e?.message || JSON.stringify(e)).join(', ')}
+                                    {field.state.meta.errors
+                                        .map((e: any) => (typeof e === 'string' ? e : e?.message || JSON.stringify(e)))
+                                        .join(', ')}
                                 </p>
                             ) : null}
                         </div>
@@ -81,7 +83,7 @@ function RouteComponent() {
                         <Button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full mt-4 h-14 rounded-full bg-[#03063A] hover:bg-[#03063A]/90 text-white text-[15px] font-semibold"
+                            className="w-full mt-4 h-14 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-[15px] font-semibold"
                         >
                             {isSubmitting ? 'Sending...' : 'Send Reset Link'}
                         </Button>
@@ -92,7 +94,7 @@ function RouteComponent() {
             <div className="text-center mt-2">
                 <p className="text-muted-foreground text-[14px]">
                     Remember your password?{' '}
-                    <Link to="/signin" className="text-[#FFB800] font-semibold hover:underline transition-colors">
+                    <Link to="/signin" className="text-warning font-semibold hover:underline transition-colors">
                         Sign In
                     </Link>
                 </p>

@@ -104,7 +104,6 @@ export let ACCESS_USERS: AccessUserRow[] = [
 ]
 
 export async function fetchAccessUsers(): Promise<AccessUserRow[]> {
-
     return [...ACCESS_USERS]
 }
 

@@ -5,10 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import type { ResidentAPIResult } from '@/lib/api/management'
 
-const COMMUNITIES = [
-    'Savanna-la-Mar', 'Frome', 'Petersfield', 'Little London',
-    'Darliston', 'Whithorn', 'Negril', 'Lucea', 'Green Island',
-]
+const COMMUNITIES = ['Savanna-la-Mar', 'Frome', 'Petersfield', 'Little London', 'Darliston', 'Whithorn', 'Negril', 'Lucea', 'Green Island']
 
 interface EditResidentDialogProps {
     children?: React.ReactNode
@@ -19,9 +16,7 @@ export function EditResidentDialog({ children, resident }: EditResidentDialogPro
     const [open, setOpen] = useState(false)
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                {children}
-            </DialogTrigger>
+            <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent className="sm:max-w-xl p-6 md:p-8 rounded-2xl border-none shadow-xl gap-6">
                 <div className="flex flex-col items-center mb-2">
                     <h2 className="text-2xl md:text-3xl font-semibold text-center text-foreground">Edit Resident</h2>
@@ -56,7 +51,9 @@ export function EditResidentDialog({ children, resident }: EditResidentDialogPro
                                 </SelectTrigger>
                                 <SelectContent className="rounded-xl border-none shadow-md">
                                     {COMMUNITIES.map((c) => (
-                                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                                        <SelectItem key={c} value={c}>
+                                            {c}
+                                        </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -79,8 +76,12 @@ export function EditResidentDialog({ children, resident }: EditResidentDialogPro
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 mt-4 w-full items-center justify-end">
-                    <Button onClick={() => setOpen(false)} variant="outline">Cancel</Button>
-                    <Button onClick={() => setOpen(false)} variant="default">Save Changes</Button>
+                    <Button onClick={() => setOpen(false)} variant="outline">
+                        Cancel
+                    </Button>
+                    <Button onClick={() => setOpen(false)} variant="default">
+                        Save Changes
+                    </Button>
                 </div>
             </DialogContent>
         </Dialog>

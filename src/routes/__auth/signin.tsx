@@ -32,14 +32,17 @@ function RouteComponent() {
         defaultValues: { phone: '', password: '', remember: false },
         validators: { onChange: signinSchema },
         onSubmit: async ({ value }) => {
-            loginMutation.mutate({
-                username: value.phone,
-                password: value.password,
-            }, {
-                onError: (error: any) => {
-                    toast.error(error.message || 'Failed to sign in')
-                }
-            })
+            loginMutation.mutate(
+                {
+                    username: value.phone,
+                    password: value.password,
+                },
+                {
+                    onError: (error: any) => {
+                        toast.error(error.message || 'Failed to sign in')
+                    },
+                },
+            )
         },
     })
 
@@ -65,7 +68,7 @@ function RouteComponent() {
                                 Phone Number
                             </Label>
                             <div className="relative">
-                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] size-5" />
+                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground size-5" />
                                 <Input
                                     id="phone"
                                     type="tel"
@@ -73,7 +76,7 @@ function RouteComponent() {
                                     value={field.state.value}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                     onBlur={field.handleBlur}
-                                    className="pl-12 h-[52px] rounded-3xl bg-[#EEEEEE] border-0 focus-visible:ring-2 focus-visible:ring-primary/20 text-[15px] font-medium transition-all placeholder:text-[#888888]"
+                                    className="pl-12 h-[52px] rounded-3xl bg-secondary border-0 focus-visible:ring-2 focus-visible:ring-primary/20 text-[15px] font-medium transition-all placeholder:text-muted-foreground"
                                 />
                             </div>
                             {field.state.meta.errors ? (
@@ -94,7 +97,7 @@ function RouteComponent() {
                                 </Label>
                             </div>
                             <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#888888] size-5" />
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground size-5" />
                                 <Input
                                     id="password"
                                     type={showPassword ? 'text' : 'password'}
@@ -102,14 +105,14 @@ function RouteComponent() {
                                     value={field.state.value}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                     onBlur={field.handleBlur}
-                                    className="pl-12 pr-12 h-[52px] rounded-3xl bg-[#EEEEEE] border-0 focus-visible:ring-2 focus-visible:ring-primary/20 text-[15px] font-medium transition-all placeholder:text-[#888888]"
+                                    className="pl-12 pr-12 h-[52px] rounded-3xl bg-secondary border-0 focus-visible:ring-2 focus-visible:ring-primary/20 text-[15px] font-medium transition-all placeholder:text-muted-foreground"
                                 />
                                 <button
                                     type="button"
                                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                                     aria-pressed={showPassword}
                                     onClick={() => setShowPassword((v) => !v)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#888888] hover:text-foreground transition-colors outline-none"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors outline-none"
                                 >
                                     {showPassword ? <Eye className="size-5" /> : <EyeOff className="size-5" />}
                                 </button>
@@ -117,7 +120,7 @@ function RouteComponent() {
                             <div className="flex justify-end mt-1">
                                 <Link
                                     to="/forgot-password"
-                                    className="text-[#FFB800] hover:text-[#FFB800]/80 text-[13px] font-semibold transition-colors"
+                                    className="text-warning hover:text-warning/80 text-[13px] font-semibold transition-colors"
                                 >
                                     Forgot password?
                                 </Link>
@@ -136,7 +139,7 @@ function RouteComponent() {
                         <Button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full mt-4 h-14 rounded-full bg-[#03063A] hover:bg-[#03063A]/90 text-white text-[15px] font-semibold"
+                            className="w-full mt-4 h-14 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-[15px] font-semibold"
                         >
                             {isSubmitting ? 'Signing in...' : 'Sign In'}
                         </Button>

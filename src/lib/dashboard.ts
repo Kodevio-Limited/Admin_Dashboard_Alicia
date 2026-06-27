@@ -99,11 +99,35 @@ export const urgentFlags: UrgentFlag[] = [
 ]
 
 export const statCardsData: StatCardData[] = [
-    { label: 'Residents Checked-in', value: '1,250', trend: { value: '12.5%', direction: 'up', label: 'vs Last Period' }, iconName: 'Users', color: 'emerald' },
-    { label: 'Active Hubs', value: '18/20', trend: { value: '12.5%', direction: 'up', label: 'vs Last Period' }, iconName: 'Activity', color: 'blue' },
-    { label: 'Coordinators Active', value: '24', trend: { value: '12.5%', direction: 'up', label: 'vs Last Period' }, iconName: 'CheckCircle', color: 'amber' },
+    {
+        label: 'Residents Checked-in',
+        value: '1,250',
+        trend: { value: '12.5%', direction: 'up', label: 'vs Last Period' },
+        iconName: 'Users',
+        color: 'emerald',
+    },
+    {
+        label: 'Active Hubs',
+        value: '18/20',
+        trend: { value: '12.5%', direction: 'up', label: 'vs Last Period' },
+        iconName: 'Activity',
+        color: 'blue',
+    },
+    {
+        label: 'Coordinators Active',
+        value: '24',
+        trend: { value: '12.5%', direction: 'up', label: 'vs Last Period' },
+        iconName: 'CheckCircle',
+        color: 'amber',
+    },
     { label: 'Gov/NGO Licenses', value: '5', iconName: 'ShieldCheck', color: 'slate' },
-    { label: 'Open Alerts', value: '3', trend: { value: '12.5%', direction: 'up', label: 'vs Last Period' }, iconName: 'AlertCircle', color: 'rose' },
+    {
+        label: 'Open Alerts',
+        value: '3',
+        trend: { value: '12.5%', direction: 'up', label: 'vs Last Period' },
+        iconName: 'AlertCircle',
+        color: 'rose',
+    },
 ]
 
 export interface OverviewData {

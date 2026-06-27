@@ -27,7 +27,6 @@ export let HAZARDS: HazardItem[] = [
 ]
 
 export async function fetchHazards(): Promise<HazardItem[]> {
-
     return [...HAZARDS]
 }
 

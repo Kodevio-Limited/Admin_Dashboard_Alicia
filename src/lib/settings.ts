@@ -1,14 +1,16 @@
 export const staticContentApi = {
     get: async (key: string) => {
-        if (key === "terms-and-conditions") {
-            return { content: "<p>This is the default Terms & Conditions content. You can edit this text using the rich text editor below.</p>" };
+        if (key === 'terms-and-conditions') {
+            return {
+                content: '<p>This is the default Terms & Conditions content. You can edit this text using the rich text editor below.</p>',
+            }
         }
-        return { content: "<p>This is the default Privacy Policy content. You can edit this text using the rich text editor below.</p>" };
+        return { content: '<p>This is the default Privacy Policy content. You can edit this text using the rich text editor below.</p>' }
     },
     update: async (key: string, content: string) => {
-        return true;
-    }
-};
+        return true
+    },
+}
 
 export type NotifRow = {
     key: string
@@ -27,12 +29,12 @@ export interface ProfileData {
 }
 
 export let PROFILE_DATA: ProfileData = {
-    fullName: "David Plummer",
-    organization: "Stem Spark Solutions",
-    role: "System Administrator",
-    licensedTerritory: "Jamaica",
-    email: "hello@stemsparksolutions.com",
-    avatar: "/avatars/profile_dummy.png"
+    fullName: 'David Plummer',
+    organization: 'Stem Spark Solutions',
+    role: 'System Administrator',
+    licensedTerritory: 'Jamaica',
+    email: 'hello@stemsparksolutions.com',
+    avatar: '/avatars/profile_dummy.png',
 }
 
 export async function fetchProfileData(): Promise<ProfileData> {

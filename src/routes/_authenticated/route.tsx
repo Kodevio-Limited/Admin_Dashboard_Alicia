@@ -22,7 +22,7 @@ export const Route = createFileRoute('/_authenticated')({
         if (!token) {
             throw redirect({ to: '/signin' })
         }
-        
+
         try {
             await context.queryClient.ensureQueryData(profileQueryOptions())
         } catch {

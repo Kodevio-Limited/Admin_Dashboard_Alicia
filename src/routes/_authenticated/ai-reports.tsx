@@ -7,12 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { PageHeader } from '@/components/sections/page-header'
 import { Switch } from '@/components/ui/switch'
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -47,7 +42,7 @@ function MessageReviewTab() {
 
     const filteredReviews = useMemo(() => {
         if (statusFilter === 'All') return reviews
-        return reviews.filter(r => r.status.toLowerCase() === statusFilter.toLowerCase())
+        return reviews.filter((r) => r.status.toLowerCase() === statusFilter.toLowerCase())
     }, [reviews, statusFilter])
 
     const columns: DataTableColumn<MessageReviewRow>[] = useMemo(
@@ -76,7 +71,7 @@ function MessageReviewTab() {
                     if (row.status === 'REVIEWD' || row.status === 'RESOLVED') variant = 'success'
                     if (row.status === 'PENDING') variant = 'warning'
                     if (row.status === 'ESCALATED') variant = 'destructive'
-                    
+
                     return (
                         <Badge variant={variant as any} className="rounded-full px-3 py-1 text-xs font-semibold">
                             {row.status}
@@ -107,28 +102,32 @@ function MessageReviewTab() {
                         <DropdownMenuContent align="end" sideOffset={8}>
                             <DropdownMenuItem onSelect={() => setViewingMessage(row)}>View details</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onSelect={() => toast.success(`Editing message from ${row.resident}`)}>Edit message</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => toast.success(`Marked as resolved for ${row.resident}`)}>Mark as resolved</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => toast.success(`Editing message from ${row.resident}`)}>
+                                Edit message
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => toast.success(`Marked as resolved for ${row.resident}`)}>
+                                Mark as resolved
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 ),
             },
         ],
-        []
+        [],
     )
 
     return (
         <div className="flex-1 flex flex-col gap-4 min-h-0 w-full">
             <div className="flex items-center gap-3 overflow-x-auto pb-2">
-                {filterOptions.map(option => (
+                {filterOptions.map((option) => (
                     <button
                         key={option}
                         onClick={() => setStatusFilter(option)}
                         className={cn(
-                            "px-6 py-2 rounded-full text-sm font-medium border transition-colors whitespace-nowrap",
-                            statusFilter === option 
-                                ? "bg-[#03063A] text-white border-[#03063A]" 
-                                : "bg-white text-muted-foreground border-border hover:bg-muted"
+                            'px-6 py-2 rounded-full text-sm font-medium border transition-colors whitespace-nowrap',
+                            statusFilter === option
+                                ? 'bg-primary text-primary-foreground border-primary'
+                                : 'bg-white text-muted-foreground border-border hover:bg-muted',
                         )}
                     >
                         {option}
@@ -159,12 +158,16 @@ function MessageReviewTab() {
                     <DialogHeader className="flex flex-col items-center gap-1.5 pt-2">
                         <DialogTitle className="text-2xl font-bold tracking-tight">Review Message</DialogTitle>
                         <p className="text-sm font-medium text-muted-foreground">{viewingMessage?.resident}</p>
-                        <Badge className={cn(
-                            "rounded-md px-2 py-0.5 mt-1 border-0 uppercase font-semibold text-[11px] tracking-wider",
-                            viewingMessage?.status === 'REVIEWD' || viewingMessage?.status === 'RESOLVED' ? "bg-[#B5F5C6] text-[#0A7B21] hover:bg-[#B5F5C6]" :
-                            viewingMessage?.status === 'PENDING' ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-100" :
-                            "bg-red-100 text-red-700 hover:bg-red-100"
-                        )}>
+                        <Badge
+                            className={cn(
+                                'rounded-md px-2 py-0.5 mt-1 border-0 uppercase font-semibold text-[11px] tracking-wider',
+                                viewingMessage?.status === 'REVIEWD' || viewingMessage?.status === 'RESOLVED'
+                                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400'
+                                    : viewingMessage?.status === 'PENDING'
+                                      ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100'
+                                      : 'bg-red-100 text-red-700 hover:bg-red-100',
+                            )}
+                        >
                             {viewingMessage?.status}
                         </Badge>
                     </DialogHeader>
@@ -172,24 +175,28 @@ function MessageReviewTab() {
                     <div className="flex flex-col gap-5">
                         <div className="flex flex-col gap-2">
                             <span className="text-[13px] font-medium text-muted-foreground">Resident Message</span>
-                            <div className="rounded-xl bg-[#F4F4F5] p-4 text-[15px] leading-relaxed font-medium text-foreground">
+                            <div className="rounded-xl bg-muted p-4 text-[15px] leading-relaxed font-medium text-foreground">
                                 "{viewingMessage?.preview}"
                             </div>
                         </div>
 
                         <div className="flex flex-col gap-2">
                             <span className="text-[13px] font-medium text-muted-foreground">AI Interpretation Model</span>
-                            <div className="rounded-2xl bg-[#F4F4F5] p-5 flex flex-col gap-4">
+                            <div className="rounded-2xl bg-muted p-5 flex flex-col gap-4">
                                 <div className="flex items-center justify-between">
                                     <span className="font-bold text-[15px]">Predicted Intent</span>
-                                    <Badge className="bg-[#E4E4FA] text-[#3034A0] hover:bg-[#E4E4FA] rounded-md border-0 text-[11px] px-2 py-0.5">
+                                    <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-100 rounded-md border-0 text-[11px] px-2 py-0.5">
                                         Possible Hazard (Flood)
                                     </Badge>
                                 </div>
-                                
+
                                 <div className="flex flex-col gap-1.5 text-[13px]">
-                                    <p className="text-muted-foreground">Hazard Type: <span className="text-foreground font-semibold">Flood</span></p>
-                                    <p className="text-muted-foreground">Approximate Location: <span className="text-foreground font-semibold">Haining Road</span></p>
+                                    <p className="text-muted-foreground">
+                                        Hazard Type: <span className="text-foreground font-semibold">Flood</span>
+                                    </p>
+                                    <p className="text-muted-foreground">
+                                        Approximate Location: <span className="text-foreground font-semibold">Haining Road</span>
+                                    </p>
                                 </div>
 
                                 <div className="flex flex-col gap-2 pt-2">
@@ -197,18 +204,19 @@ function MessageReviewTab() {
                                         <span className="font-semibold">Confidence Score</span>
                                         <span className="font-bold">68%</span>
                                     </div>
-                                    <div className="h-2 w-full bg-[#E5E5E5] rounded-full overflow-hidden flex">
-                                        <div className="h-full bg-[#EBD046] w-[68%] rounded-full" />
+                                    <div className="h-2 w-full bg-secondary rounded-full overflow-hidden flex">
+                                        <div className="h-full bg-warning w-[68%] rounded-full" />
                                     </div>
                                     <p className="text-[11px] leading-snug text-muted-foreground mt-2">
-                                        Model confidence is below threshold. Human verification required before triggering standard response protocols.
+                                        Model confidence is below threshold. Human verification required before triggering standard response
+                                        protocols.
                                     </p>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div className="flex flex-col gap-3 mt-2">
-                        <Button 
+                        <Button
                             variant="default"
                             className="w-full"
                             onClick={() => {
@@ -219,7 +227,7 @@ function MessageReviewTab() {
                             Mark as Safe
                         </Button>
                         <div className="flex gap-3">
-                            <Button 
+                            <Button
                                 variant="secondary"
                                 className="flex-1"
                                 onClick={() => {
@@ -229,7 +237,7 @@ function MessageReviewTab() {
                             >
                                 Follow Up
                             </Button>
-                            <Button 
+                            <Button
                                 variant="destructive"
                                 className="flex-1"
                                 onClick={() => {
@@ -279,18 +287,18 @@ function ReportsCenterTab() {
                 ),
             },
         ],
-        []
+        [],
     )
 
     return (
         <div className="flex-1 flex flex-col md:flex-row gap-6 min-h-0 w-full overflow-y-auto md:overflow-hidden pb-6 md:pb-0">
             <Card className="flex-[4] rounded-[20px] bg-white p-6 shadow-sm flex flex-col gap-8 h-max md:h-full md:overflow-y-auto border-0">
                 <div className="flex items-center gap-4">
-                    <div className="flex-1 bg-[#EBEBEB] rounded-xl p-5 flex flex-col gap-1.5">
+                    <div className="flex-1 bg-secondary rounded-xl p-5 flex flex-col gap-1.5">
                         <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">GENERATED</span>
                         <span className="text-[32px] leading-none font-bold text-foreground mt-1">124</span>
                     </div>
-                    <div className="flex-1 bg-[#EBEBEB] rounded-xl p-5 flex flex-col gap-1.5">
+                    <div className="flex-1 bg-secondary rounded-xl p-5 flex flex-col gap-1.5">
                         <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">NEXT AUTO</span>
                         <span className="text-[26px] leading-none font-bold text-foreground mt-2.5 tracking-tight">Tomorrow</span>
                     </div>
@@ -299,13 +307,13 @@ function ReportsCenterTab() {
                 <div className="flex flex-col gap-6">
                     <div className="flex items-center justify-between">
                         <span className="text-[17px] font-bold text-foreground">Auto Reporting</span>
-                        <Switch defaultChecked className="data-[state=checked]:bg-[#03063A] scale-125 origin-right" />
+                        <Switch defaultChecked className="data-[state=checked]:bg-primary scale-125 origin-right" />
                     </div>
 
                     <div className="flex flex-col gap-2.5">
                         <span className="text-[13px] font-medium text-muted-foreground">Frequency</span>
                         <Select defaultValue="weekly">
-                            <SelectTrigger className="w-full bg-[#EBEBEB] border-0 rounded-3xl h-[52px] text-[15px] font-medium px-5 shadow-none">
+                            <SelectTrigger className="w-full bg-secondary border-0 rounded-3xl h-[52px] text-[15px] font-medium px-5 shadow-none">
                                 <SelectValue placeholder="Select frequency" />
                             </SelectTrigger>
                             <SelectContent>
@@ -318,20 +326,44 @@ function ReportsCenterTab() {
 
                     <div className="flex flex-col gap-6 mt-4">
                         <div className="flex items-center gap-4">
-                            <Checkbox id="activity" defaultChecked className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5" />
-                            <label htmlFor="activity" className="text-[15px] font-medium leading-none cursor-pointer">Activity Summary</label>
+                            <Checkbox
+                                id="activity"
+                                defaultChecked
+                                className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5"
+                            />
+                            <label htmlFor="activity" className="text-[15px] font-medium leading-none cursor-pointer">
+                                Activity Summary
+                            </label>
                         </div>
                         <div className="flex items-center gap-4">
-                            <Checkbox id="hubs" defaultChecked className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5" />
-                            <label htmlFor="hubs" className="text-[15px] font-medium leading-none cursor-pointer">Hubs Summary</label>
+                            <Checkbox
+                                id="hubs"
+                                defaultChecked
+                                className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5"
+                            />
+                            <label htmlFor="hubs" className="text-[15px] font-medium leading-none cursor-pointer">
+                                Hubs Summary
+                            </label>
                         </div>
                         <div className="flex items-center gap-4">
-                            <Checkbox id="alerts" defaultChecked className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5" />
-                            <label htmlFor="alerts" className="text-[15px] font-medium leading-none cursor-pointer">Alerts Summary</label>
+                            <Checkbox
+                                id="alerts"
+                                defaultChecked
+                                className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5"
+                            />
+                            <label htmlFor="alerts" className="text-[15px] font-medium leading-none cursor-pointer">
+                                Alerts Summary
+                            </label>
                         </div>
                         <div className="flex items-center gap-4">
-                            <Checkbox id="ai" defaultChecked className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5" />
-                            <label htmlFor="ai" className="text-[15px] font-medium leading-none cursor-pointer">AI Performance</label>
+                            <Checkbox
+                                id="ai"
+                                defaultChecked
+                                className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5"
+                            />
+                            <label htmlFor="ai" className="text-[15px] font-medium leading-none cursor-pointer">
+                                AI Performance
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -376,43 +408,52 @@ function AiReportsPage() {
     return (
         <>
             <PageHeader title="AI & Reports" description="Monitor AI performance and manage automated reporting" lastUpdated="05:41:15 PM">
-                <Button variant="default">
-                    Generate Report
-                </Button>
+                <Button variant="default">Generate Report</Button>
             </PageHeader>
 
             <div className="flex-1 flex flex-col gap-6 w-full min-h-0">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 w-full">
-                    <TabsList className="inline-flex w-fit h-10 md:h-12 bg-[#DFDFDF] p-1.5 rounded-full overflow-x-auto justify-start border-0">
-                        <TabsTrigger value="ai-control" className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#03063A] data-[state=active]:shadow-sm text-[#737373] transition-all">
+                    <TabsList className="inline-flex w-fit h-10 md:h-12 bg-muted p-1.5 rounded-full overflow-x-auto justify-start border-0">
+                        <TabsTrigger
+                            value="ai-control"
+                            className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm text-muted-foreground transition-all"
+                        >
                             AI Control
                         </TabsTrigger>
-                        <TabsTrigger value="message-review" className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#03063A] data-[state=active]:shadow-sm text-[#737373] transition-all">
+                        <TabsTrigger
+                            value="message-review"
+                            className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm text-muted-foreground transition-all"
+                        >
                             Message Review
                         </TabsTrigger>
-                        <TabsTrigger value="reports-center" className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#03063A] data-[state=active]:shadow-sm text-[#737373] transition-all">
+                        <TabsTrigger
+                            value="reports-center"
+                            className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm text-muted-foreground transition-all"
+                        >
                             Reports Center
                         </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="ai-control" className="mt-6 flex flex-col gap-4 outline-none w-full flex-1">
-                        <div className="rounded-2xl bg-[#E4E4E4] border border-black/[0.03] shadow-sm p-6">
+                        <div className="rounded-2xl bg-muted border border-black/[0.03] shadow-sm p-6">
                             <div className="space-y-1">
                                 <h2 className="text-[17px] font-semibold text-foreground tracking-tight">Confidence Threshold</h2>
                                 <p className="text-sm text-muted-foreground">Minimum AI confidence required to auto-classify a message.</p>
                             </div>
 
                             <div className="mt-14 relative">
-                                <div className="absolute right-0 -top-11 text-[28px] font-bold text-[#03063A] tracking-tight">{confidence}%</div>
+                                <div className="absolute right-0 -top-11 text-[28px] font-bold text-primary tracking-tight">
+                                    {confidence}%
+                                </div>
                                 <input
                                     type="range"
                                     min={50}
                                     max={99}
                                     value={confidence}
                                     onChange={(event) => setConfidence(Number(event.target.value))}
-                                    className="w-full h-2.5 rounded-full appearance-none outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#03063A] [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#03063A] [&::-moz-range-thumb]:border-0 cursor-pointer"
+                                    className="w-full h-2.5 rounded-full appearance-none outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:border-0 cursor-pointer"
                                     style={{
-                                        background: `linear-gradient(to right, #03063A 0%, #03063A ${((confidence - 50) / 49) * 100}%, #B4B9D6 ${((confidence - 50) / 49) * 100}%, #B4B9D6 100%)`
+                                        background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${((confidence - 50) / 49) * 100}%, var(--secondary) ${((confidence - 50) / 49) * 100}%, var(--secondary) 100%)`,
                                     }}
                                 />
                                 <div className="flex justify-between text-[11px] text-muted-foreground mt-2.5 font-medium">
@@ -422,21 +463,21 @@ function AiReportsPage() {
                             </div>
                         </div>
 
-                        <div className="rounded-2xl bg-[#E4E4E4] border border-black/[0.03] shadow-sm p-6 flex items-center justify-between gap-6">
+                        <div className="rounded-2xl bg-muted border border-black/[0.03] shadow-sm p-6 flex items-center justify-between gap-6">
                             <div className="space-y-1 flex-1">
                                 <h2 className="text-[17px] font-semibold text-foreground tracking-tight">Enable Auto-Classification</h2>
                                 <p className="text-sm text-muted-foreground">
                                     If disabled, all incoming messages will require manual human review regardless of confidence score.
                                 </p>
                             </div>
-                            <Switch 
-                                checked={autoClassification} 
-                                onCheckedChange={handleAutoClassificationChange} 
-                                className="data-[state=checked]:bg-[#03063A] scale-125 origin-right" 
+                            <Switch
+                                checked={autoClassification}
+                                onCheckedChange={handleAutoClassificationChange}
+                                className="data-[state=checked]:bg-primary scale-125 origin-right"
                             />
                         </div>
 
-                        <div className="rounded-2xl bg-[#E4E4E4] border border-black/[0.03] shadow-sm p-6 flex items-center justify-between gap-6">
+                        <div className="rounded-2xl bg-muted border border-black/[0.03] shadow-sm p-6 flex items-center justify-between gap-6">
                             <div className="space-y-1 flex-1">
                                 <h2 className="text-[17px] font-semibold text-foreground tracking-tight">Report Frequency</h2>
                                 <p className="text-sm text-muted-foreground">
@@ -444,7 +485,7 @@ function AiReportsPage() {
                                 </p>
                             </div>
                             <Select defaultValue="60min">
-                                <SelectTrigger className="w-fit min-w-[160px] bg-white border border-[#E5E5E5] rounded-xl h-10 shadow-sm text-sm font-medium">
+                                <SelectTrigger className="w-fit min-w-[160px] bg-background border border-border rounded-xl h-10 shadow-sm text-sm font-medium">
                                     <SelectValue placeholder="Select frequency" />
                                 </SelectTrigger>
                                 <SelectContent>

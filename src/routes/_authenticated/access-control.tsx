@@ -10,12 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -49,13 +44,13 @@ function UserProfile({ name, email, avatar }: { name: string; email: string; ava
     )
 }
 
-function statusVariant(status: UserStatus): "success" | "secondary" | "destructive" {
+function statusVariant(status: UserStatus): 'success' | 'secondary' | 'destructive' {
     if (status === 'ACTIVE') return 'success'
     if (status === 'SUSPEND') return 'destructive'
     return 'secondary'
 }
 
-function InviteUserDialog({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
+function InviteUserDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px] p-6 sm:rounded-[32px] gap-6 outline-none" showCloseButton={false}>
@@ -66,16 +61,23 @@ function InviteUserDialog({ open, onOpenChange }: { open: boolean, onOpenChange:
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[13px] font-bold text-foreground">Full Name</label>
-                        <Input placeholder="John Doe" className="bg-[#EEEEEE] border-0 h-12 rounded-xl text-foreground font-medium placeholder:text-muted-foreground/60" />
+                        <Input
+                            placeholder="John Doe"
+                            className="bg-secondary border-0 h-12 rounded-xl text-foreground font-medium placeholder:text-muted-foreground/60"
+                        />
                     </div>
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[13px] font-bold text-foreground">Email Address</label>
-                        <Input placeholder="john@gmail.com" type="email" className="bg-[#EEEEEE] border-0 h-12 rounded-xl text-foreground font-medium placeholder:text-muted-foreground/60" />
+                        <Input
+                            placeholder="john@gmail.com"
+                            type="email"
+                            className="bg-secondary border-0 h-12 rounded-xl text-foreground font-medium placeholder:text-muted-foreground/60"
+                        />
                     </div>
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[13px] font-bold text-foreground">System Role</label>
                         <Select>
-                            <SelectTrigger className="w-full bg-[#EEEEEE] border-0 h-12 rounded-xl text-foreground font-medium">
+                            <SelectTrigger className="w-full bg-secondary border-0 h-12 rounded-xl text-foreground font-medium">
                                 <SelectValue placeholder="Coordinator" />
                             </SelectTrigger>
                             <SelectContent>
@@ -88,7 +90,7 @@ function InviteUserDialog({ open, onOpenChange }: { open: boolean, onOpenChange:
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[13px] font-bold text-foreground">Assign to Area/Hub</label>
                         <Select>
-                            <SelectTrigger className="w-full bg-[#EEEEEE] border-0 h-12 rounded-xl text-foreground font-medium">
+                            <SelectTrigger className="w-full bg-secondary border-0 h-12 rounded-xl text-foreground font-medium">
                                 <SelectValue placeholder="Select hub" />
                             </SelectTrigger>
                             <SelectContent>
@@ -99,22 +101,18 @@ function InviteUserDialog({ open, onOpenChange }: { open: boolean, onOpenChange:
                             </SelectContent>
                         </Select>
                     </div>
-                    
+
                     <div className="flex items-center justify-between mt-2 mb-2">
                         <label className="text-[13px] font-bold text-foreground">Send Welcome Email</label>
-                        <Switch className="data-[state=checked]:bg-[#03063A]" defaultChecked />
+                        <Switch className="data-[state=checked]:bg-primary" defaultChecked />
                     </div>
                 </div>
 
                 <div className="flex gap-3">
-                    <Button 
-                        variant="secondary" 
-                        className="flex-1"
-                        onClick={() => onOpenChange(false)}
-                    >
+                    <Button variant="secondary" className="flex-1" onClick={() => onOpenChange(false)}>
                         Cancel
                     </Button>
-                    <Button 
+                    <Button
                         className="flex-1"
                         onClick={() => {
                             toast.success('Invitation sent!')
@@ -129,13 +127,13 @@ function InviteUserDialog({ open, onOpenChange }: { open: boolean, onOpenChange:
     )
 }
 
-function EditUserDialog({ 
-    user, 
+function EditUserDialog({
+    user,
     onOpenChange,
-    onStatusChange
-}: { 
-    user: AccessUserRow | null, 
-    onOpenChange: (user: AccessUserRow | null) => void,
+    onStatusChange,
+}: {
+    user: AccessUserRow | null
+    onOpenChange: (user: AccessUserRow | null) => void
     onStatusChange: (id: number, status: UserStatus) => void
 }) {
     if (!user) return null
@@ -146,7 +144,12 @@ function EditUserDialog({
         <Dialog open={!!user} onOpenChange={(open) => !open && onOpenChange(null)}>
             <DialogContent className="sm:max-w-[400px] p-6 sm:rounded-[32px] gap-6 outline-none" showCloseButton={false}>
                 <div className="absolute top-4 right-4">
-                    <Button variant="ghost" size="icon" className="size-8 rounded-full bg-[#E5E5E5] hover:bg-[#D5D5D5]" onClick={() => onOpenChange(null)}>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8 rounded-full bg-[#E5E5E5] hover:bg-[#D5D5D5]"
+                        onClick={() => onOpenChange(null)}
+                    >
                         <X className="size-4" />
                     </Button>
                 </div>
@@ -157,17 +160,21 @@ function EditUserDialog({
                             <AvatarImage src={user.avatar} alt={user.name} />
                             <AvatarFallback className="text-2xl">{user.name.slice(0, 2)}</AvatarFallback>
                         </Avatar>
-                        <div className={cn(
-                            "absolute bottom-3 right-3 size-4 rounded-full border-2 border-white",
-                            isActive ? "bg-[#22C55E]" : "bg-[#EF4444]"
-                        )} />
+                        <div
+                            className={cn(
+                                'absolute bottom-3 right-3 size-4 rounded-full border-2 border-white',
+                                isActive ? 'bg-[#22C55E]' : 'bg-[#EF4444]',
+                            )}
+                        />
                     </div>
                     <DialogTitle className="text-2xl font-bold tracking-tight">{user.name}</DialogTitle>
                     <p className="text-[13px] font-medium text-muted-foreground">{user.email}</p>
-                    <Badge className={cn(
-                        "rounded-md px-2 py-0.5 mt-1 border-0 uppercase font-semibold text-[11px] tracking-wider",
-                        isActive ? "bg-[#B5F5C6] text-[#0A7B21] hover:bg-[#B5F5C6]" : "bg-[#FECACA] text-[#DC2626] hover:bg-[#FECACA]"
-                    )}>
+                    <Badge
+                        className={cn(
+                            'rounded-md px-2 py-0.5 mt-1 border-0 uppercase font-semibold text-[11px] tracking-wider',
+                            isActive ? 'bg-[#B5F5C6] text-[#0A7B21] hover:bg-[#B5F5C6]' : 'bg-[#FECACA] text-[#DC2626] hover:bg-[#FECACA]',
+                        )}
+                    >
                         {user.status}
                     </Badge>
                 </DialogHeader>
@@ -204,20 +211,28 @@ function EditUserDialog({
 
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[13px] font-bold text-foreground">Last Login</label>
-                        <Input value="4:40 PM" readOnly className="bg-[#EEEEEE] border-0 h-11 rounded-xl text-muted-foreground font-medium" />
+                        <Input
+                            value="4:40 PM"
+                            readOnly
+                            className="bg-[#EEEEEE] border-0 h-11 rounded-xl text-muted-foreground font-medium"
+                        />
                     </div>
 
                     {!isActive && (
                         <div className="flex flex-col gap-1.5">
                             <label className="text-[13px] font-bold text-foreground">Suspended By</label>
-                            <Input value="Omar Symister" readOnly className="bg-[#EEEEEE] border-0 h-11 rounded-xl text-muted-foreground font-medium" />
+                            <Input
+                                value="Omar Symister"
+                                readOnly
+                                className="bg-[#EEEEEE] border-0 h-11 rounded-xl text-muted-foreground font-medium"
+                            />
                         </div>
                     )}
                 </div>
 
                 <div className="flex gap-3 mt-4">
                     {isActive ? (
-                        <Button 
+                        <Button
                             variant="destructive"
                             className="flex-1"
                             onClick={() => {
@@ -228,7 +243,7 @@ function EditUserDialog({
                             Suspend User
                         </Button>
                     ) : (
-                        <Button 
+                        <Button
                             className="flex-1"
                             onClick={() => {
                                 onStatusChange(user.id, 'ACTIVE')
@@ -238,7 +253,7 @@ function EditUserDialog({
                             Unsuspend User
                         </Button>
                     )}
-                    <Button 
+                    <Button
                         className="flex-1"
                         onClick={() => {
                             toast.success('Changes saved')
@@ -297,7 +312,9 @@ function AccessControlPage() {
                 className: 'py-2 text-left',
                 headerClassName: 'text-left',
                 render: (user: AccessUserRow) => (
-                    <Badge variant={statusVariant(user.status)} className="rounded-full px-3 py-1 text-xs font-semibold">{user.status}</Badge>
+                    <Badge variant={statusVariant(user.status)} className="rounded-full px-3 py-1 text-xs font-semibold">
+                        {user.status}
+                    </Badge>
                 ),
             },
             {
@@ -331,7 +348,9 @@ function AccessControlPage() {
     return (
         <>
             <PageHeader title="Access Control" description="Manage users, roles, and system permissions" lastUpdated="05:41:15 PM">
-                <Button variant="default" onClick={() => setIsInviteOpen(true)}>+ Invite User</Button>
+                <Button variant="default" onClick={() => setIsInviteOpen(true)}>
+                    + Invite User
+                </Button>
             </PageHeader>
 
             <Card className="flex-1 overflow-hidden shadow-sm flex flex-col min-h-0">

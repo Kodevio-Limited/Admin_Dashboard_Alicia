@@ -67,7 +67,7 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                         <DropdownMenuItem
                             onSelect={() => unsuspendMutation.mutate(coordinator.phone_number)}
                             disabled={unsuspendMutation.isPending}
-                            className="text-green-600 focus:text-green-600"
+                            className="text-emerald-600 focus:text-emerald-600"
                         >
                             Unsuspend coordinator
                         </DropdownMenuItem>
@@ -90,14 +90,14 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                             <AvatarFallback className="text-3xl bg-muted">{coordinator.full_name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         {coordinator.is_active && (
-                            <div className="absolute bottom-1.5 right-1.5 size-6 bg-[#34D399] rounded-full border-4 border-white" />
+                            <div className="absolute bottom-1.5 right-1.5 size-6 bg-emerald-500 rounded-full border-4 border-white" />
                         )}
                     </div>
                     <h2 className="text-2xl font-medium text-foreground">{coordinator.full_name}</h2>
                     <span className="text-sm text-muted-foreground mb-3">{coordinator.email || coordinator.phone_number}</span>
                     <Badge
                         variant={coordinator.is_active ? 'success' : 'secondary'}
-                        className={`uppercase px-4 py-1 tracking-wider text-xs font-medium ${coordinator.is_active ? 'bg-[#99F6E4]/50 text-[#16A34A] hover:bg-[#99F6E4]/50' : ''}`}
+                        className="uppercase px-4 py-1 tracking-wider text-xs font-medium"
                     >
                         {coordinator.is_active ? 'ACTIVE' : 'INACTIVE'}
                     </Badge>
@@ -105,10 +105,19 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
 
                 <div className="px-6 pb-6 w-full flex flex-col gap-3">
                     <p className="text-sm text-muted-foreground font-medium">Assignment Details</p>
-                    <div className="bg-[#F3F4F6] rounded-xl p-4 flex flex-col gap-4">
+                    <div className="bg-muted rounded-xl p-4 flex flex-col gap-4">
                         {[
-                            { icon: <Users className="size-[18px]" />, label: 'Assigned Area', value: coordinator.hub_name || 'Unassigned' },
-                            { icon: <Clock className="size-[18px]" />, label: 'Phone Number', value: coordinator.phone_number, green: true },
+                            {
+                                icon: <Users className="size-[18px]" />,
+                                label: 'Assigned Area',
+                                value: coordinator.hub_name || 'Unassigned',
+                            },
+                            {
+                                icon: <Clock className="size-[18px]" />,
+                                label: 'Phone Number',
+                                value: coordinator.phone_number,
+                                green: true,
+                            },
                             { icon: <Activity className="size-[18px]" />, label: 'Last Active', value: '10 mins ago' },
                         ].map(({ icon, label, value, green }) => (
                             <div key={label} className="flex items-center justify-between text-sm">
@@ -116,7 +125,7 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                                     {icon}
                                     <span>{label}</span>
                                 </div>
-                                <span className={`font-medium ${green ? 'text-[#16A34A]' : 'text-foreground'}`}>{value}</span>
+                                <span className={`font-medium ${green ? 'text-emerald-600' : 'text-foreground'}`}>{value}</span>
                             </div>
                         ))}
                     </div>
@@ -143,7 +152,9 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                         </Button>
                     )}
                     <ReassignCoordinatorDialog coordinator={coordinator}>
-                        <Button variant="default" className="flex-1">Reassign Area</Button>
+                        <Button variant="default" className="flex-1">
+                            Reassign Area
+                        </Button>
                     </ReassignCoordinatorDialog>
                 </div>
             </DialogContent>

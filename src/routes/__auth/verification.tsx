@@ -31,7 +31,8 @@ function TwoStepVerificationPage() {
             setIsVerifying(true)
             const res = await verifyPassword(identifier, otp)
             // Assuming the backend returns an access token in the response
-            const token = res?.data?.access || res?.data?.access_token || res?.data?.token || res?.access || res?.access_token || res?.token || otp
+            const token =
+                res?.data?.access || res?.data?.access_token || res?.data?.token || res?.access || res?.access_token || res?.token || otp
             toast.success('Code verified successfully')
             navigate({ to: '/reset-password', search: { token } })
         } catch (error: any) {
@@ -46,9 +47,7 @@ function TwoStepVerificationPage() {
             {/* Header */}
             <div className="text-center flex flex-col items-center gap-2 mb-8">
                 <h1 className="text-[28px] md:text-[32px] text-foreground font-bold tracking-tight">Verify Email</h1>
-                <p className="text-[#888888] text-[15px]">
-                    We've sent a 6-digit code to {identifier || 'your email'}
-                </p>
+                <p className="text-muted-foreground text-[15px]">We've sent a 6-digit code to {identifier || 'your email'}</p>
             </div>
 
             {/* OTP */}
@@ -57,23 +56,41 @@ function TwoStepVerificationPage() {
                 <div className="flex justify-between items-center w-full">
                     <InputOTP maxLength={6} value={otp} onChange={setOtp} className="w-full">
                         <InputOTPGroup className="w-full flex justify-between gap-2 sm:gap-3">
-                            <InputOTPSlot index={0} className="w-full aspect-[4/5] sm:aspect-square sm:h-14 sm:w-14 rounded-[14px] border-0 text-lg font-bold bg-[#EEEEEE] focus-visible:ring-2 focus-visible:ring-primary/20 transition-all" />
-                            <InputOTPSlot index={1} className="w-full aspect-[4/5] sm:aspect-square sm:h-14 sm:w-14 rounded-[14px] border-0 text-lg font-bold bg-[#EEEEEE] focus-visible:ring-2 focus-visible:ring-primary/20 transition-all" />
-                            <InputOTPSlot index={2} className="w-full aspect-[4/5] sm:aspect-square sm:h-14 sm:w-14 rounded-[14px] border-0 text-lg font-bold bg-[#EEEEEE] focus-visible:ring-2 focus-visible:ring-primary/20 transition-all" />
-                            <InputOTPSlot index={3} className="w-full aspect-[4/5] sm:aspect-square sm:h-14 sm:w-14 rounded-[14px] border-0 text-lg font-bold bg-[#EEEEEE] focus-visible:ring-2 focus-visible:ring-primary/20 transition-all" />
-                            <InputOTPSlot index={4} className="w-full aspect-[4/5] sm:aspect-square sm:h-14 sm:w-14 rounded-[14px] border-0 text-lg font-bold bg-[#EEEEEE] focus-visible:ring-2 focus-visible:ring-primary/20 transition-all" />
-                            <InputOTPSlot index={5} className="w-full aspect-[4/5] sm:aspect-square sm:h-14 sm:w-14 rounded-[14px] border-0 text-lg font-bold bg-[#EEEEEE] focus-visible:ring-2 focus-visible:ring-primary/20 transition-all" />
+                            <InputOTPSlot
+                                index={0}
+                                className="w-full aspect-[4/5] sm:aspect-square sm:h-14 sm:w-14 rounded-[14px] border-0 text-lg font-bold bg-secondary focus-visible:ring-2 focus-visible:ring-primary/20 transition-all"
+                            />
+                            <InputOTPSlot
+                                index={1}
+                                className="w-full aspect-[4/5] sm:aspect-square sm:h-14 sm:w-14 rounded-[14px] border-0 text-lg font-bold bg-secondary focus-visible:ring-2 focus-visible:ring-primary/20 transition-all"
+                            />
+                            <InputOTPSlot
+                                index={2}
+                                className="w-full aspect-[4/5] sm:aspect-square sm:h-14 sm:w-14 rounded-[14px] border-0 text-lg font-bold bg-secondary focus-visible:ring-2 focus-visible:ring-primary/20 transition-all"
+                            />
+                            <InputOTPSlot
+                                index={3}
+                                className="w-full aspect-[4/5] sm:aspect-square sm:h-14 sm:w-14 rounded-[14px] border-0 text-lg font-bold bg-secondary focus-visible:ring-2 focus-visible:ring-primary/20 transition-all"
+                            />
+                            <InputOTPSlot
+                                index={4}
+                                className="w-full aspect-[4/5] sm:aspect-square sm:h-14 sm:w-14 rounded-[14px] border-0 text-lg font-bold bg-secondary focus-visible:ring-2 focus-visible:ring-primary/20 transition-all"
+                            />
+                            <InputOTPSlot
+                                index={5}
+                                className="w-full aspect-[4/5] sm:aspect-square sm:h-14 sm:w-14 rounded-[14px] border-0 text-lg font-bold bg-secondary focus-visible:ring-2 focus-visible:ring-primary/20 transition-all"
+                            />
                         </InputOTPGroup>
                     </InputOTP>
                 </div>
                 <div className="flex justify-end mt-1">
-                    <button className="text-[#FFB800] hover:text-[#FFB800]/80 text-[11px] font-semibold transition-all">Send again</button>
+                    <button className="text-warning hover:text-warning/80 text-[11px] font-semibold transition-all">Send again</button>
                 </div>
             </div>
 
             {/* Button */}
             <Button
-                className="w-full mt-4 h-14 rounded-full bg-[#03063A] hover:bg-[#03063A]/90 text-white text-[15px] font-semibold"
+                className="w-full mt-4 h-14 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-[15px] font-semibold"
                 onClick={handleVerify}
                 disabled={otp.length !== 6 || isVerifying}
             >

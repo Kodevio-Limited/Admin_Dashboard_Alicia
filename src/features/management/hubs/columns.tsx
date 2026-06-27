@@ -15,9 +15,7 @@ export const hubColumns: DataTableColumn<HubAPIResult>[] = [
         header: 'LOCATION',
         className: 'py-2 text-center',
         headerClassName: 'text-center',
-        render: (hub) => (
-            <div className="whitespace-normal max-w-[120px] mx-auto leading-tight">{hub.address}</div>
-        ),
+        render: (hub) => <div className="whitespace-normal max-w-[120px] mx-auto leading-tight">{hub.address}</div>,
     },
     {
         key: 'battery',
@@ -33,7 +31,13 @@ export const hubColumns: DataTableColumn<HubAPIResult>[] = [
         headerClassName: 'text-center',
         render: (hub) => (
             <Badge
-                variant={hub.status === 'open' ? 'success' : hub.status === 'low_battery' || hub.status === 'critical' ? 'destructive' : 'warning'}
+                variant={
+                    hub.status === 'open'
+                        ? 'success'
+                        : hub.status === 'low_battery' || hub.status === 'critical'
+                          ? 'destructive'
+                          : 'warning'
+                }
                 className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider"
             >
                 {hub.status.replace('_', ' ')}

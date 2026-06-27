@@ -1,9 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useMemo, useState, useRef } from 'react'
 import { toast } from 'sonner'
-import { Lock, EyeOff, User, Building, Briefcase, MapPin, Mail, Edit, Loader2 } from 'lucide-react'
+import { Lock, EyeOff, Eye, User, Building, Briefcase, MapPin, Mail, Edit, Loader2 } from 'lucide-react'
 import JoditEditor from 'jodit-react'
-import { Button } from '@/components/ui/button' 
+import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PageHeader } from '@/components/sections/page-header'
 import { Field, FieldLabel } from '@/components/ui/field'
@@ -12,16 +12,20 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import imgProfile3D from '@/assets/profile_dummy.png'
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query'
 import { staticContentApi } from '@/lib/settings'
-import { useProfile, useUpdateProfile } from '@/hooks/use-users'
+import { useProfile, useUpdateProfile, useChangePassword } from '@/hooks/use-users'
 
 export const Route = createFileRoute('/_authenticated/settings')({
     component: SettingsPage,
 })
 interface PasswordFieldProps {
     label: string
+    value: string
+    onChange: (val: string) => void
+    placeholder?: string
 }
 
-function PasswordField({ label }: PasswordFieldProps) {
+function PasswordField({ label, value, onChange, placeholder = '••••••••' }: PasswordFieldProps) {
+    const [showPassword, setShowPassword] = useState(false)
     return (
         <Field>
             <FieldLabel>{label}</FieldLabel>
@@ -31,10 +35,21 @@ function PasswordField({ label }: PasswordFieldProps) {
                         <Lock className="size-5" />
                     </InputGroupText>
                 </InputGroupAddon>
-                <InputGroupInput type="password" placeholder="••••••••" />
+                <InputGroupInput
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder={placeholder}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                />
                 <InputGroupAddon align="inline-end">
-                    <InputGroupButton variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-foreground hover:bg-transparent">
-                        <EyeOff className="size-5" />
+                    <InputGroupButton
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        className="text-muted-foreground hover:text-foreground hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                    >
+                        {showPassword ? <Eye className="size-5" /> : <EyeOff className="size-5" />}
                     </InputGroupButton>
                 </InputGroupAddon>
             </InputGroup>
@@ -43,14 +58,58 @@ function PasswordField({ label }: PasswordFieldProps) {
 }
 
 function SecurityTab() {
+    const [oldPassword, setOldPassword] = useState('')
+    const [newPassword, setNewPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
+    const changePasswordMutation = useChangePassword()
+
+    const handleUpdate = () => {
+        if (!oldPassword) {
+            toast.error('Please enter your current password')
+            return
+        }
+        if (!newPassword) {
+            toast.error('Please enter a new password')
+            return
+        }
+        if (newPassword.length < 8) {
+            toast.error('New password must be at least 8 characters')
+            return
+        }
+        if (newPassword !== confirmPassword) {
+            toast.error('New password and confirmation password do not match')
+            return
+        }
+
+        changePasswordMutation.mutate(
+            {
+                old_password: oldPassword,
+                new_password: newPassword,
+                confirm_password: confirmPassword,
+            },
+            {
+                onSuccess: () => {
+                    toast.success('Password updated successfully')
+                    setOldPassword('')
+                    setNewPassword('')
+                    setConfirmPassword('')
+                },
+                onError: (error: any) => {
+                    toast.error(error.message || 'Failed to update password')
+                },
+            },
+        )
+    }
+
     return (
         <div className="flex flex-col items-center gap-4 w-full pb-4 flex-1">
             <div className="flex flex-col gap-4 w-full max-w-2xl mt-8">
-                <PasswordField label="Current Password" />
-                <PasswordField label="New Password" />
-                <PasswordField label="Confirm Password" />
+                <PasswordField label="Current Password" value={oldPassword} onChange={setOldPassword} />
+                <PasswordField label="New Password" value={newPassword} onChange={setNewPassword} />
+                <PasswordField label="Confirm Password" value={confirmPassword} onChange={setConfirmPassword} />
                 <div className="mt-8">
-                    <Button variant="default" className="w-full" onClick={() => toast.success('Password updated successfully')}>
+                    <Button variant="default" className="w-full" onClick={handleUpdate} disabled={changePasswordMutation.isPending}>
+                        {changePasswordMutation.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
                         Update Password
                     </Button>
                 </div>
@@ -60,72 +119,71 @@ function SecurityTab() {
 }
 
 function TermsAndConditionsTab() {
-    const queryClient = useQueryClient();
-    const [content, setContent] = useState<string>("");
-    const [isInitialized, setIsInitialized] = useState(false);
+    const queryClient = useQueryClient()
+    const [content, setContent] = useState<string>('')
+    const [isInitialized, setIsInitialized] = useState(false)
 
     const { data, isLoading, error } = useQuery({
-        queryKey: ["static-content", "terms-and-conditions"],
-        queryFn: () => staticContentApi.get("terms-and-conditions"),
-    });
+        queryKey: ['static-content', 'terms-and-conditions'],
+        queryFn: () => staticContentApi.get('terms-and-conditions'),
+    })
 
     const updateContent = useMutation({
-        mutationFn: () =>
-            staticContentApi.update("terms-and-conditions", content),
+        mutationFn: () => staticContentApi.update('terms-and-conditions', content),
 
         onSuccess: () => {
-            toast.success("Terms & Conditions updated successfully");
+            toast.success('Terms & Conditions updated successfully')
 
             queryClient.invalidateQueries({
-                queryKey: ["static-content", "terms-and-conditions"],
-            });
+                queryKey: ['static-content', 'terms-and-conditions'],
+            })
         },
 
         onError: () => {
-            toast.error("Failed to update Terms & Conditions");
+            toast.error('Failed to update Terms & Conditions')
         },
-    });
+    })
 
     useEffect(() => {
         if (data) {
-            setContent(data.content ?? "");
-            setIsInitialized(true);
+            setContent(data.content ?? '')
+            setIsInitialized(true)
         }
-    }, [data]);
+    }, [data])
 
     const config = useMemo(
         () => ({
             height: 512,
             readonly: false,
             buttons: [
-                "bold",
-                "italic",
-                "underline",
-                "strike",
-                "subscript",
-                "superscript",
-                "|",
-                "font",
-                "fontsize",
-                "paragraph",
-                "|",
-                "align",
-                "ul",
-                "ol",
-                "outdent",
-                "indent",
-                "|",
-                "table",
-                "hr",
-                "link",
-                "|",
-                "undo",
-                "redo",
+                'bold',
+                'italic',
+                'underline',
+                'strike',
+                'subscript',
+                'superscript',
+                '|',
+                'font',
+                'fontsize',
+                'paragraph',
+                '|',
+                'align',
+                'ul',
+                'ol',
+                'outdent',
+                'indent',
+                '|',
+                'table',
+                'hr',
+                'link',
+                '|',
+                'undo',
+                'redo',
             ],
-            placeholder: "Start typing...",
+            placeholder: 'Start typing...',
         }),
-        []
-    );
+        [],
+    )
 
     if (isLoading || !isInitialized) {
         return (
@@ -133,40 +191,28 @@ function TermsAndConditionsTab() {
                 <Loader2 className="size-8 animate-spin" />
                 <p>Loading Terms & Conditions...</p>
             </div>
-        );
+        )
     }
 
     if (error) {
         return (
             <div className="flex justify-center items-center h-96">
-                <p className="text-destructive font-medium">
-                    Error loading Terms & Conditions
-                </p>
+                <p className="text-destructive font-medium">Error loading Terms & Conditions</p>
             </div>
-        );
+        )
     }
 
     return (
         <div className="flex-1 flex flex-col gap-6 w-full mt-4">
             <div className="rounded-xl overflow-hidden border shadow-sm">
-                <JoditEditor
-                    config={config}
-                    value={content}
-                    onChange={(value) => setContent(value)}
-                />
+                <JoditEditor config={config} value={content} onChange={(value) => setContent(value)} />
             </div>
 
             <div className="flex flex-col gap-4 mt-2">
-                <p className="text-sm font-medium text-foreground">
-                    Last updated: June 8, 2026 by Dianne Plummer.
-                </p>
+                <p className="text-sm font-medium text-foreground">Last updated: June 8, 2026 by Dianne Plummer.</p>
 
                 <div className="flex flex-col sm:flex-row gap-4 w-full">
-                    <Button
-                        size="lg"
-                        variant="secondary"
-                        className="flex-1 rounded-full"
-                    >
+                    <Button size="lg" variant="secondary" className="flex-1 rounded-full">
                         Preview
                     </Button>
                     <Button
@@ -182,76 +228,75 @@ function TermsAndConditionsTab() {
                 </div>
             </div>
         </div>
-    );
+    )
 }
 
 function PrivacyPolicyTab() {
-    const queryClient = useQueryClient();
-    const [content, setContent] = useState<string>("");
-    const [isInitialized, setIsInitialized] = useState(false);
+    const queryClient = useQueryClient()
+    const [content, setContent] = useState<string>('')
+    const [isInitialized, setIsInitialized] = useState(false)
 
     const { data, isLoading, error } = useQuery({
-        queryKey: ["static-content", "privacy-policy"],
-        queryFn: () => staticContentApi.get("privacy-policy"),
-    });
+        queryKey: ['static-content', 'privacy-policy'],
+        queryFn: () => staticContentApi.get('privacy-policy'),
+    })
 
     const updateContent = useMutation({
-        mutationFn: () =>
-            staticContentApi.update("privacy-policy", content),
+        mutationFn: () => staticContentApi.update('privacy-policy', content),
 
         onSuccess: () => {
-            toast.success("Privacy Policy updated successfully");
+            toast.success('Privacy Policy updated successfully')
 
             queryClient.invalidateQueries({
-                queryKey: ["static-content", "privacy-policy"],
-            });
+                queryKey: ['static-content', 'privacy-policy'],
+            })
         },
 
         onError: () => {
-            toast.error("Failed to update Privacy Policy");
+            toast.error('Failed to update Privacy Policy')
         },
-    });
+    })
 
     useEffect(() => {
         if (data) {
-            setContent(data.content ?? "");
-            setIsInitialized(true);
+            setContent(data.content ?? '')
+            setIsInitialized(true)
         }
-    }, [data]);
+    }, [data])
 
     const config = useMemo(
         () => ({
             height: 512,
             readonly: false,
             buttons: [
-                "bold",
-                "italic",
-                "underline",
-                "strike",
-                "subscript",
-                "superscript",
-                "|",
-                "font",
-                "fontsize",
-                "paragraph",
-                "|",
-                "align",
-                "ul",
-                "ol",
-                "outdent",
-                "indent",
-                "|",
-                "table",
-                "hr",
-                "link",
-                "|",
-                "undo",
-                "redo",
+                'bold',
+                'italic',
+                'underline',
+                'strike',
+                'subscript',
+                'superscript',
+                '|',
+                'font',
+                'fontsize',
+                'paragraph',
+                '|',
+                'align',
+                'ul',
+                'ol',
+                'outdent',
+                'indent',
+                '|',
+                'table',
+                'hr',
+                'link',
+                '|',
+                'undo',
+                'redo',
             ],
-            placeholder: "Start typing...",
+            placeholder: 'Start typing...',
         }),
-        []
-    );
+        [],
+    )
 
     if (isLoading || !isInitialized) {
         return (
@@ -259,33 +304,25 @@ function PrivacyPolicyTab() {
                 <Loader2 className="size-8 animate-spin" />
                 <p>Loading Privacy Policy...</p>
             </div>
-        );
+        )
     }
 
     if (error) {
         return (
             <div className="flex justify-center items-center h-96">
-                <p className="text-destructive font-medium">
-                    Error loading Privacy Policy
-                </p>
+                <p className="text-destructive font-medium">Error loading Privacy Policy</p>
             </div>
-        );
+        )
     }
 
     return (
         <div className="flex-1 flex flex-col gap-6 w-full mt-4">
             <div className="rounded-xl overflow-hidden border shadow-sm">
-                <JoditEditor
-                    config={config}
-                    value={content}
-                    onChange={(value) => setContent(value)}
-                />
+                <JoditEditor config={config} value={content} onChange={(value) => setContent(value)} />
             </div>
 
             <div className="flex flex-col gap-4 mt-2">
-                <p className="text-sm font-medium text-foreground">
-                    Last updated: June 8, 2026 by Dianne Plummer.
-                </p>
+                <p className="text-sm font-medium text-foreground">Last updated: June 8, 2026 by Dianne Plummer.</p>
 
                 <div className="flex flex-col sm:flex-row gap-4 w-full">
                     <Button
@@ -300,7 +337,7 @@ function PrivacyPolicyTab() {
                         variant="default"
                         disabled={updateContent.isPending}
                         onClick={() => updateContent.mutate()}
-                        className="flex-1 rounded-full text-base h-12 bg-[#03063A] hover:bg-[#03063A]/90 text-white shadow-none"
+                        className="flex-1 rounded-full text-base h-12 bg-primary hover:bg-primary/90 text-primary-foreground shadow-none"
                     >
                         {updateContent.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
                         Update
@@ -308,7 +345,7 @@ function PrivacyPolicyTab() {
                 </div>
             </div>
         </div>
-    );
+    )
 }
 
 interface FormInputProps {
@@ -320,11 +357,13 @@ interface FormInputProps {
     type?: string
 }
 
-function FormInput({ label, icon: Icon, defaultValue, name, disabled, type = "text" }: FormInputProps) {
+function FormInput({ label, icon: Icon, defaultValue, name, disabled, type = 'text' }: FormInputProps) {
     return (
         <Field>
             <FieldLabel>{label}</FieldLabel>
-            <InputGroup className={`rounded-full bg-muted/50 border-transparent focus-within:ring-primary/20 ${disabled ? 'opacity-70 pointer-events-none' : ''}`}>
+            <InputGroup
+                className={`rounded-full bg-muted/50 border-transparent focus-within:ring-primary/20 ${disabled ? 'opacity-70 pointer-events-none' : ''}`}
+            >
                 <InputGroupAddon align="inline-start">
                     <InputGroupText>
                         <Icon className="size-5" />
@@ -363,7 +402,7 @@ function ProfileTab() {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         const formData = new FormData(e.currentTarget)
-        
+
         const dataObj: any = {
             full_name: formData.get('full_name') as string,
         }
@@ -375,14 +414,14 @@ function ProfileTab() {
             payload.append('avatar', selectedImage)
             payload.append('profile_picture', selectedImage) // Send both just in case
         }
-        
+
         updateMutation.mutate(payload, {
             onSuccess: () => {
                 toast.success('Profile changes saved')
                 setIsEditing(false)
                 setSelectedImage(null)
             },
-            onError: (err) => toast.error(err.message || 'Failed to update profile')
+            onError: (err) => toast.error(err.message || 'Failed to update profile'),
         })
     }
 
@@ -402,20 +441,18 @@ function ProfileTab() {
                 <div className="flex justify-center relative">
                     <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                         <Avatar className="size-32 md:size-36 ring-4 ring-white shadow-sm">
-                            <AvatarImage src={previewUrl || user?.avatar || imgProfile3D} alt="Profile Picture" className="group-hover:scale-105 transition-transform duration-500 object-cover" />
+                            <AvatarImage
+                                src={previewUrl || user?.avatar || imgProfile3D}
+                                alt="Profile Picture"
+                                className="group-hover:scale-105 transition-transform duration-500 object-cover"
+                            />
                             <AvatarFallback>{user?.full_name ? user.full_name.substring(0, 2).toUpperCase() : 'U'}</AvatarFallback>
                         </Avatar>
                         {/* Edit button */}
-                        <div className="absolute bottom-0 right-0 bg-[#545c99] text-white size-10 rounded-full flex items-center justify-center shadow-sm ring-4 ring-white group-hover:scale-110 transition-transform">
+                        <div className="absolute bottom-0 right-0 bg-primary text-primary-foreground size-10 rounded-full flex items-center justify-center shadow-sm ring-4 ring-white group-hover:scale-110 transition-transform">
                             <Edit className="size-4" />
                         </div>
-                        <input 
-                            type="file" 
-                            ref={fileInputRef} 
-                            className="hidden" 
-                            accept="image/*" 
-                            onChange={handleImageChange} 
-                        />
+                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageChange} />
                     </div>
                 </div>
 
@@ -423,19 +460,25 @@ function ProfileTab() {
                 <form key={user?.email || 'loading'} onSubmit={handleSubmit} className="flex flex-col gap-6 w-full max-w-4xl">
                     {/* Row 1: Full Name + Organization */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-                        <FormInput label="Full Name" name="full_name" defaultValue={user?.full_name || ""} icon={User} disabled={!isEditing} />
-                        <FormInput label="Organization" defaultValue={"Stem Spark Solutions"} icon={Building} disabled />
+                        <FormInput
+                            label="Full Name"
+                            name="full_name"
+                            defaultValue={user?.full_name || ''}
+                            icon={User}
+                            disabled={!isEditing}
+                        />
+                        <FormInput label="Organization" defaultValue={'Stem Spark Solutions'} icon={Building} disabled />
                     </div>
 
                     {/* Row 2: Role + Licensed Territory */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-                        <FormInput label="Role" defaultValue={user?.role || "user"} icon={Briefcase} disabled />
-                        <FormInput label="Licensed Territory" defaultValue={"Jamaica"} icon={MapPin} disabled />
+                        <FormInput label="Role" defaultValue={user?.role || 'user'} icon={Briefcase} disabled />
+                        <FormInput label="Licensed Territory" defaultValue={'Jamaica'} icon={MapPin} disabled />
                     </div>
 
                     {/* Email */}
                     <div className="w-full">
-                        <FormInput label="Email" defaultValue={user?.email || ""} icon={Mail} disabled />
+                        <FormInput label="Email" defaultValue={user?.email || ''} icon={Mail} disabled />
                     </div>
 
                     {/* Buttons */}
@@ -446,11 +489,18 @@ function ProfileTab() {
                             </Button>
                         ) : (
                             <>
-                                <Button size="lg" variant="outline" className="w-full sm:flex-1" type="button" onClick={handleCancel} disabled={updateMutation.isPending}>
+                                <Button
+                                    size="lg"
+                                    variant="outline"
+                                    className="w-full sm:flex-1"
+                                    type="button"
+                                    onClick={handleCancel}
+                                    disabled={updateMutation.isPending}
+                                >
                                     Cancel
                                 </Button>
                                 <Button size="lg" className="w-full sm:flex-1" type="submit" disabled={updateMutation.isPending}>
-                                    {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                                    {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
                                 </Button>
                             </>
                         )}
@@ -467,17 +517,29 @@ function SettingsPage() {
             <PageHeader title="Settings" description="Manage your account & apps." lastUpdated="05:41:15 PM" />
 
             <Tabs defaultValue="profile" className="flex-1 flex flex-col w-full min-h-0">
-                <TabsList className="inline-flex w-fit h-10 md:h-12 bg-[#DFDFDF] p-1.5 rounded-full overflow-x-auto justify-start border-0">
-                    <TabsTrigger value="profile" className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#03063A] data-[state=active]:shadow-sm text-[#737373] transition-all">
+                <TabsList className="inline-flex w-fit h-10 md:h-12 bg-muted p-1.5 rounded-full overflow-x-auto justify-start border-0">
+                    <TabsTrigger
+                        value="profile"
+                        className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm text-muted-foreground transition-all"
+                    >
                         My Profile
                     </TabsTrigger>
-                    <TabsTrigger value="security" className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#03063A] data-[state=active]:shadow-sm text-[#737373] transition-all">
+                    <TabsTrigger
+                        value="security"
+                        className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm text-muted-foreground transition-all"
+                    >
                         Security
                     </TabsTrigger>
-                    <TabsTrigger value="privacy-policy" className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#03063A] data-[state=active]:shadow-sm text-[#737373] transition-all">
+                    <TabsTrigger
+                        value="privacy-policy"
+                        className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm text-muted-foreground transition-all"
+                    >
                         Privacy Policy
                     </TabsTrigger>
-                    <TabsTrigger value="terms-and-conditions" className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-[#03063A] data-[state=active]:shadow-sm text-[#737373] transition-all">
+                    <TabsTrigger
+                        value="terms-and-conditions"
+                        className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm text-muted-foreground transition-all"
+                    >
                         Terms & Conditions
                     </TabsTrigger>
                 </TabsList>
@@ -492,7 +554,10 @@ function SettingsPage() {
                     <TabsContent value="privacy-policy" className="m-0 border-0 p-0 outline-none flex-1 data-[state=active]:flex flex-col">
                         <PrivacyPolicyTab />
                     </TabsContent>
-                    <TabsContent value="terms-and-conditions" className="m-0 border-0 p-0 outline-none flex-1 data-[state=active]:flex flex-col">
+                    <TabsContent
+                        value="terms-and-conditions"
+                        className="m-0 border-0 p-0 outline-none flex-1 data-[state=active]:flex flex-col"
+                    >
                         <TermsAndConditionsTab />
                     </TabsContent>
                 </div>

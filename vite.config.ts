@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
         resolve: { tsconfigPaths: true },
         plugins: [devtools(), tailwindcss(), tanstackRouter({ target: 'react', autoCodeSplitting: true }), viteReact()],
         optimizeDeps: {
-            include: ['lucide-react']
+            include: ['lucide-react'],
         },
         server: {
             proxy: {
@@ -21,8 +21,8 @@ export default defineConfig(({ mode }) => {
                     target: env.VITE_APP_SERVER || 'http://spark.kodevio.com:8000',
                     changeOrigin: true,
                     secure: false,
-                }
-            }
-        }
+                },
+            },
+        },
     }
 })

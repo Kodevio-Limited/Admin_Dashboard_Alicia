@@ -14,9 +14,7 @@ export function EditCoordinatorDialog({ children, coordinator }: EditCoordinator
     const [open, setOpen] = useState(false)
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                {children}
-            </DialogTrigger>
+            <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent className="sm:max-w-xl p-6 md:p-8 rounded-2xl border-none shadow-xl gap-6">
                 <div className="flex flex-col items-center mb-2">
                     <h2 className="text-2xl md:text-3xl font-semibold text-center text-foreground">Edit Coordinator</h2>
@@ -58,8 +56,12 @@ export function EditCoordinatorDialog({ children, coordinator }: EditCoordinator
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 mt-4 w-full items-center justify-end">
-                    <Button onClick={() => setOpen(false)} variant="outline">Cancel</Button>
-                    <Button onClick={() => setOpen(false)} variant="default">Save Changes</Button>
+                    <Button onClick={() => setOpen(false)} variant="outline">
+                        Cancel
+                    </Button>
+                    <Button onClick={() => setOpen(false)} variant="default">
+                        Save Changes
+                    </Button>
                 </div>
             </DialogContent>
         </Dialog>

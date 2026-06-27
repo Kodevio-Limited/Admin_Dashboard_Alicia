@@ -47,7 +47,7 @@ export function NavUser({
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <button className="flex items-center gap-2.5 bg-transparent border-none cursor-pointer focus:outline-none hover:opacity-80 transition-opacity">
-                        <Avatar className="size-8 ring-2 ring-[#f0f0f0]">
+                        <Avatar className="size-8 ring-2 ring-border">
                             <AvatarImage src={user.avatar || undefined} alt={user.name} />
                             <AvatarFallback>{user.name ? user.name.substring(0, 2).toUpperCase() : 'U'}</AvatarFallback>
                         </Avatar>
@@ -67,7 +67,9 @@ export function NavUser({
                         <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                             <Avatar className="h-8 w-8 rounded-lg">
                                 <AvatarImage src={user.avatar || undefined} alt={user.name} />
-                                <AvatarFallback className="rounded-lg">{user.name ? user.name.substring(0, 2).toUpperCase() : 'U'}</AvatarFallback>
+                                <AvatarFallback className="rounded-lg">
+                                    {user.name ? user.name.substring(0, 2).toUpperCase() : 'U'}
+                                </AvatarFallback>
                             </Avatar>
                             <div className="grid flex-1 text-left text-sm leading-tight">
                                 <span className="truncate font-medium">{user.name}</span>
@@ -99,12 +101,12 @@ export function NavUser({
                         <AlertDialogDescription className="hidden">Confirm if you want to sign out of your account.</AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="flex flex-row gap-3 sm:justify-center mt-2 w-full">
-                        <AlertDialogCancel className="w-full sm:w-1/2 m-0 h-11 text-base border-[#24357B] text-[#24357B] hover:bg-[#24357B]/5">
+                        <AlertDialogCancel className="w-full sm:w-1/2 m-0 h-11 text-base border-primary text-primary hover:bg-primary/5">
                             Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction
                             onClick={handleLogout}
-                            className="w-full sm:w-1/2 m-0 h-11 text-base bg-[#24357B] hover:bg-[#24357B]/90 text-white"
+                            className="w-full sm:w-1/2 m-0 h-11 text-base bg-primary hover:bg-primary/90 text-primary-foreground"
                         >
                             Yes
                         </AlertDialogAction>

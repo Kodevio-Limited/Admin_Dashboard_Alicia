@@ -19,7 +19,9 @@ export const residentColumns: DataTableColumn<ResidentAPIResult>[] = [
         key: 'user',
         header: 'RESIDENTS',
         className: 'font-medium py-2 px-2 text-sm',
-        render: (resident) => <UserProfile name={resident.full_name} email={resident.email || resident.phone_number} avatar={resident.profile_photo || ''} />,
+        render: (resident) => (
+            <UserProfile name={resident.full_name} email={resident.email || resident.phone_number} avatar={resident.profile_photo || ''} />
+        ),
     },
     {
         key: 'community',
@@ -36,7 +38,9 @@ export const residentColumns: DataTableColumn<ResidentAPIResult>[] = [
         render: (resident) => {
             if (!resident.last_checkin) return 'Never'
             try {
-                return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric', month: 'short', day: 'numeric' }).format(new Date(resident.last_checkin))
+                return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: 'numeric', month: 'short', day: 'numeric' }).format(
+                    new Date(resident.last_checkin),
+                )
             } catch {
                 return resident.last_checkin
             }

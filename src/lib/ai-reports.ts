@@ -195,7 +195,11 @@ export let REPORTS: Report[] = [
             urgentFlags: '12',
             silentZones: '0',
         },
-        criticalSignals: ['Spike in gastrointestinal symptoms — Southern Camp', 'Water supply contamination suspected', 'Quarantine enacted'],
+        criticalSignals: [
+            'Spike in gastrointestinal symptoms — Southern Camp',
+            'Water supply contamination suspected',
+            'Quarantine enacted',
+        ],
         affectedAreas: ['Southern Relief Camp (Quarantine Sector B)'],
         tacticalInsights:
             'Deploy mobile water purification units immediately to the Southern Camp. Isolate the current water reservoir and distribute bottled water stockpiles. Enhance sanitation protocols across all relief sites.',
@@ -203,7 +207,6 @@ export let REPORTS: Report[] = [
 ]
 
 export async function fetchReports(): Promise<Report[]> {
-
     return [...REPORTS]
 }
 
@@ -281,7 +284,6 @@ export const MESSAGE_REVIEWS: MessageReviewRow[] = [
 ]
 
 export async function fetchMessageReviews(): Promise<MessageReviewRow[]> {
-
     return [...MESSAGE_REVIEWS]
 }
 
@@ -299,6 +301,5 @@ export const REPORT_HISTORY: ReportHistoryItem[] = [
 ]
 
 export async function fetchReportHistory(): Promise<ReportHistoryItem[]> {
-
     return [...REPORT_HISTORY]
 }
