@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { Eye, Search, X, SlidersHorizontal } from 'lucide-react'
+import { Eye, SlidersHorizontal } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
 import { PageHeader } from '@/components/sections/page-header'
@@ -9,7 +9,6 @@ import { type HubAPIResult, type CoordinatorAPIResult } from '@/lib/api/manageme
 import { useResidents, useHubs, useCoordinators } from '@/hooks/use-management'
 import { residentColumns, hubColumns, coordinatorColumns, CreateHubDialog, AssignCoordinatorDialog } from '@/features/management'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 
@@ -39,21 +38,27 @@ function ManagementPage() {
     const [hubPage, setHubPage] = useState(1)
     const [hubLimit, setHubLimit] = useState(10)
     const [hubSearch, setHubSearch] = useState('')
+    const [hubStatus, setHubStatus] = useState<string>('all')
 
     const { data: hubsData, isLoading: isLoadingHubs } = useHubs({
         page: hubPage,
         limit: hubLimit,
         search: hubSearch || undefined,
+        status: hubStatus !== 'all' ? hubStatus : undefined,
     })
 
     const [coordinatorPage, setCoordinatorPage] = useState(1)
     const [coordinatorLimit, setCoordinatorLimit] = useState(10)
     const [coordinatorSearch, setCoordinatorSearch] = useState('')
+    const [coordinatorHubId, setCoordinatorHubId] = useState<string>('all')
+    const [coordinatorIsActive, setCoordinatorIsActive] = useState<string>('all')
 
     const { data: coordinatorsData, isLoading: isLoadingCoordinators } = useCoordinators({
         page: coordinatorPage,
         limit: coordinatorLimit,
         search: coordinatorSearch || undefined,
+        hub_id: coordinatorHubId !== 'all' ? Number(coordinatorHubId) : undefined,
+        is_active: coordinatorIsActive !== 'all' ? coordinatorIsActive === 'active' : undefined,
     })
 
     const activeSearchValue = activeTab === 'residents' ? residentSearch : activeTab === 'hubs' ? hubSearch : coordinatorSearch
@@ -158,6 +163,137 @@ function ManagementPage() {
                         </PopoverContent>
                     </Popover>
                 )}
+
+                {activeTab === 'hubs' && (
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="outline"
+                                className="h-9 rounded-full px-4 gap-2 text-xs font-semibold text-muted-foreground border-black/5 bg-white shadow-sm hover:bg-slate-50"
+                            >
+                                <SlidersHorizontal className="size-3.5" />
+                                Filter
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 rounded-2xl p-4 flex flex-col gap-4 border shadow-xl bg-white" align="end">
+                            <div className="flex items-center justify-between">
+                                <h3 className="font-semibold text-sm">Filters</h3>
+                                {hubStatus !== 'all' && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                            setHubStatus('all')
+                                            setHubPage(1)
+                                        }}
+                                        className="h-auto p-0 text-xs font-medium text-muted-foreground hover:text-foreground"
+                                    >
+                                        Clear all
+                                    </Button>
+                                )}
+                            </div>
+                            <div className="flex flex-col gap-3">
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-xs font-medium text-muted-foreground">Status</label>
+                                    <Select
+                                        value={hubStatus}
+                                        onValueChange={(val) => {
+                                            setHubStatus(val)
+                                            setHubPage(1)
+                                        }}
+                                    >
+                                        <SelectTrigger className="h-10 rounded-lg bg-muted/40 border-none shadow-none text-sm">
+                                            <SelectValue placeholder="All Status" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl border-none shadow-md">
+                                            <SelectItem value="all">All Status</SelectItem>
+                                            <SelectItem value="open">Open</SelectItem>
+                                            <SelectItem value="closed">Closed</SelectItem>
+                                            <SelectItem value="critical">Critical</SelectItem>
+                                            <SelectItem value="low_battery">Low Battery</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                )}
+
+                {activeTab === 'coordinators' && (
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="outline"
+                                className="h-9 rounded-full px-4 gap-2 text-xs font-semibold text-muted-foreground border-black/5 bg-white shadow-sm hover:bg-slate-50"
+                            >
+                                <SlidersHorizontal className="size-3.5" />
+                                Filter
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 rounded-2xl p-4 flex flex-col gap-4 border shadow-xl bg-white" align="end">
+                            <div className="flex items-center justify-between">
+                                <h3 className="font-semibold text-sm">Filters</h3>
+                                {(coordinatorHubId !== 'all' || coordinatorIsActive !== 'all') && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                            setCoordinatorHubId('all')
+                                            setCoordinatorIsActive('all')
+                                            setCoordinatorPage(1)
+                                        }}
+                                        className="h-auto p-0 text-xs font-medium text-muted-foreground hover:text-foreground"
+                                    >
+                                        Clear all
+                                    </Button>
+                                )}
+                            </div>
+                            <div className="flex flex-col gap-3">
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-xs font-medium text-muted-foreground">Hub</label>
+                                    <Select
+                                        value={coordinatorHubId}
+                                        onValueChange={(val) => {
+                                            setCoordinatorHubId(val)
+                                            setCoordinatorPage(1)
+                                        }}
+                                    >
+                                        <SelectTrigger className="h-10 rounded-lg bg-muted/40 border-none shadow-none text-sm">
+                                            <SelectValue placeholder="All Hubs" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl border-none shadow-md">
+                                            <SelectItem value="all">All Hubs</SelectItem>
+                                            {filterHubsData?.results?.map((hub) => (
+                                                <SelectItem key={hub.id} value={hub.id.toString()}>
+                                                    {hub.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-xs font-medium text-muted-foreground">Status</label>
+                                    <Select
+                                        value={coordinatorIsActive}
+                                        onValueChange={(val) => {
+                                            setCoordinatorIsActive(val)
+                                            setCoordinatorPage(1)
+                                        }}
+                                    >
+                                        <SelectTrigger className="h-10 rounded-lg bg-muted/40 border-none shadow-none text-sm">
+                                            <SelectValue placeholder="All Status" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl border-none shadow-md">
+                                            <SelectItem value="all">All Status</SelectItem>
+                                            <SelectItem value="active">Active</SelectItem>
+                                            <SelectItem value="inactive">Inactive</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                )}
             </PageHeader>
 
             <div className="flex-1 flex flex-col w-full">
@@ -237,6 +373,7 @@ function ManagementPage() {
                                                 noun="hubs"
                                                 onReset={() => {
                                                     setHubSearch('')
+                                                    setHubStatus('all')
                                                     setHubPage(1)
                                                 }}
                                             />
@@ -268,6 +405,8 @@ function ManagementPage() {
                                                 noun="coordinators"
                                                 onReset={() => {
                                                     setCoordinatorSearch('')
+                                                    setCoordinatorHubId('all')
+                                                    setCoordinatorIsActive('all')
                                                     setCoordinatorPage(1)
                                                 }}
                                             />
