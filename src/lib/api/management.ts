@@ -221,3 +221,4 @@ export async function updateUser(phone: string, payload: UpdateUserPayload): Pro
         data: payload,
     })
 }
+

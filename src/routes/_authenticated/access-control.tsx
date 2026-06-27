@@ -320,9 +320,7 @@ function AccessControlPage() {
                 key: 'user',
                 header: 'USER',
                 className: 'font-medium py-2 px-2 text-sm',
-                render: (user: UserAPIResult) => (
-                    <UserProfile name={user.full_name} email={user.email || user.phone_number} />
-                ),
+                render: (user: UserAPIResult) => <UserProfile name={user.full_name} email={user.email || user.phone_number} />,
             },
             {
                 key: 'role',
