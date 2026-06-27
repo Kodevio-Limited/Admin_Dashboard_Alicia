@@ -13,6 +13,7 @@ import imgProfile3D from '@/assets/profile_dummy.png'
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query'
 import { staticContentApi } from '@/lib/settings'
 import { useProfile, useUpdateProfile, useChangePassword } from '@/hooks/use-users'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 export const Route = createFileRoute('/_authenticated/settings')({
     component: SettingsPage,
@@ -122,6 +123,8 @@ function TermsAndConditionsTab() {
     const queryClient = useQueryClient()
     const [content, setContent] = useState<string>('')
     const [isInitialized, setIsInitialized] = useState(false)
+    const [isEditing, setIsEditing] = useState(false)
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
     const { data, isLoading, error } = useQuery({
         queryKey: ['static-content', 'terms-and-conditions'],
@@ -129,10 +132,16 @@ function TermsAndConditionsTab() {
     })
 
     const updateContent = useMutation({
-        mutationFn: () => staticContentApi.update('terms-and-conditions', content),
+        mutationFn: () =>
+            staticContentApi.update('terms-and-conditions', {
+                slug: data?.slug || 'terms',
+                title: data?.title || 'Terms and Conditions',
+                content: content,
+            }),
 
         onSuccess: () => {
             toast.success('Terms & Conditions updated successfully')
+            setIsEditing(false)
 
             queryClient.invalidateQueries({
                 queryKey: ['static-content', 'terms-and-conditions'],
@@ -145,16 +154,23 @@ function TermsAndConditionsTab() {
     })
 
     useEffect(() => {
-        if (data) {
-            setContent(data.content ?? '')
+        if (!isLoading) {
+            setContent(data?.content ?? '')
             setIsInitialized(true)
         }
-    }, [data])
+    }, [data, isLoading])
+
+    const handleCancel = () => {
+        if (data) {
+            setContent(data.content ?? '')
+        }
+        setIsEditing(false)
+    }
 
     const config = useMemo(
         () => ({
             height: 512,
-            readonly: false,
+            readonly: !isEditing,
             buttons: [
                 'bold',
                 'italic',
@@ -182,7 +198,7 @@ function TermsAndConditionsTab() {
             ],
             placeholder: 'Start typing...',
         }),
-        [],
+        [isEditing],
     )
 
     if (isLoading || !isInitialized) {
@@ -212,21 +228,62 @@ function TermsAndConditionsTab() {
                 <p className="text-sm font-medium text-foreground">Last updated: June 8, 2026 by Dianne Plummer.</p>
 
                 <div className="flex flex-col sm:flex-row gap-4 w-full">
-                    <Button size="lg" variant="secondary" className="flex-1 rounded-full">
-                        Preview
-                    </Button>
-                    <Button
-                        size="lg"
-                        variant="default"
-                        disabled={updateContent.isPending}
-                        onClick={() => updateContent.mutate()}
-                        className="flex-1 rounded-full"
-                    >
-                        {updateContent.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-                        Update
-                    </Button>
+                    {!isEditing ? (
+                        <>
+                            <Button
+                                size="lg"
+                                variant="secondary"
+                                className="flex-1 rounded-full text-base h-12 bg-muted/50 hover:bg-muted shadow-none border"
+                                onClick={() => setIsPreviewOpen(true)}
+                            >
+                                Preview
+                            </Button>
+                            <Button
+                                size="lg"
+                                variant="default"
+                                className="flex-1 rounded-full text-base h-12"
+                                onClick={() => setIsEditing(true)}
+                            >
+                                Edit
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button
+                                size="lg"
+                                variant="outline"
+                                className="flex-1 rounded-full text-base h-12"
+                                onClick={handleCancel}
+                                disabled={updateContent.isPending}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                size="lg"
+                                variant="default"
+                                disabled={updateContent.isPending}
+                                onClick={() => updateContent.mutate()}
+                                className="flex-1 rounded-full text-base h-12"
+                            >
+                                {updateContent.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+                                Save Changes
+                            </Button>
+                        </>
+                    )}
                 </div>
             </div>
+
+            <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+                <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto p-6 rounded-[32px]">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl font-bold tracking-tight mb-4">Terms & Conditions Preview</DialogTitle>
+                    </DialogHeader>
+                    <div
+                        className="prose prose-sm max-w-none text-foreground leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: content }}
+                    />
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }
@@ -235,6 +292,8 @@ function PrivacyPolicyTab() {
     const queryClient = useQueryClient()
     const [content, setContent] = useState<string>('')
     const [isInitialized, setIsInitialized] = useState(false)
+    const [isEditing, setIsEditing] = useState(false)
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false)
 
     const { data, isLoading, error } = useQuery({
         queryKey: ['static-content', 'privacy-policy'],
@@ -242,10 +301,16 @@ function PrivacyPolicyTab() {
     })
 
     const updateContent = useMutation({
-        mutationFn: () => staticContentApi.update('privacy-policy', content),
+        mutationFn: () =>
+            staticContentApi.update('privacy-policy', {
+                slug: data?.slug || 'privacy-policy',
+                title: data?.title || 'Privacy Policy',
+                content: content,
+            }),
 
         onSuccess: () => {
             toast.success('Privacy Policy updated successfully')
+            setIsEditing(false)
 
             queryClient.invalidateQueries({
                 queryKey: ['static-content', 'privacy-policy'],
@@ -258,16 +323,23 @@ function PrivacyPolicyTab() {
     })
 
     useEffect(() => {
-        if (data) {
-            setContent(data.content ?? '')
+        if (!isLoading) {
+            setContent(data?.content ?? '')
             setIsInitialized(true)
         }
-    }, [data])
+    }, [data, isLoading])
+
+    const handleCancel = () => {
+        if (data) {
+            setContent(data.content ?? '')
+        }
+        setIsEditing(false)
+    }
 
     const config = useMemo(
         () => ({
             height: 512,
-            readonly: false,
+            readonly: !isEditing,
             buttons: [
                 'bold',
                 'italic',
@@ -295,7 +367,7 @@ function PrivacyPolicyTab() {
             ],
             placeholder: 'Start typing...',
         }),
-        [],
+        [isEditing],
     )
 
     if (isLoading || !isInitialized) {
@@ -325,25 +397,62 @@ function PrivacyPolicyTab() {
                 <p className="text-sm font-medium text-foreground">Last updated: June 8, 2026 by Dianne Plummer.</p>
 
                 <div className="flex flex-col sm:flex-row gap-4 w-full">
-                    <Button
-                        size="lg"
-                        variant="secondary"
-                        className="flex-1 rounded-full text-base h-12 bg-muted/50 hover:bg-muted shadow-none border"
-                    >
-                        Preview
-                    </Button>
-                    <Button
-                        size="lg"
-                        variant="default"
-                        disabled={updateContent.isPending}
-                        onClick={() => updateContent.mutate()}
-                        className="flex-1 rounded-full text-base h-12 bg-primary hover:bg-primary/90 text-primary-foreground shadow-none"
-                    >
-                        {updateContent.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
-                        Update
-                    </Button>
+                    {!isEditing ? (
+                        <>
+                            <Button
+                                size="lg"
+                                variant="secondary"
+                                className="flex-1 rounded-full text-base h-12 bg-muted/50 hover:bg-muted shadow-none border"
+                                onClick={() => setIsPreviewOpen(true)}
+                            >
+                                Preview
+                            </Button>
+                            <Button
+                                size="lg"
+                                variant="default"
+                                className="flex-1 rounded-full text-base h-12"
+                                onClick={() => setIsEditing(true)}
+                            >
+                                Edit
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button
+                                size="lg"
+                                variant="outline"
+                                className="flex-1 rounded-full text-base h-12"
+                                onClick={handleCancel}
+                                disabled={updateContent.isPending}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                size="lg"
+                                variant="default"
+                                disabled={updateContent.isPending}
+                                onClick={() => updateContent.mutate()}
+                                className="flex-1 rounded-full text-base h-12"
+                            >
+                                {updateContent.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+                                Save Changes
+                            </Button>
+                        </>
+                    )}
                 </div>
             </div>
+
+            <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+                <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto p-6 rounded-[32px]">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl font-bold tracking-tight mb-4">Privacy Policy Preview</DialogTitle>
+                    </DialogHeader>
+                    <div
+                        className="prose prose-sm max-w-none text-foreground leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: content }}
+                    />
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

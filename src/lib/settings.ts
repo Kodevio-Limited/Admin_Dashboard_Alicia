@@ -1,14 +1,42 @@
+import { client } from './api-client'
+
+export interface StaticContentAPIResult {
+    slug: string
+    title: string
+    content: string
+}
+
+interface ApiResponse<T> {
+    status: string
+    data: T
+    message?: string
+}
+
 export const staticContentApi = {
-    get: async (key: string) => {
-        if (key === 'terms-and-conditions') {
-            return {
-                content: '<p>This is the default Terms & Conditions content. You can edit this text using the rich text editor below.</p>',
+    get: async (key: string): Promise<StaticContentAPIResult> => {
+        const endpoint = key === 'privacy-policy' ? '/admin/content/privacy-policy/' : '/admin/content/terms/'
+        try {
+            const response = await client<ApiResponse<StaticContentAPIResult>>(endpoint)
+            return response.data
+        } catch (err: any) {
+            const isNotFound = err?.message?.toLowerCase().includes('not found') || err?.message?.includes('404')
+            if (isNotFound) {
+                return {
+                    slug: key === 'privacy-policy' ? 'privacy-policy' : 'terms',
+                    title: key === 'privacy-policy' ? 'Privacy Policy' : 'Terms & Conditions',
+                    content: '',
+                }
             }
+            throw err
         }
-        return { content: '<p>This is the default Privacy Policy content. You can edit this text using the rich text editor below.</p>' }
     },
-    update: async (key: string, content: string) => {
-        return true
+    update: async (key: string, payload: { slug: string; title: string; content: string }): Promise<StaticContentAPIResult> => {
+        const endpoint = key === 'privacy-policy' ? '/admin/content/privacy-policy/' : '/admin/content/terms/'
+        const response = await client<ApiResponse<StaticContentAPIResult>>(endpoint, {
+            method: 'PATCH',
+            data: payload,
+        })
+        return response.data
     },
 }
 
