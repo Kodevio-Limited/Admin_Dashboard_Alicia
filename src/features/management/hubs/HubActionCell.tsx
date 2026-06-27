@@ -31,9 +31,11 @@ export function HubActionCell({ hub }: { hub: HubAPIResult }) {
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>View details</DropdownMenuItem>
                     </DialogTrigger>
                     <DropdownMenuSeparator />
+                    {/* 
                     <CreateHubDialog mode="edit" hub={hub}>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit hub</DropdownMenuItem>
                     </CreateHubDialog>
+                    */}
                     <DropdownMenuItem onSelect={() => toast.success(`Restarted hub ${hub.name}`)}>Restart hub</DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
@@ -97,11 +99,13 @@ export function HubActionCell({ hub }: { hub: HubAPIResult }) {
                         >
                             Restart Sync Service
                         </Button>
+                        {/* 
                         <CreateHubDialog mode="edit" hub={hub}>
                             <Button variant="secondary" className="flex-1">
                                 Edit
                             </Button>
                         </CreateHubDialog>
+                        */}
                     </div>
                 </div>
             </DialogContent>

@@ -43,10 +43,12 @@ export function ResidentActionCell({ resident }: { resident: ResidentAPIResult }
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>View details</DropdownMenuItem>
                     </DialogTrigger>
                     <DropdownMenuSeparator />
+                    {/* 
                     <EditResidentDialog resident={resident}>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit resident</DropdownMenuItem>
                     </EditResidentDialog>
                     <DropdownMenuSeparator />
+                    */}
                     {resident.is_active ? (
                         <DropdownMenuItem
                             onSelect={() => {

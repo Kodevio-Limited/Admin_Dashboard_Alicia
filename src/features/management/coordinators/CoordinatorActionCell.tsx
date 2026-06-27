@@ -54,11 +54,12 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                     <DialogTrigger asChild>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>View details</DropdownMenuItem>
                     </DialogTrigger>
-                    <DropdownMenuSeparator />
+                    {/* 
                     <EditCoordinatorDialog coordinator={coordinator}>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit coordinator</DropdownMenuItem>
                     </EditCoordinatorDialog>
                     <DropdownMenuSeparator />
+                    */}
                     <ReassignCoordinatorDialog coordinator={coordinator}>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Reassign Area</DropdownMenuItem>
                     </ReassignCoordinatorDialog>

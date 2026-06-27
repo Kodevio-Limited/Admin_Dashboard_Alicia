@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { Eye } from 'lucide-react'
+import { Eye, Search, X, SlidersHorizontal } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
 import { PageHeader } from '@/components/sections/page-header'
@@ -8,6 +8,10 @@ import { ServerDataTable } from '@/components/shared/server-data-table'
 import { type HubAPIResult, type CoordinatorAPIResult } from '@/lib/api/management'
 import { useResidents, useHubs, useCoordinators } from '@/hooks/use-management'
 import { residentColumns, hubColumns, coordinatorColumns, CreateHubDialog, AssignCoordinatorDialog } from '@/features/management'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 
 export const Route = createFileRoute('/_authenticated/management')({
     component: ManagementPage,
@@ -18,17 +22,23 @@ function ManagementPage() {
 
     const [residentPage, setResidentPage] = useState(1)
     const [residentLimit, setResidentLimit] = useState(10)
-    const [residentSearch] = useState('')
+    const [residentSearch, setResidentSearch] = useState('')
+    const [residentHubId, setResidentHubId] = useState<string>('all')
+    const [residentIsActive, setResidentIsActive] = useState<string>('all')
+
+    const { data: filterHubsData } = useHubs({ limit: 100 })
 
     const { data: residentsData, isLoading: isLoadingResidents } = useResidents({
         page: residentPage,
         limit: residentLimit,
         search: residentSearch || undefined,
+        hub_id: residentHubId !== 'all' ? Number(residentHubId) : undefined,
+        is_active: residentIsActive !== 'all' ? residentIsActive === 'active' : undefined,
     })
 
     const [hubPage, setHubPage] = useState(1)
     const [hubLimit, setHubLimit] = useState(10)
-    const [hubSearch] = useState('')
+    const [hubSearch, setHubSearch] = useState('')
 
     const { data: hubsData, isLoading: isLoadingHubs } = useHubs({
         page: hubPage,
@@ -38,7 +48,7 @@ function ManagementPage() {
 
     const [coordinatorPage, setCoordinatorPage] = useState(1)
     const [coordinatorLimit, setCoordinatorLimit] = useState(10)
-    const [coordinatorSearch] = useState('')
+    const [coordinatorSearch, setCoordinatorSearch] = useState('')
 
     const { data: coordinatorsData, isLoading: isLoadingCoordinators } = useCoordinators({
         page: coordinatorPage,
@@ -46,9 +56,109 @@ function ManagementPage() {
         search: coordinatorSearch || undefined,
     })
 
+    const activeSearchValue = activeTab === 'residents' ? residentSearch : activeTab === 'hubs' ? hubSearch : coordinatorSearch
+
+    const handleSearchChange = (val: string) => {
+        if (activeTab === 'residents') {
+            setResidentSearch(val)
+            setResidentPage(1)
+        } else if (activeTab === 'hubs') {
+            setHubSearch(val)
+            setHubPage(1)
+        } else if (activeTab === 'coordinators') {
+            setCoordinatorSearch(val)
+            setCoordinatorPage(1)
+        }
+    }
+
     return (
         <>
-            <PageHeader title="Management" description="Manage residents, hubs, and coordinators" lastUpdated="05:41:15 PM" />
+            <PageHeader
+                title="Management"
+                description="Manage residents, hubs, and coordinators"
+                lastUpdated="05:41:15 PM"
+                searchValue={activeSearchValue}
+                onSearchChange={handleSearchChange}
+                searchPlaceholder={
+                    activeTab === 'residents' ? 'Search residents...' : activeTab === 'hubs' ? 'Search hubs...' : 'Search coordinators...'
+                }
+            >
+                {activeTab === 'residents' && (
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="outline"
+                                className="h-9 rounded-full px-4 gap-2 text-xs font-semibold text-muted-foreground border-black/5 bg-white shadow-sm hover:bg-slate-50"
+                            >
+                                <SlidersHorizontal className="size-3.5" />
+                                Filter
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 rounded-2xl p-4 flex flex-col gap-4 border shadow-xl bg-white" align="end">
+                            <div className="flex items-center justify-between">
+                                <h3 className="font-semibold text-sm">Filters</h3>
+                                {(residentHubId !== 'all' || residentIsActive !== 'all') && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                            setResidentHubId('all')
+                                            setResidentIsActive('all')
+                                            setResidentPage(1)
+                                        }}
+                                        className="h-auto p-0 text-xs font-medium text-muted-foreground hover:text-foreground"
+                                    >
+                                        Clear all
+                                    </Button>
+                                )}
+                            </div>
+                            <div className="flex flex-col gap-3">
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-xs font-medium text-muted-foreground">Hub</label>
+                                    <Select
+                                        value={residentHubId}
+                                        onValueChange={(val) => {
+                                            setResidentHubId(val)
+                                            setResidentPage(1)
+                                        }}
+                                    >
+                                        <SelectTrigger className="h-10 rounded-lg bg-muted/40 border-none shadow-none text-sm">
+                                            <SelectValue placeholder="All Hubs" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl border-none shadow-md">
+                                            <SelectItem value="all">All Hubs</SelectItem>
+                                            {filterHubsData?.results?.map((hub) => (
+                                                <SelectItem key={hub.id} value={hub.id.toString()}>
+                                                    {hub.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-xs font-medium text-muted-foreground">Status</label>
+                                    <Select
+                                        value={residentIsActive}
+                                        onValueChange={(val) => {
+                                            setResidentIsActive(val)
+                                            setResidentPage(1)
+                                        }}
+                                    >
+                                        <SelectTrigger className="h-10 rounded-lg bg-muted/40 border-none shadow-none text-sm">
+                                            <SelectValue placeholder="All Status" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl border-none shadow-md">
+                                            <SelectItem value="all">All Status</SelectItem>
+                                            <SelectItem value="active">Active</SelectItem>
+                                            <SelectItem value="inactive">Inactive</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                )}
+            </PageHeader>
 
             <div className="flex-1 flex flex-col w-full">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col w-full min-h-0">
@@ -95,6 +205,12 @@ function ManagementPage() {
                                                 onPageChange={setResidentPage}
                                                 onLimitChange={setResidentLimit}
                                                 isLoading={isLoadingResidents}
+                                                onReset={() => {
+                                                    setResidentSearch('')
+                                                    setResidentHubId('all')
+                                                    setResidentIsActive('all')
+                                                    setResidentPage(1)
+                                                }}
                                             />
                                         </div>
                                     </div>
@@ -119,6 +235,10 @@ function ManagementPage() {
                                                 onLimitChange={setHubLimit}
                                                 isLoading={isLoadingHubs}
                                                 noun="hubs"
+                                                onReset={() => {
+                                                    setHubSearch('')
+                                                    setHubPage(1)
+                                                }}
                                             />
                                         </div>
                                     </div>
@@ -146,6 +266,10 @@ function ManagementPage() {
                                                 onLimitChange={setCoordinatorLimit}
                                                 isLoading={isLoadingCoordinators}
                                                 noun="coordinators"
+                                                onReset={() => {
+                                                    setCoordinatorSearch('')
+                                                    setCoordinatorPage(1)
+                                                }}
                                             />
                                         </div>
                                     </div>

@@ -108,20 +108,20 @@ function Dashboard() {
                                 <AreaChart data={checkinData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                     <defs>
                                         <linearGradient id="checkinGradient" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#03045E" stopOpacity={0.15} />
-                                            <stop offset="95%" stopColor="#03045E" stopOpacity={0} />
+                                            <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.15} />
+                                            <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                                     <XAxis
                                         dataKey="time"
-                                        tick={{ fill: '#989898', fontSize: 13, fontWeight: 500 }}
+                                        tick={{ fill: 'var(--muted-foreground)', fontSize: 13, fontWeight: 500 }}
                                         axisLine={false}
                                         tickLine={false}
                                         dy={12}
                                     />
                                     <YAxis
-                                        tick={{ fill: '#989898', fontSize: 13, fontWeight: 500 }}
+                                        tick={{ fill: 'var(--muted-foreground)', fontSize: 13, fontWeight: 500 }}
                                         axisLine={false}
                                         tickLine={false}
                                         tickFormatter={(v) => `${v / 1000}K`}
@@ -133,11 +133,11 @@ function Dashboard() {
                                     <Area
                                         type="monotone"
                                         dataKey="value"
-                                        stroke="#03045E"
+                                        stroke="var(--primary)"
                                         strokeWidth={3}
                                         fill="url(#checkinGradient)"
                                         dot={false}
-                                        activeDot={{ r: 6, fill: '#03045E', stroke: 'white', strokeWidth: 2 }}
+                                        activeDot={{ r: 6, fill: 'var(--primary)', stroke: 'white', strokeWidth: 2 }}
                                     />
                                 </AreaChart>
                             </ResponsiveContainer>
@@ -221,10 +221,10 @@ function Dashboard() {
                                     margin={{ top: 0, right: 30, left: 0, bottom: 0 }}
                                     barSize={32}
                                 >
-                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
+                                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border)" />
                                     <XAxis
                                         type="number"
-                                        tick={{ fill: '#989898', fontSize: 13, fontWeight: 500 }}
+                                        tick={{ fill: 'var(--muted-foreground)', fontSize: 13, fontWeight: 500 }}
                                         axisLine={false}
                                         tickLine={false}
                                         ticks={[0, 30, 60, 90, 120]}
@@ -233,7 +233,7 @@ function Dashboard() {
                                     <YAxis
                                         type="category"
                                         dataKey="name"
-                                        tick={{ fill: '#54555a', fontSize: 14, fontWeight: 600 }}
+                                        tick={{ fill: 'var(--foreground)', fontSize: 14, fontWeight: 600 }}
                                         axisLine={false}
                                         tickLine={false}
                                         width={120}
@@ -244,7 +244,7 @@ function Dashboard() {
                                     />
                                     <Bar dataKey="value" radius={[0, 8, 8, 0]}>
                                         {hazardData.map((_, i) => (
-                                            <Cell key={i} fill="#03045E" />
+                                            <Cell key={i} fill="var(--primary)" />
                                         ))}
                                     </Bar>
                                 </BarChart>

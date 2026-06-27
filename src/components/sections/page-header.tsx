@@ -8,9 +8,21 @@ export interface PageHeaderProps {
     className?: string
     lastUpdated?: string
     children?: React.ReactNode
+    searchValue?: string
+    onSearchChange?: (val: string) => void
+    searchPlaceholder?: string
 }
 
-export function PageHeader({ title, description, className, lastUpdated, children }: PageHeaderProps) {
+export function PageHeader({
+    title,
+    description,
+    className,
+    lastUpdated,
+    children,
+    searchValue,
+    onSearchChange,
+    searchPlaceholder = 'Search region, hub, or incident...',
+}: PageHeaderProps) {
     return (
         <div className={cn('flex flex-col md:flex-row md:items-start justify-between w-full gap-4 shrink-0', className)}>
             <div className="flex flex-col gap-2">
@@ -31,8 +43,10 @@ export function PageHeader({ title, description, className, lastUpdated, childre
                         <Search className="shrink-0 size-4 text-muted-foreground" />
                         <input
                             type="search"
-                            aria-label="Search region, hub, or incident"
-                            placeholder="Search region, hub, or incident..."
+                            aria-label="Search"
+                            placeholder={searchPlaceholder}
+                            value={searchValue || ''}
+                            onChange={(e) => onSearchChange?.(e.target.value)}
                             className="font-medium text-xs md:text-sm text-foreground bg-transparent outline-none w-full placeholder:text-muted-foreground"
                         />
                     </div>

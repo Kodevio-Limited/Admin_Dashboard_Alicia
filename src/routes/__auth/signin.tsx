@@ -81,7 +81,9 @@ function RouteComponent() {
                             </div>
                             {field.state.meta.errors ? (
                                 <p className="text-destructive text-sm font-medium px-4 text-center">
-                                    {field.state.meta.errors.map((e: any) => (typeof e === 'string' ? e : e?.message || JSON.stringify(e))).join(', ')}
+                                    {field.state.meta.errors
+                                        .map((e: any) => (typeof e === 'string' ? e : e?.message || JSON.stringify(e)))
+                                        .join(', ')}
                                 </p>
                             ) : null}
                         </div>
@@ -127,7 +129,9 @@ function RouteComponent() {
                             </div>
                             {field.state.meta.errors ? (
                                 <p className="text-destructive text-sm font-medium px-4 text-center">
-                                    {field.state.meta.errors.map((e: any) => (typeof e === 'string' ? e : e?.message || JSON.stringify(e))).join(', ')}
+                                    {field.state.meta.errors
+                                        .map((e: any) => (typeof e === 'string' ? e : e?.message || JSON.stringify(e)))
+                                        .join(', ')}
                                 </p>
                             ) : null}
                         </div>
