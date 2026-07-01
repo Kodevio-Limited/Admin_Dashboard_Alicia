@@ -19,4 +19,17 @@ export const adminKeys = {
     // System
     overview: () => [...adminKeys.all, 'overview'] as const,
     aiConfig: () => [...adminKeys.all, 'ai-config'] as const,
+
+    // AI Control & Reporting
+    aiControl: () => [...adminKeys.all, 'ai-control-config'] as const,
+    aiReporting: () => [...adminKeys.all, 'ai-reporting-config'] as const,
+
+    // Message Review Queue
+    messageReview: () => [...adminKeys.all, 'message-reviews'] as const,
+    messageReviewList: (filters: Record<string, any>) => [...adminKeys.messageReview(), filters] as const,
+    messageReviewDetail: (source: string, id: number) => [...adminKeys.messageReview(), 'detail', source, id] as const,
+
+    // AI Reports
+    reports: () => [...adminKeys.all, 'reports'] as const,
+    reportDetail: (id: number) => [...adminKeys.all, 'reports', id] as const,
 }

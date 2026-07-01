@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import type { HubAPIResult } from '@/lib/api/management'
-import { CreateHubDialog } from './CreateHubDialog'
+// removed unused imports
 import { AssignCoordinatorDialog } from '../coordinators/AssignCoordinatorDialog'
 
 export function HubActionCell({ hub }: { hub: HubAPIResult }) {

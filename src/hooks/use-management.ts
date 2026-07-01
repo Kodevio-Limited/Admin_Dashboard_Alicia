@@ -34,7 +34,7 @@ export function useActivateResident() {
     const queryClient = useQueryClient()
     return useMutation({
         mutationFn: activateResident,
-        onSuccess: (data, userId) => {
+        onSuccess: (_, userId) => {
             queryClient.invalidateQueries({ queryKey: managementKeys.residents() })
             queryClient.invalidateQueries({ queryKey: managementKeys.residentDetails(userId) })
             queryClient.invalidateQueries({ queryKey: managementKeys.users() })
@@ -46,7 +46,7 @@ export function useSuspendResident() {
     const queryClient = useQueryClient()
     return useMutation({
         mutationFn: suspendResident,
-        onSuccess: (data, userId) => {
+        onSuccess: (_, userId) => {
             queryClient.invalidateQueries({ queryKey: managementKeys.residents() })
             queryClient.invalidateQueries({ queryKey: managementKeys.residentDetails(userId) })
             queryClient.invalidateQueries({ queryKey: managementKeys.users() })

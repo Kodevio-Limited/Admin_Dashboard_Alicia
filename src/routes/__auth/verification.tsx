@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
-import { ShieldCheck } from 'lucide-react'
 
 import { z } from 'zod'
 import { verifyPassword } from '@/lib/api/auth'

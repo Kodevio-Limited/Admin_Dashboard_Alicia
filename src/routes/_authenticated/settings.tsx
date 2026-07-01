@@ -13,7 +13,7 @@ import imgProfile3D from '@/assets/profile_dummy.png'
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query'
 import { staticContentApi } from '@/lib/settings'
 import { useProfile, useUpdateProfile, useChangePassword } from '@/hooks/use-users'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 
 export const Route = createFileRoute('/_authenticated/settings')({

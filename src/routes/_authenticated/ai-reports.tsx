@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState, useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useState, useMemo, useEffect } from 'react'
+// unused tanstack query imports removed
 import { Eye, Download, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -23,7 +23,18 @@ import { DataTable } from '@/components/ui/data-table'
 import type { DataTableColumn } from '@/components/ui/data-table'
 import { cn } from '@/lib/utils'
 
-import { fetchMessageReviews, fetchReportHistory } from '@/lib/ai-reports'
+import {
+    useMessageReviews,
+    useMessageReviewDetail,
+    useUpdateMessageReviewStatus,
+    useReportHistory,
+    useReportingConfig,
+    useUpdateReportingConfig,
+    useDeleteReport,
+    useControlConfig,
+    useUpdateControlConfig,
+    useGenerateReport,
+} from '@/hooks/use-ai-reports'
 import type { MessageReviewRow, ReportHistoryItem } from '@/lib/ai-reports'
 
 export const Route = createFileRoute('/_authenticated/ai-reports')({
@@ -31,35 +42,93 @@ export const Route = createFileRoute('/_authenticated/ai-reports')({
 })
 
 function MessageReviewTab() {
-    const [statusFilter, setStatusFilter] = useState('All')
+    const [statusFilter, setStatusFilter] = useState('all')
+    const [sourceFilter, setSourceFilter] = useState('all')
+    const [severityFilter, setSeverityFilter] = useState('all')
     const [viewingMessage, setViewingMessage] = useState<MessageReviewRow | null>(null)
-    const filterOptions = ['All', 'Pending', 'Escalated', 'Resolved']
+    const statusOptions = ['all', 'pending', 'escalated', 'resolved', 'reviewed']
 
-    const { data: reviews = [], isLoading } = useQuery({
-        queryKey: ['message-reviews'],
-        queryFn: fetchMessageReviews,
-    })
+    const queryParams = {
+        ...(statusFilter !== 'all' && { status: statusFilter }),
+        ...(sourceFilter !== 'all' && { source: sourceFilter }),
+        ...(severityFilter !== 'all' && { severity: Number(severityFilter) }),
+    }
 
-    const filteredReviews = useMemo(() => {
-        if (statusFilter === 'All') return reviews
-        return reviews.filter((r) => r.status.toLowerCase() === statusFilter.toLowerCase())
-    }, [reviews, statusFilter])
+    const { data: page, isLoading } = useMessageReviews(queryParams)
+
+    const reviews = page?.results ?? []
+    const totalCount = page?.count ?? 0
+
+    const { data: detailsData, isLoading: isLoadingDetails } = useMessageReviewDetail(viewingMessage?.source, viewingMessage?.id)
+
+    const updateStatusHook = useUpdateMessageReviewStatus()
+    const updateStatusMutation = {
+        isPending: updateStatusHook.isPending,
+        mutate: (variables: { source: 'hazard' | 'checkin'; id: number; status: string }) =>
+            updateStatusHook.mutate(variables as any, {
+                onSuccess: (_, v) => {
+                    toast.success(`Message marked as ${v.status}`)
+                    setViewingMessage(null)
+                },
+                onError: (err: any) => {
+                    toast.error(err.message || 'Failed to update message status')
+                },
+            }),
+    }
 
     const columns: DataTableColumn<MessageReviewRow>[] = useMemo(
         () => [
             {
+                key: 'source',
+                header: 'SOURCE',
+                className: 'py-2 px-2',
+                headerClassName: 'px-2',
+                render: (row: MessageReviewRow) => (
+                    <Badge
+                        variant={row.source === 'hazard' ? 'destructive' : 'secondary'}
+                        className="rounded-full px-3 py-1 text-xs font-semibold capitalize"
+                    >
+                        {row.source}
+                    </Badge>
+                ),
+            },
+            {
                 key: 'preview',
-                header: 'MESSAGE PREVIEW',
+                header: 'MESSAGE',
                 className: 'py-2 px-2 font-medium text-sm',
                 headerClassName: 'px-2',
-                render: (row: MessageReviewRow) => <div className="max-w-[400px] leading-snug">{row.preview}</div>,
+                render: (row: MessageReviewRow) => (
+                    <div className="max-w-[360px] leading-snug truncate" title={row.preview}>
+                        {row.preview}
+                    </div>
+                ),
             },
             {
                 key: 'resident',
-                header: 'RESIDENT',
+                header: 'REPORTER',
                 className: 'py-2 text-muted-foreground text-left pr-4',
                 headerClassName: 'text-left pr-4',
                 render: (row: MessageReviewRow) => row.resident,
+            },
+            {
+                key: 'severity',
+                header: 'SEVERITY',
+                className: 'py-2 text-left pr-4',
+                headerClassName: 'text-left pr-4',
+                render: (row: MessageReviewRow) => {
+                    if (row.severity == null) return <span className="text-muted-foreground text-xs">—</span>
+                    const colors: Record<number, string> = {
+                        1: 'bg-yellow-100 text-yellow-700',
+                        2: 'bg-orange-100 text-orange-700',
+                        3: 'bg-red-100 text-red-700',
+                    }
+                    const labels: Record<number, string> = { 1: 'Low', 2: 'Medium', 3: 'High' }
+                    return (
+                        <span className={cn('text-xs font-semibold px-2 py-0.5 rounded-full', colors[row.severity] ?? 'bg-muted text-muted-foreground')}>
+                            {labels[row.severity] ?? `L${row.severity}`}
+                        </span>
+                    )
+                },
             },
             {
                 key: 'status',
@@ -67,13 +136,14 @@ function MessageReviewTab() {
                 className: 'py-2 text-left pr-4',
                 headerClassName: 'text-left pr-4',
                 render: (row: MessageReviewRow) => {
-                    let variant = 'secondary'
-                    if (row.status === 'REVIEWD' || row.status === 'RESOLVED') variant = 'success'
-                    if (row.status === 'PENDING') variant = 'warning'
-                    if (row.status === 'ESCALATED') variant = 'destructive'
-
+                    const variantMap: Record<string, string> = {
+                        reviewed: 'success',
+                        resolved: 'success',
+                        pending: 'warning',
+                        escalated: 'destructive',
+                    }
                     return (
-                        <Badge variant={variant as any} className="rounded-full px-3 py-1 text-xs font-semibold">
+                        <Badge variant={(variantMap[row.status] ?? 'secondary') as any} className="rounded-full px-3 py-1 text-xs font-semibold capitalize">
                             {row.status}
                         </Badge>
                     )
@@ -82,7 +152,7 @@ function MessageReviewTab() {
             {
                 key: 'time',
                 header: 'TIME',
-                className: 'py-2 text-left pr-4',
+                className: 'py-2 text-left pr-4 text-muted-foreground text-sm',
                 headerClassName: 'text-left pr-4',
                 render: (row: MessageReviewRow) => row.time,
             },
@@ -102,38 +172,81 @@ function MessageReviewTab() {
                         <DropdownMenuContent align="end" sideOffset={8}>
                             <DropdownMenuItem onSelect={() => setViewingMessage(row)}>View details</DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onSelect={() => toast.success(`Editing message from ${row.resident}`)}>
-                                Edit message
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => toast.success(`Marked as resolved for ${row.resident}`)}>
+                            <DropdownMenuItem
+                                onSelect={() => updateStatusMutation.mutate({ source: row.source, id: row.id, status: 'resolved' })}
+                            >
                                 Mark as resolved
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onSelect={() => updateStatusMutation.mutate({ source: row.source, id: row.id, status: 'escalated' })}
+                                className="text-destructive focus:text-destructive"
+                            >
+                                Escalate
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 ),
             },
         ],
-        [],
+        [updateStatusMutation],
     )
 
     return (
         <div className="flex-1 flex flex-col gap-4 min-h-0 w-full">
-            <div className="flex items-center gap-3 overflow-x-auto pb-2">
-                {filterOptions.map((option) => (
-                    <button
-                        key={option}
-                        onClick={() => setStatusFilter(option)}
-                        className={cn(
-                            'px-6 py-2 rounded-full text-sm font-medium border transition-colors whitespace-nowrap',
-                            statusFilter === option
-                                ? 'bg-primary text-primary-foreground border-primary'
-                                : 'bg-white text-muted-foreground border-border hover:bg-muted',
-                        )}
-                    >
-                        {option}
-                    </button>
-                ))}
+            {/* Filters row */}
+            <div className="flex flex-wrap items-center gap-3">
+                {/* Status pill filters */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                    {statusOptions.map((option) => (
+                        <button
+                            key={option}
+                            onClick={() => setStatusFilter(option)}
+                            className={cn(
+                                'px-5 py-2 rounded-full text-sm font-medium border transition-colors whitespace-nowrap capitalize',
+                                statusFilter === option
+                                    ? 'bg-primary text-primary-foreground border-primary'
+                                    : 'bg-white text-muted-foreground border-border hover:bg-muted',
+                            )}
+                        >
+                            {option === 'all' ? 'All' : option}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="flex items-center gap-2 ml-auto">
+                    {/* Source filter */}
+                    <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                        <SelectTrigger className="w-[130px] bg-white border border-border rounded-xl h-9 text-sm font-medium shadow-none">
+                            <SelectValue placeholder="Source" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Sources</SelectItem>
+                            <SelectItem value="checkin">Check-in</SelectItem>
+                            <SelectItem value="hazard">Hazard</SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    {/* Severity filter */}
+                    <Select value={severityFilter} onValueChange={setSeverityFilter}>
+                        <SelectTrigger className="w-[140px] bg-white border border-border rounded-xl h-9 text-sm font-medium shadow-none">
+                            <SelectValue placeholder="Severity" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Severities</SelectItem>
+                            <SelectItem value="1">Low (1)</SelectItem>
+                            <SelectItem value="2">Medium (2)</SelectItem>
+                            <SelectItem value="3">High (3)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
+
+            {/* Count badge */}
+            {!isLoading && (
+                <p className="text-sm text-muted-foreground">
+                    Showing <span className="font-semibold text-foreground">{reviews.length}</span> of <span className="font-semibold text-foreground">{totalCount}</span> items
+                </p>
+            )}
 
             <Card className="flex-1 overflow-hidden shadow-sm flex flex-col min-h-0">
                 <CardContent className="p-4 flex-1 flex flex-col">
@@ -141,14 +254,15 @@ function MessageReviewTab() {
                         <div className="flex-1 flex items-center justify-center text-muted-foreground">Loading message reviews...</div>
                     ) : (
                         <div className="flex-1 flex flex-col gap-4">
-                            <DataTable columns={columns} data={filteredReviews} noun="messages" emptyIcon={<Eye className="h-6 w-6" />} />
+                            <DataTable columns={columns} data={reviews} noun="messages" emptyIcon={<Eye className="h-6 w-6" />} />
                         </div>
                     )}
                 </CardContent>
             </Card>
 
+            {/* Detail modal */}
             <Dialog open={!!viewingMessage} onOpenChange={(open) => !open && setViewingMessage(null)}>
-                <DialogContent className="max-w-[420px] p-6 sm:rounded-[32px] gap-6 outline-none" showCloseButton={false}>
+                <DialogContent className="max-w-[480px] p-6 sm:rounded-[32px] gap-6 outline-none" showCloseButton={false}>
                     <div className="absolute top-4 right-4">
                         <Button variant="ghost" size="icon" onClick={() => setViewingMessage(null)}>
                             <X className="size-4" />
@@ -158,94 +272,129 @@ function MessageReviewTab() {
                     <DialogHeader className="flex flex-col items-center gap-1.5 pt-2">
                         <DialogTitle className="text-2xl font-bold tracking-tight">Review Message</DialogTitle>
                         <p className="text-sm font-medium text-muted-foreground">{viewingMessage?.resident}</p>
-                        <Badge
-                            className={cn(
-                                'rounded-md px-2 py-0.5 mt-1 border-0 uppercase font-semibold text-[11px] tracking-wider',
-                                viewingMessage?.status === 'REVIEWD' || viewingMessage?.status === 'RESOLVED'
-                                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400'
-                                    : viewingMessage?.status === 'PENDING'
-                                      ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100'
-                                      : 'bg-red-100 text-red-700 hover:bg-red-100',
-                            )}
-                        >
-                            {viewingMessage?.status}
-                        </Badge>
+                        <div className="flex items-center gap-2 mt-1">
+                            <Badge
+                                className={cn(
+                                    'rounded-md px-2 py-0.5 border-0 uppercase font-semibold text-[11px] tracking-wider',
+                                    viewingMessage?.status === 'reviewed' || viewingMessage?.status === 'resolved'
+                                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400'
+                                        : viewingMessage?.status === 'pending'
+                                          ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100'
+                                          : 'bg-red-100 text-red-700 hover:bg-red-100',
+                                )}
+                            >
+                                {viewingMessage?.status}
+                            </Badge>
+                            <Badge variant={viewingMessage?.source === 'hazard' ? 'destructive' : 'secondary'} className="rounded-md px-2 py-0.5 border-0 text-[11px] font-semibold uppercase">
+                                {viewingMessage?.source}
+                            </Badge>
+                        </div>
                     </DialogHeader>
 
                     <div className="flex flex-col gap-5">
+                        {/* Photo */}
+                        {(viewingMessage?.photo_url || detailsData?.photo_url) && (
+                            <div className="rounded-xl overflow-hidden bg-muted aspect-video">
+                                <img
+                                    src={`${(viewingMessage?.photo_url || detailsData?.photo_url)?.startsWith('http') ? '' : 'http://spark.kodevio.com:8000'}${viewingMessage?.photo_url || detailsData?.photo_url}`}
+                                    alt="Report photo"
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                        )}
+
+                        {/* Message */}
                         <div className="flex flex-col gap-2">
-                            <span className="text-[13px] font-medium text-muted-foreground">Resident Message</span>
+                            <span className="text-[13px] font-medium text-muted-foreground">Message</span>
                             <div className="rounded-xl bg-muted p-4 text-[15px] leading-relaxed font-medium text-foreground">
-                                "{viewingMessage?.preview}"
+                                {viewingMessage?.preview}
                             </div>
                         </div>
 
-                        <div className="flex flex-col gap-2">
-                            <span className="text-[13px] font-medium text-muted-foreground">AI Interpretation Model</span>
-                            <div className="rounded-2xl bg-muted p-5 flex flex-col gap-4">
-                                <div className="flex items-center justify-between">
-                                    <span className="font-bold text-[15px]">Predicted Intent</span>
-                                    <Badge className="bg-indigo-100 text-indigo-700 hover:bg-indigo-100 rounded-md border-0 text-[11px] px-2 py-0.5">
-                                        Possible Hazard (Flood)
-                                    </Badge>
-                                </div>
-
-                                <div className="flex flex-col gap-1.5 text-[13px]">
-                                    <p className="text-muted-foreground">
-                                        Hazard Type: <span className="text-foreground font-semibold">Flood</span>
-                                    </p>
-                                    <p className="text-muted-foreground">
-                                        Approximate Location: <span className="text-foreground font-semibold">Haining Road</span>
-                                    </p>
-                                </div>
-
-                                <div className="flex flex-col gap-2 pt-2">
-                                    <div className="flex items-center justify-between text-[13px]">
-                                        <span className="font-semibold">Confidence Score</span>
-                                        <span className="font-bold">68%</span>
+                        {/* Meta grid */}
+                        {isLoadingDetails ? (
+                            <div className="rounded-2xl bg-muted p-5 flex items-center justify-center text-sm text-muted-foreground min-h-[80px]">
+                                Loading details...
+                            </div>
+                        ) : (
+                            <div className="rounded-2xl bg-muted p-5 flex flex-col gap-3 text-[13px]">
+                                {(detailsData?.hazardType || viewingMessage?.hazardType) && (
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Hazard Type</span>
+                                        <span className="font-semibold capitalize">{detailsData?.hazardType || viewingMessage?.hazardType}</span>
                                     </div>
-                                    <div className="h-2 w-full bg-secondary rounded-full overflow-hidden flex">
-                                        <div className="h-full bg-warning w-[68%] rounded-full" />
+                                )}
+                                {(detailsData?.hub_name || viewingMessage?.hub_name) && (
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Hub</span>
+                                        <span className="font-semibold">{detailsData?.hub_name || viewingMessage?.hub_name}</span>
                                     </div>
-                                    <p className="text-[11px] leading-snug text-muted-foreground mt-2">
-                                        Model confidence is below threshold. Human verification required before triggering standard response
-                                        protocols.
-                                    </p>
+                                )}
+                                {(detailsData?.severity ?? viewingMessage?.severity) != null && (
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Severity</span>
+                                        <span className="font-semibold">{detailsData?.severity ?? viewingMessage?.severity} / 3</span>
+                                    </div>
+                                )}
+                                {(detailsData?.risk_score ?? viewingMessage?.risk_score) != null && (
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Risk Score</span>
+                                        <span className="font-semibold">{detailsData?.risk_score ?? viewingMessage?.risk_score}</span>
+                                    </div>
+                                )}
+                                {(detailsData?.latitude ?? viewingMessage?.latitude) != null && (
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Coordinates</span>
+                                        <span className="font-semibold font-mono text-xs">
+                                            {(detailsData?.latitude ?? viewingMessage?.latitude)?.toFixed(5)}, {(detailsData?.longitude ?? viewingMessage?.longitude)?.toFixed(5)}
+                                        </span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Reported at</span>
+                                    <span className="font-semibold">{viewingMessage?.time}</span>
                                 </div>
                             </div>
-                        </div>
+                        )}
                     </div>
+
                     <div className="flex flex-col gap-3 mt-2">
                         <Button
                             variant="default"
                             className="w-full"
+                            disabled={updateStatusMutation.isPending}
                             onClick={() => {
-                                toast.success('Message marked as safe.')
-                                setViewingMessage(null)
+                                if (viewingMessage) {
+                                    updateStatusMutation.mutate({ source: viewingMessage.source, id: viewingMessage.id, status: 'reviewed' })
+                                }
                             }}
                         >
-                            Mark as Safe
+                            Mark as Reviewed
                         </Button>
                         <div className="flex gap-3">
                             <Button
                                 variant="secondary"
                                 className="flex-1"
+                                disabled={updateStatusMutation.isPending}
                                 onClick={() => {
-                                    toast('Follow up initiated.')
-                                    setViewingMessage(null)
+                                    if (viewingMessage) {
+                                        updateStatusMutation.mutate({ source: viewingMessage.source, id: viewingMessage.id, status: 'resolved' })
+                                    }
                                 }}
                             >
-                                Follow Up
+                                Mark Resolved
                             </Button>
                             <Button
                                 variant="destructive"
                                 className="flex-1"
+                                disabled={updateStatusMutation.isPending}
                                 onClick={() => {
-                                    toast.error('Escalated to critical!')
-                                    setViewingMessage(null)
+                                    if (viewingMessage) {
+                                        updateStatusMutation.mutate({ source: viewingMessage.source, id: viewingMessage.id, status: 'escalated' })
+                                    }
                                 }}
                             >
-                                Escalate to Critical
+                                Escalate
                             </Button>
                         </div>
                     </div>
@@ -256,39 +405,121 @@ function MessageReviewTab() {
 }
 
 function ReportsCenterTab() {
-    const { data: history = [], isLoading } = useQuery({
-        queryKey: ['report-history'],
-        queryFn: fetchReportHistory,
-    })
+    const { data: history = [], isLoading } = useReportHistory()
+    const { data: reportingConfig } = useReportingConfig()
+
+    const updateReportingHook = useUpdateReportingConfig()
+    const updateReportingMutation = {
+        isPending: updateReportingHook.isPending,
+        mutate: (variables: any) =>
+            updateReportingHook.mutate(variables, {
+                onSuccess: () => toast.success('Auto-reporting configuration updated'),
+                onError: (err: any) => toast.error(err.message || 'Failed to update auto-reporting configuration'),
+            }),
+    }
+
+    const deleteReportHook = useDeleteReport()
+    const deleteReportMutation = {
+        isPending: deleteReportHook.isPending,
+        mutate: (id: number) =>
+            deleteReportHook.mutate(id, {
+                onSuccess: () => toast.success('Report deleted successfully'),
+                onError: (err: any) => toast.error(err.message || 'Failed to delete report'),
+            }),
+    }
+
+    const [autoReporting, setAutoReporting] = useState(true)
+    const [freq, setFreq] = useState('weekly')
+    const [incActivity, setIncActivity] = useState(true)
+    const [incHubs, setIncHubs] = useState(true)
+    const [incAlerts, setIncAlerts] = useState(true)
+    const [incPerformance, setIncPerformance] = useState(true)
+
+    useEffect(() => {
+        if (reportingConfig) {
+            setAutoReporting(reportingConfig.auto_reporting_enabled)
+            setFreq(reportingConfig.frequency)
+            setIncActivity(reportingConfig.include_activity_summary)
+            setIncHubs(reportingConfig.include_hubs_summary)
+            setIncAlerts(reportingConfig.include_alerts_summary)
+            setIncPerformance(reportingConfig.include_ai_performance)
+        }
+    }, [reportingConfig])
 
     const columns: DataTableColumn<ReportHistoryItem>[] = useMemo(
         () => [
             {
                 key: 'info',
                 header: '',
-                className: 'py-5',
+                className: 'py-4',
                 headerClassName: 'hidden',
-                render: (row: ReportHistoryItem) => (
-                    <div className="flex flex-col gap-1.5">
-                        <span className="font-semibold text-foreground text-[15px]">{row.title}</span>
-                        <span className="text-xs text-muted-foreground">{row.date}</span>
-                    </div>
-                ),
+                render: (row: ReportHistoryItem) => {
+                    const date = row.created_at ? new Date(row.created_at) : null
+                    const dateStr = date
+                        ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                        : '—'
+                    // Strip markdown, take first 120 chars as preview
+                    const preview = row.summary.replace(/[#*_`>\-]/g, '').trim().slice(0, 120) + (row.summary.length > 120 ? '…' : '')
+
+                    return (
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2">
+                                <span className="font-semibold text-foreground text-[14px]">
+                                    Situation Report #{row.id}
+                                </span>
+                                <span
+                                    className={cn(
+                                        'text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider',
+                                        row.is_auto
+                                            ? 'bg-blue-100 text-blue-700'
+                                            : 'bg-violet-100 text-violet-700',
+                                    )}
+                                >
+                                    {row.is_auto ? 'Auto' : 'Manual'}
+                                </span>
+                            </div>
+                            <p className="text-[12px] text-muted-foreground leading-snug line-clamp-2">{preview}</p>
+                            <span className="text-[11px] text-muted-foreground/70">{dateStr}</span>
+                        </div>
+                    )
+                },
             },
             {
                 key: 'action',
                 header: '',
-                className: 'py-5 text-right',
+                className: 'py-4 text-right',
                 headerClassName: 'hidden',
-                render: () => (
-                    <Button variant="secondary">
-                        <Download className="h-3.5 w-3.5" /> PDF
-                    </Button>
+                render: (row: ReportHistoryItem) => (
+                    <div className="flex items-center justify-end gap-2">
+                        {row.pdf_url ? (
+                            <a href={row.pdf_url} target="_blank" rel="noreferrer">
+                                <Button variant="secondary" size="sm" className="gap-1.5">
+                                    <Download className="h-3.5 w-3.5" />
+                                    PDF
+                                </Button>
+                            </a>
+                        ) : (
+                            <Button variant="secondary" size="sm" className="gap-1.5 opacity-40" disabled>
+                                <Download className="h-3.5 w-3.5" />
+                                PDF
+                            </Button>
+                        )}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:bg-destructive/10"
+                            disabled={deleteReportMutation.isPending}
+                            onClick={() => deleteReportMutation.mutate(row.id)}
+                        >
+                            Delete
+                        </Button>
+                    </div>
                 ),
             },
         ],
-        [],
+        [deleteReportMutation],
     )
+
 
     return (
         <div className="flex-1 flex flex-col md:flex-row gap-6 min-h-0 w-full overflow-y-auto md:overflow-hidden pb-6 md:pb-0">
@@ -296,7 +527,7 @@ function ReportsCenterTab() {
                 <div className="flex items-center gap-4">
                     <div className="flex-1 bg-secondary rounded-xl p-5 flex flex-col gap-1.5">
                         <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">GENERATED</span>
-                        <span className="text-[32px] leading-none font-bold text-foreground mt-1">124</span>
+                        <span className="text-[32px] leading-none font-bold text-foreground mt-1">{history.length}</span>
                     </div>
                     <div className="flex-1 bg-secondary rounded-xl p-5 flex flex-col gap-1.5">
                         <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">NEXT AUTO</span>
@@ -307,12 +538,25 @@ function ReportsCenterTab() {
                 <div className="flex flex-col gap-6">
                     <div className="flex items-center justify-between">
                         <span className="text-[17px] font-bold text-foreground">Auto Reporting</span>
-                        <Switch defaultChecked className="data-[state=checked]:bg-primary scale-125 origin-right" />
+                        <Switch
+                            checked={autoReporting}
+                            onCheckedChange={(checked) => {
+                                setAutoReporting(checked)
+                                updateReportingMutation.mutate({ auto_reporting_enabled: checked })
+                            }}
+                            className="data-[state=checked]:bg-primary scale-125 origin-right"
+                        />
                     </div>
 
                     <div className="flex flex-col gap-2.5">
                         <span className="text-[13px] font-medium text-muted-foreground">Frequency</span>
-                        <Select defaultValue="weekly">
+                        <Select
+                            value={freq}
+                            onValueChange={(val) => {
+                                setFreq(val)
+                                updateReportingMutation.mutate({ frequency: val })
+                            }}
+                        >
                             <SelectTrigger className="w-full bg-secondary border-0 rounded-3xl h-[52px] text-[15px] font-medium px-5 shadow-none">
                                 <SelectValue placeholder="Select frequency" />
                             </SelectTrigger>
@@ -328,7 +572,12 @@ function ReportsCenterTab() {
                         <div className="flex items-center gap-4">
                             <Checkbox
                                 id="activity"
-                                defaultChecked
+                                checked={incActivity}
+                                onCheckedChange={(checked) => {
+                                    const val = !!checked
+                                    setIncActivity(val)
+                                    updateReportingMutation.mutate({ include_activity_summary: val })
+                                }}
                                 className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5"
                             />
                             <label htmlFor="activity" className="text-[15px] font-medium leading-none cursor-pointer">
@@ -338,7 +587,12 @@ function ReportsCenterTab() {
                         <div className="flex items-center gap-4">
                             <Checkbox
                                 id="hubs"
-                                defaultChecked
+                                checked={incHubs}
+                                onCheckedChange={(checked) => {
+                                    const val = !!checked
+                                    setIncHubs(val)
+                                    updateReportingMutation.mutate({ include_hubs_summary: val })
+                                }}
                                 className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5"
                             />
                             <label htmlFor="hubs" className="text-[15px] font-medium leading-none cursor-pointer">
@@ -348,7 +602,12 @@ function ReportsCenterTab() {
                         <div className="flex items-center gap-4">
                             <Checkbox
                                 id="alerts"
-                                defaultChecked
+                                checked={incAlerts}
+                                onCheckedChange={(checked) => {
+                                    const val = !!checked
+                                    setIncAlerts(val)
+                                    updateReportingMutation.mutate({ include_alerts_summary: val })
+                                }}
                                 className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5"
                             />
                             <label htmlFor="alerts" className="text-[15px] font-medium leading-none cursor-pointer">
@@ -358,7 +617,12 @@ function ReportsCenterTab() {
                         <div className="flex items-center gap-4">
                             <Checkbox
                                 id="ai"
-                                defaultChecked
+                                checked={incPerformance}
+                                onCheckedChange={(checked) => {
+                                    const val = !!checked
+                                    setIncPerformance(val)
+                                    updateReportingMutation.mutate({ include_ai_performance: val })
+                                }}
                                 className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5"
                             />
                             <label htmlFor="ai" className="text-[15px] font-medium leading-none cursor-pointer">
@@ -389,26 +653,50 @@ function ReportsCenterTab() {
 
 function AiReportsPage() {
     const [activeTab, setActiveTab] = useState('ai-control')
+    const { data: controlConfig } = useControlConfig()
+
+    const updateControlHook = useUpdateControlConfig()
+    const updateControlMutation = {
+        isPending: updateControlHook.isPending,
+        mutate: (variables: any) =>
+            updateControlHook.mutate(variables, {
+                onSuccess: () => toast.success('AI Control configuration updated'),
+                onError: (err: any) => toast.error(err.message || 'Failed to update AI Control configuration'),
+            }),
+    }
+
+    const generateReportHook = useGenerateReport()
+    const generateReportMutation = {
+        isPending: generateReportHook.isPending,
+        mutate: () =>
+            generateReportHook.mutate(undefined, {
+                onSuccess: () => toast.success('Manual report generation triggered successfully!'),
+                onError: (err: any) => toast.error(err.message || 'Failed to trigger report generation'),
+            }),
+    }
+
     const [confidence, setConfidence] = useState(85)
     const [autoClassification, setAutoClassification] = useState(true)
+    const [controlFrequency, setControlFrequency] = useState('60min')
 
-    const handleAutoClassificationChange = (checked: boolean) => {
-        setAutoClassification(checked)
-        if (checked) {
-            toast.success('Auto-Classification Enabled', {
-                description: 'Messages will be automatically classified based on the confidence threshold.',
-            })
-        } else {
-            toast('Auto-Classification Disabled', {
-                description: 'All incoming messages will now require manual review.',
-            })
+    useEffect(() => {
+        if (controlConfig) {
+            setConfidence(controlConfig.confidence_threshold)
+            setAutoClassification(controlConfig.autonomous_classification)
+            setControlFrequency(controlConfig.review_report_frequency)
         }
-    }
+    }, [controlConfig])
 
     return (
         <>
             <PageHeader title="AI & Reports" description="Monitor AI performance and manage automated reporting" lastUpdated="05:41:15 PM">
-                <Button variant="default">Generate Report</Button>
+                <Button
+                    variant="default"
+                    disabled={generateReportMutation.isPending}
+                    onClick={() => generateReportMutation.mutate()}
+                >
+                    {generateReportMutation.isPending ? 'Generating...' : 'Generate Report'}
+                </Button>
             </PageHeader>
 
             <div className="flex-1 flex flex-col gap-6 w-full min-h-0">
@@ -451,6 +739,8 @@ function AiReportsPage() {
                                     max={99}
                                     value={confidence}
                                     onChange={(event) => setConfidence(Number(event.target.value))}
+                                    onMouseUp={() => updateControlMutation.mutate({ confidence_threshold: confidence })}
+                                    onTouchEnd={() => updateControlMutation.mutate({ confidence_threshold: confidence })}
                                     className="w-full h-2.5 rounded-full appearance-none outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:border-0 cursor-pointer"
                                     style={{
                                         background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${((confidence - 50) / 49) * 100}%, var(--secondary) ${((confidence - 50) / 49) * 100}%, var(--secondary) 100%)`,
@@ -472,7 +762,10 @@ function AiReportsPage() {
                             </div>
                             <Switch
                                 checked={autoClassification}
-                                onCheckedChange={handleAutoClassificationChange}
+                                onCheckedChange={(checked) => {
+                                    setAutoClassification(checked)
+                                    updateControlMutation.mutate({ autonomous_classification: checked })
+                                }}
                                 className="data-[state=checked]:bg-primary scale-125 origin-right"
                             />
                         </div>
@@ -484,7 +777,13 @@ function AiReportsPage() {
                                     Select how often automated performance reports are generated.
                                 </p>
                             </div>
-                            <Select defaultValue="60min">
+                            <Select
+                                value={controlFrequency}
+                                onValueChange={(value) => {
+                                    setControlFrequency(value)
+                                    updateControlMutation.mutate({ review_report_frequency: value })
+                                }}
+                            >
                                 <SelectTrigger className="w-fit min-w-[160px] bg-background border border-border rounded-xl h-10 shadow-sm text-sm font-medium">
                                     <SelectValue placeholder="Select frequency" />
                                 </SelectTrigger>

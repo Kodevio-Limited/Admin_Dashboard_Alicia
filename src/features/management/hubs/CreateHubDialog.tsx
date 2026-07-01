@@ -3,7 +3,7 @@ import { Plus, MapPin, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+// removed unused imports
 import type { HubAPIResult } from '@/lib/api/management'
 import { useCreateHub, useCoordinators } from '@/hooks/use-management'
 import { MapPicker } from '@/components/shared/MapPicker'

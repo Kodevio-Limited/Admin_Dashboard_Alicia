@@ -15,7 +15,7 @@ import {
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import type { CoordinatorAPIResult } from '@/lib/api/management'
 import { ReassignCoordinatorDialog } from './ReassignCoordinatorDialog'
-import { EditCoordinatorDialog } from './EditCoordinatorDialog'
+// removed EditCoordinatorDialog
 
 export function CoordinatorActionCell({ coordinator }: { coordinator: CoordinatorAPIResult }) {
     const [open, setOpen] = useState(false)
@@ -23,7 +23,7 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
 
     const createStatusMutation = (status: 'ACTIVE' | 'INACTIVE') =>
         useMutation({
-            mutationFn: (id: string) => {
+            mutationFn: (_id: string) => {
                 // TODO: Actual API call for suspend/activate coordinator
                 return Promise.resolve()
             },

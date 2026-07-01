@@ -4,7 +4,7 @@ import { getAdminOverview } from '@/lib/api/dashboard'
 import type { AdminDashboardOverviewResponse } from '@/lib/api/dashboard'
 import {
     workloadData as fallbackWorkloadData,
-    urgentFlags as fallbackUrgentFlags,
+    // urgentFlags as fallbackUrgentFlags,
     statCardsData as fallbackStatCards,
 } from '@/lib/dashboard'
 import type { CheckinDataPoint, HazardDataPoint, WorkloadDataPoint, UrgentFlag, StatCardData } from '@/lib/dashboard'

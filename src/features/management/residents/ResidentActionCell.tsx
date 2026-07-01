@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { useMutation } from '@tanstack/react-query'
+// removed useMutation
 import { useActivateResident, useSuspendResident } from '@/hooks/use-management'
 import { Eye, Ban, Clock, MapPin } from 'lucide-react'
-import { toast } from 'sonner'
+// removed toast
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 import type { ResidentAPIResult } from '@/lib/api/management'
-import { EditResidentDialog } from './EditResidentDialog'
+// removed EditResidentDialog
 
 function statusVariant(status: string): 'success' | 'warning' | 'destructive' {
     if (status === 'ACTIVE') return 'success'
@@ -70,7 +70,7 @@ export function ResidentActionCell({ resident }: { resident: ResidentAPIResult }
     const [open, setOpen] = useState(false)
     const activateMutation = useActivateResident()
     const suspendMutation = useSuspendResident()
-    const delayMutation = { isPending: false, mutate: (id: string) => {} } // TODO: Implement if needed
+    const delayMutation = { isPending: false, mutate: (_id: string) => {} } // TODO: Implement if needed
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
