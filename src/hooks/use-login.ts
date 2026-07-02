@@ -19,8 +19,18 @@ export const useLogin = () => {
                 localStorage.setItem('refresh_token', tokenData.refresh)
             }
 
-            // Prefetch the user data instantly
-            await queryClient.ensureQueryData(profileQueryOptions())
+            try {
+                // Prefetch the user data instantly
+                const profile = await queryClient.fetchQuery(profileQueryOptions())
+                
+                if (profile.role !== 'admin') {
+                    throw new Error('Access denied: You must be an admin user to access this dashboard.')
+                }
+            } catch (error) {
+                localStorage.removeItem('access_token')
+                localStorage.removeItem('refresh_token')
+                throw error
+            }
 
             navigate({ to: '/' })
         },
