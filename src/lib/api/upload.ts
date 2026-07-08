@@ -1,4 +1,4 @@
-import { request } from './base'
+import { client } from '../api-client'
 
 export async function uploadImage(file: File, folder?: string): Promise<string> {
     const formData = new FormData()
@@ -6,15 +6,15 @@ export async function uploadImage(file: File, folder?: string): Promise<string> 
 
     const path = folder ? `/upload/image?folder=${encodeURIComponent(folder)}` : '/upload/image'
 
-    const { url } = await request<{ url: string }>(path, {
+    const response = await client<{ url: string }>(path, {
         method: 'POST',
-        body: formData,
+        data: formData,
     })
-    return url
+    return response.url
 }
 
 export async function deleteImage(url: string): Promise<void> {
-    await request(`/upload/image?url=${encodeURIComponent(url)}`, {
+    await client(`/upload/image?url=${encodeURIComponent(url)}`, {
         method: 'DELETE',
     })
 }

@@ -591,8 +591,7 @@ function ProfileTab() {
         if (selectedImage) {
             payload = new FormData()
             payload.append('full_name', dataObj.full_name)
-            payload.append('avatar', selectedImage)
-            payload.append('profile_picture', selectedImage) // Send both just in case
+            payload.append('profile_photo', selectedImage)
         }
 
         updateMutation.mutate(payload, {
