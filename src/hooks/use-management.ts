@@ -118,3 +118,17 @@ export function useUpdateUser() {
         },
     })
 }
+
+import { inviteUser, inviteGovernment, type InviteUserPayload, type InviteGovernmentPayload } from '@/lib/api/management'
+
+export function useInviteUser() {
+    return useMutation({
+        mutationFn: (payload: InviteUserPayload) => inviteUser(payload),
+    })
+}
+
+export function useInviteGovernment() {
+    return useMutation({
+        mutationFn: (payload: InviteGovernmentPayload) => inviteGovernment(payload),
+    })
+}

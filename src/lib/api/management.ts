@@ -222,3 +222,29 @@ export async function updateUser(phone: string, payload: UpdateUserPayload): Pro
     })
 }
 
+export interface InviteUserPayload {
+    phone_number: string
+    full_name: string
+    role: 'resident' | 'coordinator' | 'government'
+    hub_id?: number | null
+}
+
+export async function inviteUser(payload: InviteUserPayload): Promise<ApiResponse<any>> {
+    return client<ApiResponse<any>>('/admin/users/invite/', {
+        method: 'POST',
+        data: payload,
+    })
+}
+
+export interface InviteGovernmentPayload {
+    email: string
+    full_name: string
+}
+
+export async function inviteGovernment(payload: InviteGovernmentPayload): Promise<ApiResponse<any>> {
+    return client<ApiResponse<any>>('/admin/users/invite-by-email/', {
+        method: 'POST',
+        data: payload,
+    })
+}
+

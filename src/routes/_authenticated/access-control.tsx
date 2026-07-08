@@ -23,7 +23,7 @@ import { PageHeader } from '@/components/sections/page-header'
 import { DataTable } from '@/components/ui/data-table'
 import type { DataTableColumn } from '@/components/ui/data-table'
 
-import { useUsers, useActivateResident, useSuspendResident, useUpdateUser } from '@/hooks/use-management'
+import { useUsers, useActivateResident, useSuspendResident, useUpdateUser, useInviteUser, useInviteGovernment, useHubs } from '@/hooks/use-management'
 import type { UserAPIResult } from '@/lib/api/management'
 
 export const Route = createFileRoute('/_authenticated/access-control')({
@@ -47,6 +47,76 @@ function UserProfile({ name, email }: { name: string; email: string }) {
 }
 
 function InviteUserDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+    const [fullName, setFullName] = useState('')
+    const [email, setEmail] = useState('')
+    const [phone, setPhone] = useState('')
+    const [role, setRole] = useState('coordinator')
+    const [hubId, setHubId] = useState<string>('none')
+    const [sendEmail, setSendEmail] = useState(true)
+
+    const inviteUser = useInviteUser()
+    const inviteGov = useInviteGovernment()
+    const { data: hubsData } = useHubs({ limit: 100 })
+    const hubs = hubsData?.results || []
+
+    // Reset form when dialog opens/closes
+    useEffect(() => {
+        if (open) {
+            setFullName('')
+            setEmail('')
+            setPhone('')
+            setRole('coordinator')
+            setHubId('none')
+            setSendEmail(true)
+        }
+    }, [open])
+
+    const handleInvite = () => {
+        if (!fullName) {
+            toast.error('Please enter a full name')
+            return
+        }
+
+        if (role === 'government') {
+            if (!email) {
+                toast.error('Please enter an email address')
+                return
+            }
+            inviteGov.mutate(
+                { email, full_name: fullName },
+                {
+                    onSuccess: () => {
+                        toast.success('Invitation sent to government user!')
+                        onOpenChange(false)
+                    },
+                    onError: (err: any) => toast.error(err?.message || 'Failed to send invite'),
+                }
+            )
+        } else {
+            if (!phone) {
+                toast.error('Please enter a phone number')
+                return
+            }
+            inviteUser.mutate(
+                {
+                    phone_number: phone,
+                    full_name: fullName,
+                    role: role as 'resident' | 'coordinator',
+                    hub_id: hubId !== 'none' ? parseInt(hubId, 10) : null,
+                },
+                {
+                    onSuccess: () => {
+                        toast.success('Invitation sent!')
+                        onOpenChange(false)
+                    },
+                    onError: (err: any) => toast.error(err?.message || 'Failed to send invite'),
+                }
+            )
+        }
+    }
+
+    const isPending = inviteUser.isPending || inviteGov.isPending
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-[425px] p-6 sm:rounded-[32px] gap-6 outline-none" showCloseButton={false}>
@@ -59,63 +129,90 @@ function InviteUserDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
                         <label className="text-[13px] font-bold text-foreground">Full Name</label>
                         <Input
                             placeholder="John Doe"
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
                             className="bg-secondary border-0 h-12 rounded-xl text-foreground font-medium placeholder:text-muted-foreground/60"
                         />
                     </div>
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-[13px] font-bold text-foreground">Email Address</label>
-                        <Input
-                            placeholder="john@gmail.com"
-                            type="email"
-                            className="bg-secondary border-0 h-12 rounded-xl text-foreground font-medium placeholder:text-muted-foreground/60"
-                        />
-                    </div>
+
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[13px] font-bold text-foreground">System Role</label>
-                        <Select>
+                        <Select value={role} onValueChange={setRole}>
                             <SelectTrigger className="w-full bg-secondary border-0 h-12 rounded-xl text-foreground font-medium">
                                 <SelectValue placeholder="Coordinator" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="admin">Admin</SelectItem>
                                 <SelectItem value="coordinator">Coordinator</SelectItem>
-                                <SelectItem value="viewer">Viewer</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-[13px] font-bold text-foreground">Assign to Area/Hub</label>
-                        <Select>
-                            <SelectTrigger className="w-full bg-secondary border-0 h-12 rounded-xl text-foreground font-medium">
-                                <SelectValue placeholder="Select hub" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="zone-1">Zone 1</SelectItem>
-                                <SelectItem value="zone-2">Zone 2</SelectItem>
-                                <SelectItem value="zone-3">Zone 3</SelectItem>
-                                <SelectItem value="headquarters">Headquarters</SelectItem>
+                                <SelectItem value="government">Government</SelectItem>
+                                <SelectItem value="resident">Resident</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
 
+                    {role === 'government' ? (
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-[13px] font-bold text-foreground">Email Address</label>
+                            <Input
+                                placeholder="john@example.com"
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="bg-secondary border-0 h-12 rounded-xl text-foreground font-medium placeholder:text-muted-foreground/60"
+                            />
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-[13px] font-bold text-foreground">Phone Number</label>
+                            <Input
+                                placeholder="01856669533"
+                                type="tel"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                className="bg-secondary border-0 h-12 rounded-xl text-foreground font-medium placeholder:text-muted-foreground/60"
+                            />
+                        </div>
+                    )}
+
+                    {role !== 'government' && (
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-[13px] font-bold text-foreground">Assign to Area/Hub</label>
+                            <Select value={hubId} onValueChange={setHubId}>
+                                <SelectTrigger className="w-full bg-secondary border-0 h-12 rounded-xl text-foreground font-medium">
+                                    <SelectValue placeholder="Select hub" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">Unassigned</SelectItem>
+                                    {hubs.map((hub) => (
+                                        <SelectItem key={hub.id} value={hub.id.toString()}>
+                                            {hub.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
+
                     <div className="flex items-center justify-between mt-2 mb-2">
-                        <label className="text-[13px] font-bold text-foreground">Send Welcome Email</label>
-                        <Switch className="data-[state=checked]:bg-primary" defaultChecked />
+                        <label className="text-[13px] font-bold text-foreground">Send Welcome {role === 'government' ? 'Email' : 'SMS'}</label>
+                        <Switch 
+                            className="data-[state=checked]:bg-primary" 
+                            checked={sendEmail} 
+                            onCheckedChange={setSendEmail} 
+                        />
                     </div>
                 </div>
 
                 <div className="flex gap-3">
-                    <Button variant="secondary" className="flex-1" onClick={() => onOpenChange(false)}>
+                    <Button variant="secondary" className="flex-1" onClick={() => onOpenChange(false)} disabled={isPending}>
                         Cancel
                     </Button>
                     <Button
                         className="flex-1"
-                        onClick={() => {
-                            toast.success('Invitation sent!')
-                            onOpenChange(false)
-                        }}
+                        onClick={handleInvite}
+                        disabled={isPending}
                     >
-                        Send Invite
+                        {isPending ? 'Sending...' : 'Send Invite'}
                     </Button>
                 </div>
             </DialogContent>

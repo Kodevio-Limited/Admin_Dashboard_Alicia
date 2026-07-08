@@ -36,3 +36,16 @@ export async function resetPassword(data: { new_password: string; confirm_passwo
     }
     return client('/auth/reset-password/', config)
 }
+
+export async function validateInviteToken(token: string): Promise<any> {
+    return client(`/auth/invite/${token}/`, {
+        method: 'POST',
+    })
+}
+
+export async function acceptInvite(data: { token: string; password: string; confirm_password: string }): Promise<any> {
+    return client('/auth/invite/accept/', {
+        method: 'POST',
+        data,
+    })
+}
