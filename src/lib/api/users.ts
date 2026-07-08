@@ -12,7 +12,7 @@ export interface UserProfile {
     medical_needs?: string
     latitude?: string
     longitude?: string
-    avatar?: string
+    profile_photo?: string
 }
 
 export interface ProfileResponse {

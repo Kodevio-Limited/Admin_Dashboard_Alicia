@@ -13,6 +13,7 @@ import imgProfile3D from '@/assets/profile_dummy.png'
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query'
 import { staticContentApi } from '@/lib/settings'
 import { useProfile, useUpdateProfile, useChangePassword } from '@/hooks/use-users'
+import { resolveImage } from '@/lib/utils'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 
@@ -583,14 +584,12 @@ function ProfileTab() {
         e.preventDefault()
         const formData = new FormData(e.currentTarget)
 
-        const dataObj: any = {
-            full_name: formData.get('full_name') as string,
-        }
+        const payload = new FormData()
+        
+        const fullName = formData.get('full_name') as string
+        if (fullName) payload.append('full_name', fullName)
 
-        let payload: any = dataObj
         if (selectedImage) {
-            payload = new FormData()
-            payload.append('full_name', dataObj.full_name)
             payload.append('profile_photo', selectedImage)
         }
 
@@ -621,7 +620,7 @@ function ProfileTab() {
                     <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                         <Avatar className="size-32 md:size-36 ring-4 ring-white shadow-sm">
                             <AvatarImage
-                                src={previewUrl || user?.avatar || imgProfile3D}
+                                src={previewUrl || (user?.profile_photo ? resolveImage(user.profile_photo) : imgProfile3D)}
                                 alt="Profile Picture"
                                 className="group-hover:scale-105 transition-transform duration-500 object-cover"
                             />

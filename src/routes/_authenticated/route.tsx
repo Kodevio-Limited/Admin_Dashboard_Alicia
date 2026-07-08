@@ -6,6 +6,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { NavUser } from '@/components/main/nav-user'
 import { createFileRoute, Link, Outlet, useRouterState, redirect } from '@tanstack/react-router'
 import { useProfile, profileQueryOptions } from '@/hooks/use-users'
+import { resolveImage } from '@/lib/utils'
 
 const routeLabels: Record<string, string> = {
     '/': 'Dashboard',
@@ -93,7 +94,7 @@ function RouteComponent() {
                                 <span className="hidden lg:flex items-center gap-1.5 rounded-md border bg-muted px-2.5 py-0.5 text-[11px] uppercase font-bold text-muted-foreground">
                                     {user.role}
                                 </span>
-                                <NavUser user={{ name: user.full_name, email: user.email, avatar: user.avatar }} />
+                                <NavUser user={{ name: user.full_name, email: user.email, avatar: user.profile_photo ? resolveImage(user.profile_photo) : undefined }} />
                             </div>
                         )}
                     </header>
