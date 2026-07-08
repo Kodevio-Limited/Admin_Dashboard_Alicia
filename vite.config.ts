@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
         server: {
             proxy: {
                 '/api': {
-                    target: env.VITE_APP_SERVER || 'http://spark.kodevio.com:8000',
+                    target: env.VITE_APP_SERVER || 'https://api.sparkcentra.com',
                     changeOrigin: true,
                     secure: false,
                 },

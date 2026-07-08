@@ -21,6 +21,10 @@ export async function forgotPassword(identifier: string): Promise<any> {
     return client('/auth/forgot-password/', { data: { identifier } })
 }
 
+export async function resendOtp(identifier: string): Promise<any> {
+    return client('/auth/forgot-password/', { data: { identifier } })
+}
+
 export async function verifyPassword(identifier: string, code: string): Promise<any> {
     return client('/auth/verify-reset-otp/', { data: { identifier, code } })
 }

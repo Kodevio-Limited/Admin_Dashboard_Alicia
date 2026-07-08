@@ -48,7 +48,7 @@ export async function client<T>(endpoint: string, { data, ...customConfig }: Req
         if (!refreshToken) {
             localStorage.removeItem('access_token')
             localStorage.removeItem('refresh_token')
-            window.location.href = '/login'
+            window.location.href = '/signin'
             throw new Error('Unauthorized')
         }
 
@@ -76,7 +76,7 @@ export async function client<T>(endpoint: string, { data, ...customConfig }: Req
                 } catch (error) {
                     localStorage.removeItem('access_token')
                     localStorage.removeItem('refresh_token')
-                    window.location.href = '/login'
+                    window.location.href = '/signin'
                     throw error
                 } finally {
                     isRefreshing = false
