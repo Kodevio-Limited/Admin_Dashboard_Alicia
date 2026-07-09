@@ -104,7 +104,7 @@ function Dashboard() {
                                 <Skeleton className="h-[250px] w-full" />
                             </div>
                         ) : (
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height={300}>
                                 <AreaChart data={checkinData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                     <defs>
                                         <linearGradient id="checkinGradient" x1="0" y1="0" x2="0" y2="1">
@@ -214,7 +214,7 @@ function Dashboard() {
                                 ))}
                             </div>
                         ) : (
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height={350}>
                                 <BarChart
                                     data={hazardData}
                                     layout="vertical"
@@ -262,7 +262,7 @@ function Dashboard() {
                         {isLoading ? (
                             <Skeleton className="size-[250px] rounded-full" />
                         ) : (
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height={350}>
                                 <PieChart>
                                     <Pie
                                         data={workloadData}
