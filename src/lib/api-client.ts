@@ -1,4 +1,4 @@
-export const baseURL = (import.meta.env.VITE_APP_SERVER as string) || ''
+export const baseURL = (import.meta.env.VITE_APP_SERVER as string) || (import.meta.env.PROD ? 'https://api.sparkcentra.com' : '')
 export const apiPrefix = (import.meta.env.VITE_API_PREFIX as string) || '/api/v1'
 
 let isRefreshing = false

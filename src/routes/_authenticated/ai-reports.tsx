@@ -22,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DataTable } from '@/components/ui/data-table'
 import type { DataTableColumn } from '@/components/ui/data-table'
 import { cn } from '@/lib/utils'
+import { Input } from '@/components/ui/input'
 
 import {
     useMessageReviews,
@@ -561,6 +562,12 @@ function ReportsCenterTab() {
                                 <SelectValue placeholder="Select frequency" />
                             </SelectTrigger>
                             <SelectContent>
+                                <SelectItem value="5min">Every 5 minutes</SelectItem>
+                                <SelectItem value="10min">Every 10 minutes</SelectItem>
+                                <SelectItem value="15min">Every 15 minutes</SelectItem>
+                                <SelectItem value="30min">Every 30 minutes</SelectItem>
+                                <SelectItem value="60min">Every 1 hour</SelectItem>
+                                <SelectItem value="12hours">Every 12 hours</SelectItem>
                                 <SelectItem value="daily">Daily</SelectItem>
                                 <SelectItem value="weekly">Weekly</SelectItem>
                                 <SelectItem value="monthly">Monthly</SelectItem>
@@ -677,15 +684,51 @@ function AiReportsPage() {
 
     const [confidence, setConfidence] = useState(85)
     const [autoClassification, setAutoClassification] = useState(true)
-    const [controlFrequency, setControlFrequency] = useState('60min')
+    const [freqValue, setFreqValue] = useState('60')
+    const [freqUnit, setFreqUnit] = useState('min')
 
     useEffect(() => {
         if (controlConfig) {
             setConfidence(controlConfig.confidence_threshold)
             setAutoClassification(controlConfig.autonomous_classification)
-            setControlFrequency(controlConfig.review_report_frequency)
+            
+            const freq = controlConfig.review_report_frequency || '60min'
+            if (freq === 'daily') {
+                setFreqValue('1')
+                setFreqUnit('days')
+            } else if (freq === 'weekly') {
+                setFreqValue('7')
+                setFreqUnit('days')
+            } else {
+                const match = freq.match(/^(\d+)(min|hours|days)$/)
+                if (match) {
+                    setFreqValue(match[1])
+                    setFreqUnit(match[2])
+                } else {
+                    setFreqValue('60')
+                    setFreqUnit('min')
+                }
+            }
         }
     }, [controlConfig])
+
+    const handleUpdateFrequency = (rawVal = freqValue, unit = freqUnit) => {
+        let num = parseInt(rawVal, 10)
+        if (isNaN(num) || num <= 0) num = 1 // Fallback to minimum
+
+        // Clamp maximums depending on unit to prevent absurd values
+        if (unit === 'min' && num > 1440) num = 1440 // Max 24 hours in mins
+        if (unit === 'hours' && num > 720) num = 720 // Max 30 days in hours
+        if (unit === 'days' && num > 365) num = 365 // Max 1 year
+
+        const valStr = num.toString()
+        setFreqValue(valStr) // Update UI with clamped value
+
+        let finalStr = `${valStr}${unit}`
+        if (unit === 'days' && valStr === '1') finalStr = 'daily'
+        if (unit === 'days' && valStr === '7') finalStr = 'weekly'
+        updateControlMutation.mutate({ review_report_frequency: finalStr })
+    }
 
     return (
         <>
@@ -777,22 +820,42 @@ function AiReportsPage() {
                                     Select how often automated performance reports are generated.
                                 </p>
                             </div>
-                            <Select
-                                value={controlFrequency}
-                                onValueChange={(value) => {
-                                    setControlFrequency(value)
-                                    updateControlMutation.mutate({ review_report_frequency: value })
-                                }}
-                            >
-                                <SelectTrigger className="w-fit min-w-[160px] bg-background border border-border rounded-xl h-10 shadow-sm text-sm font-medium">
-                                    <SelectValue placeholder="Select frequency" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="60min">Every 60 minutes</SelectItem>
-                                    <SelectItem value="daily">Daily</SelectItem>
-                                    <SelectItem value="weekly">Weekly</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <div className="flex items-center gap-2">
+                                <Input
+                                    type="number"
+                                    min={1}
+                                    step={1}
+                                    value={freqValue}
+                                    onChange={(e) => {
+                                        // Only allow digits
+                                        const cleanVal = e.target.value.replace(/[^0-9]/g, '')
+                                        setFreqValue(cleanVal)
+                                    }}
+                                    onBlur={() => handleUpdateFrequency()}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.currentTarget.blur()
+                                        }
+                                    }}
+                                    className="w-20 bg-background border-border rounded-xl h-10 shadow-sm text-sm text-center font-medium"
+                                />
+                                <Select
+                                    value={freqUnit}
+                                    onValueChange={(val) => {
+                                        setFreqUnit(val)
+                                        handleUpdateFrequency(freqValue, val)
+                                    }}
+                                >
+                                    <SelectTrigger className="w-fit min-w-[110px] bg-background border border-border rounded-xl h-10 shadow-sm text-sm font-medium">
+                                        <SelectValue placeholder="Unit" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="min">Minutes</SelectItem>
+                                        <SelectItem value="hours">Hours</SelectItem>
+                                        <SelectItem value="days">Days</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </TabsContent>
 

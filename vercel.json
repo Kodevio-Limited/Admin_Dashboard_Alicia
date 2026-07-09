@@ -1,6 +1,6 @@
 {
     "rewrites": [
-        { "source": "/api/(.*)", "destination": "http://spark.kodevio.com:8000/api/$1" },
+        { "source": "/api/(.*)", "destination": "https://api.sparkcentra.com/api/$1" },
         { "source": "/(.*)", "destination": "/index.html" }
     ]
 }
