@@ -96,6 +96,15 @@ export async function suspendResident(userId: string): Promise<ResidentAPIResult
     return response.data
 }
 
+export async function turnCoordinator(userId:string): Promise<ResidentAPIResult>{
+    const res = await client<ApiResponse<ResidentAPIResult>>(`/admin/users/${userId}/role/`, {
+        method:'PATCH',
+        data: {role:'coordinator'}
+    })
+
+    return res.data
+}
+
 export interface GetHubsParams {
     page?: number
     limit?: number

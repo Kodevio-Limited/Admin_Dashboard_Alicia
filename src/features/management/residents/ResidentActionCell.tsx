@@ -1,6 +1,6 @@
 import { useState } from 'react'
 // removed useMutation
-import { useActivateResident, useSuspendResident } from '@/hooks/use-management'
+import { useActivateResident, useSuspendResident, useTurnCoordinator } from '@/hooks/use-management'
 import { Eye, Ban, Clock, MapPin } from 'lucide-react'
 // removed toast
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -70,6 +70,7 @@ export function ResidentActionCell({ resident }: { resident: ResidentAPIResult }
     const [open, setOpen] = useState(false)
     const activateMutation = useActivateResident()
     const suspendMutation = useSuspendResident()
+    const turnCoordinatorMutation = useTurnCoordinator()
     const delayMutation = { isPending: false, mutate: (_id: string) => {} } // TODO: Implement if needed
 
     return (
@@ -92,6 +93,16 @@ export function ResidentActionCell({ resident }: { resident: ResidentAPIResult }
                     </EditResidentDialog>
                     <DropdownMenuSeparator />
                     */}
+                    <DropdownMenuItem
+                        // disabled={turnCoordinatorMutation.isPending} // If there is a pending option will use otherwise this is extra feature that is commented out.
+                        onSelect={() => {
+                            turnCoordinatorMutation.mutate(resident.phone_number)
+                            setOpen(false)
+                        }}
+                    >
+                        Turn Coordinator
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     {resident.is_active ? (
                         <DropdownMenuItem
                             onSelect={() => {

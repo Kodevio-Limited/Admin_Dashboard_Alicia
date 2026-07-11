@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getResidents, getResidentDetails, activateResident, suspendResident, getHubs, getCoordinators, createHub, assignCoordinator, reassignCoordinator, getUsers, updateUser } from '@/lib/api/management'
+import { getResidents, getResidentDetails, activateResident, suspendResident,turnCoordinator, getHubs, getCoordinators, createHub, assignCoordinator, reassignCoordinator, getUsers, updateUser } from '@/lib/api/management'
 import { type GetResidentsParams, type GetHubsParams, type GetCoordinatorsParams, type GetUsersParams } from '@/lib/api/management'
 
 export const managementKeys = {
@@ -47,11 +47,24 @@ export function useSuspendResident() {
     return useMutation({
         mutationFn: suspendResident,
         onSuccess: (_, userId) => {
+            queryClient.invalidateQueries({ queryKey: managementKeys.users() })
+            queryClient.invalidateQueries({ queryKey: managementKeys.residents() })
+            queryClient.invalidateQueries({ queryKey: managementKeys.residentDetails(userId) })
+        },
+    })
+}
+
+export function useTurnCoordinator(){ 
+    const queryClient = useQueryClient()
+    return useMutation({
+    mutationFn: turnCoordinator,
+    onSuccess: (_,userId) =>{
             queryClient.invalidateQueries({ queryKey: managementKeys.residents() })
             queryClient.invalidateQueries({ queryKey: managementKeys.residentDetails(userId) })
             queryClient.invalidateQueries({ queryKey: managementKeys.users() })
-        },
-    })
+    }
+})
+
 }
 
 export function useCoordinators(params: GetCoordinatorsParams) {
