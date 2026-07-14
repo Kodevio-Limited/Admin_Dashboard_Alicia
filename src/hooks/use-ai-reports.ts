@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { adminKeys } from '@/lib/query-keys'
 import {
     fetchMessageReviews,
@@ -47,12 +48,13 @@ export function useUpdateMessageReviewStatus() {
     })
 }
 
-export function useReportHistory(params?: { page?: number; limit?: number }) {
+export function useReportHistory(params?: { page?: number; limit?: number }, options?: { enabled?: boolean }) {
     return useQuery<ReportHistoryPage>({
         queryKey: adminKeys.reportsList(params as Record<string, any>),
         queryFn: () => fetchReportHistory(params),
         placeholderData: keepPreviousData,
         staleTime: 30 * 1000,
+        ...options,
     })
 }
 
@@ -69,7 +71,11 @@ export function useUpdateReportingConfig() {
     return useMutation({
         mutationFn: updateReportingConfig,
         onSuccess: () => {
+            toast.success('Configuration updated successfully')
             queryClient.invalidateQueries({ queryKey: adminKeys.aiReporting() })
+        },
+        onError: (err: any) => {
+            toast.error(err?.message || 'Failed to update configuration')
         },
     })
 }
@@ -79,7 +85,11 @@ export function useDeleteReport() {
     return useMutation({
         mutationFn: deleteReport,
         onSuccess: () => {
+            toast.success('Report deleted successfully')
             queryClient.invalidateQueries({ queryKey: adminKeys.reports() })
+        },
+        onError: (err: any) => {
+            toast.error(err?.message || 'Failed to delete report')
         },
     })
 }
@@ -97,7 +107,11 @@ export function useUpdateControlConfig() {
     return useMutation({
         mutationFn: updateControlConfig,
         onSuccess: () => {
+            toast.success('Configuration updated successfully')
             queryClient.invalidateQueries({ queryKey: adminKeys.aiControl() })
+        },
+        onError: (err: any) => {
+            toast.error(err?.message || 'Failed to update configuration')
         },
     })
 }
@@ -108,7 +122,11 @@ export function useUpdateReport() {
         mutationFn: ({ id, data }: { id: number; data: { summary?: string; is_auto?: boolean } }) =>
             updateReportItem(id, data),
         onSuccess: () => {
+            toast.success('Report updated successfully')
             queryClient.invalidateQueries({ queryKey: adminKeys.reports() })
+        },
+        onError: (err: any) => {
+            toast.error(err?.message || 'Failed to update report')
         },
     })
 }
@@ -118,7 +136,11 @@ export function useGenerateReport() {
     return useMutation({
         mutationFn: generateReport,
         onSuccess: () => {
+            toast.success('Report generation triggered successfully')
             queryClient.invalidateQueries({ queryKey: adminKeys.reports() })
+        },
+        onError: (err: any) => {
+            toast.error(err?.message || 'Failed to generate report')
         },
     })
 }
