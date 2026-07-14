@@ -1,12 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useMemo, useEffect } from 'react'
 // unused tanstack query imports removed
-import { Eye, Download, X, Bot, MessageSquare, BarChart2 } from 'lucide-react'
+import { Eye, Download, X, Bot, MessageSquare, BarChart2, Search, SlidersHorizontal, Edit, Loader2, Save, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { PageHeader } from '@/components/sections/page-header'
 import { Switch } from '@/components/ui/switch'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
     DropdownMenu,
@@ -15,15 +16,19 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Tabs, TabsContent } from '@/components/ui/tabs'
+import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DataTable } from '@/components/ui/data-table'
 import type { DataTableColumn } from '@/components/ui/data-table'
+import { ServerDataTable } from '@/components/shared/server-data-table'
 import { cn } from '@/lib/utils'
 
 
+import { useQueryErrorToast } from '@/hooks/use-query-error-toast'
 import {
     useMessageReviews,
     useMessageReviewDetail,
@@ -35,6 +40,7 @@ import {
     useControlConfig,
     useUpdateControlConfig,
     useGenerateReport,
+    useUpdateReport,
 } from '@/hooks/use-ai-reports'
 import type { MessageReviewRow, ReportHistoryItem } from '@/lib/ai-reports'
 
@@ -55,12 +61,16 @@ function MessageReviewTab() {
         ...(severityFilter !== 'all' && { severity: Number(severityFilter) }),
     }
 
-    const { data: page, isLoading } = useMessageReviews(queryParams)
+    const { data: page, isLoading, isError: isReviewsError, error: reviewsError } = useMessageReviews(queryParams)
 
     const reviews = page?.results ?? []
     const totalCount = page?.count ?? 0
 
-    const { data: detailsData, isLoading: isLoadingDetails } = useMessageReviewDetail(viewingMessage?.source, viewingMessage?.id)
+    // ─── Toasts for data fetch failures ────────────────────────────────────
+    useQueryErrorToast({ key: 'message-reviews', label: 'Message reviews', isError: isReviewsError, error: reviewsError })
+
+    const { data: detailsData, isLoading: isLoadingDetails, isError: isDetailError, error: detailError } = useMessageReviewDetail(viewingMessage?.source, viewingMessage?.id)
+    useQueryErrorToast({ key: 'message-detail', label: 'Message details', isError: isDetailError, error: detailError })
 
     const updateStatusHook = useUpdateMessageReviewStatus()
     const updateStatusMutation = {
@@ -405,273 +415,656 @@ function MessageReviewTab() {
     )
 }
 
-function ReportsCenterTab() {
-    const { data: history = [], isLoading } = useReportHistory()
-    const { data: reportingConfig } = useReportingConfig()
+/* ===================================================================
+   ConfigPanel — reusable wrapper for AI Control & Reporting config.
+   No dimming. Controls always visible. Edit toggles interactive state.
+   =================================================================== */
+function ConfigPanel({
+    title,
+    description,
+    icon: Icon,
+    onSave,
+    onCancel,
+    isPending,
+    isLoading,
+    children,
+}: {
+    title: string
+    description: string
+    icon: React.ElementType
+    onSave: () => Promise<void>
+    onCancel: () => void
+    isPending: boolean
+    isLoading?: boolean
+    children: React.ReactNode
+}) {
+    const [isEditing, setIsEditing] = useState(false)
 
+    if (isLoading) {
+        return (
+            <Card className="rounded-2xl shadow-sm border border-black/[0.04] bg-white overflow-hidden">
+                <CardHeader className="px-6 pt-6 pb-4">
+                    <div className="flex items-center gap-3">
+                        <Skeleton className="size-10 rounded-xl shrink-0" />
+                        <div className="flex flex-col gap-2 min-w-0 flex-1">
+                            <Skeleton className="h-5 w-48 rounded-md" />
+                            <Skeleton className="h-4 w-72 rounded-md" />
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="px-6 pb-5 space-y-6">
+                    <Skeleton className="h-4 w-36 rounded-md" />
+                    <Skeleton className="h-2 w-full rounded-full" />
+                    <Skeleton className="h-4 w-32 rounded-md" />
+                </CardContent>
+            </Card>
+        )
+    }
+
+    return (
+        <Card className="rounded-2xl shadow-sm border border-black/[0.04] bg-white flex flex-col h-full min-h-0 overflow-visible">
+            <CardHeader className="flex flex-row items-start justify-between gap-3 px-4 pt-4 pb-3 shrink-0">
+                <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="size-8 shrink-0 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Icon className="size-4 text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                        <CardTitle className="text-[15px] font-bold text-foreground tracking-tight">{title}</CardTitle>
+                        <CardDescription className="text-xs text-muted-foreground mt-0.5">{description}</CardDescription>
+                    </div>
+                </div>
+                <Button
+                    variant={isEditing ? 'secondary' : 'outline'}
+                    size="sm"
+                    onClick={() => {
+                        if (isEditing) { setIsEditing(false); onCancel() }
+                        else { setIsEditing(true) }
+                    }}
+                    className="shrink-0 rounded-lg h-8 px-3 text-xs transition-all duration-200"
+                >
+                    {isEditing ? <><XCircle className="size-3 mr-1" />Cancel</> : <><Edit className="size-3 mr-1" />Edit</>}
+                </Button>
+            </CardHeader>
+            <CardContent className="px-4 py-3 flex-1 min-h-0">{children}</CardContent>
+            {isEditing && (
+                <CardFooter className="flex justify-end gap-2 px-4 py-3 border-t border-border/60 bg-muted/30 shrink-0">
+                    <Button variant="outline" size="sm" className="rounded-lg h-8 text-xs" onClick={() => { setIsEditing(false); onCancel(); }} disabled={isPending}>
+                        <XCircle className="size-3 mr-1" />Cancel
+                    </Button>
+                    <Button size="sm" className="rounded-lg h-8 text-xs shadow-sm" onClick={() => { onSave().then(() => setIsEditing(false)); }} disabled={isPending}>
+                        {isPending ? <Loader2 className="mr-1.5 size-3 animate-spin" /> : <Save className="size-3 mr-1" />}
+                        Save
+                    </Button>
+                </CardFooter>
+            )}
+        </Card>
+    )
+}
+
+/* ── helpers ─────────────────────────────────────────────────────── */
+function freqMinutesToControlString(minutes: number): string {
+    if (minutes === 1440) return 'daily'
+    if (minutes === 10080) return 'weekly'
+    if (minutes === 43200) return 'monthly'
+    return `${minutes}min`
+}
+
+function controlStringToFreqMinutes(str: string): number {
+    if (str === 'daily') return 1440
+    if (str === 'weekly') return 10080
+    if (str === 'monthly') return 43200
+    const match = str.match(/^(\d+)(min|hours|days|hour)$/)
+    if (match) {
+        const val = parseInt(match[1], 10)
+        const unit = match[2].replace('hour', 'hours')
+        if (unit === 'min') return val
+        if (unit === 'hours') return val * 60
+        if (unit === 'days') return val * 1440
+    }
+    return 60
+}
+
+/* ===================================================================
+   AI Control Tab — two API resource panels, single-PUT-per-config
+   =================================================================== */
+function AiControlTab() {
+    const { data: controlConfig, isError: isControlError, error: controlError } = useControlConfig()
+    const { data: reportingConfig, isError: isReportingError, error: reportingError } = useReportingConfig()
+
+    useQueryErrorToast({ key: 'ai-control-config', label: 'AI control configuration', isError: isControlError, error: controlError })
+    useQueryErrorToast({ key: 'ai-reporting-config', label: 'AI reporting configuration', isError: isReportingError, error: reportingError })
+
+    const updateControlHook = useUpdateControlConfig()
     const updateReportingHook = useUpdateReportingConfig()
-    const updateReportingMutation = {
-        isPending: updateReportingHook.isPending,
-        mutate: (variables: any) =>
-            updateReportingHook.mutate(variables, {
-                onSuccess: () => toast.success('Auto-reporting configuration updated'),
-                onError: (err: any) => toast.error(err.message || 'Failed to update auto-reporting configuration'),
-            }),
+
+    const saveControl = async (payload: any) => {
+        try {
+            await updateControlHook.mutateAsync(payload)
+            toast.success('Configuration updated successfully')
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to update configuration')
+            throw err
+        }
     }
 
-    const deleteReportHook = useDeleteReport()
-    const deleteReportMutation = {
-        isPending: deleteReportHook.isPending,
-        mutate: (id: number) =>
-            deleteReportHook.mutate(id, {
-                onSuccess: () => toast.success('Report deleted successfully'),
-                onError: (err: any) => toast.error(err.message || 'Failed to delete report'),
-            }),
+    const saveReporting = async (payload: any) => {
+        try {
+            await updateReportingHook.mutateAsync(payload)
+            toast.success('Configuration updated successfully')
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to update configuration')
+            throw err
+        }
     }
 
+    const [confidence, setConfidence] = useState(85)
+    const [autoClassification, setAutoClassification] = useState(true)
     const [autoReporting, setAutoReporting] = useState(true)
     const [freqMinutes, setFreqMinutes] = useState(60)
+
     const [incActivity, setIncActivity] = useState(true)
     const [incHubs, setIncHubs] = useState(true)
     const [incAlerts, setIncAlerts] = useState(true)
     const [incPerformance, setIncPerformance] = useState(true)
     const [useAiSummary, setUseAiSummary] = useState(true)
 
-    useEffect(() => {
+    const syncControl = () => {
+        if (controlConfig) {
+            setConfidence(controlConfig.confidence_threshold)
+            setAutoClassification(controlConfig.autonomous_classification)
+            setFreqMinutes(controlStringToFreqMinutes(controlConfig.review_report_frequency))
+        }
+    }
+
+    const syncReporting = () => {
         if (reportingConfig) {
             setAutoReporting(reportingConfig.auto_reporting_enabled)
-            setFreqMinutes(reportingConfig.frequency_interval_minutes ?? 10080)
             setIncActivity(reportingConfig.include_activity_summary)
             setIncHubs(reportingConfig.include_hubs_summary)
             setIncAlerts(reportingConfig.include_alerts_summary)
             setIncPerformance(reportingConfig.include_ai_performance)
             setUseAiSummary(reportingConfig.use_ai_summary ?? true)
         }
-    }, [reportingConfig])
+    }
+
+    useEffect(() => { syncControl() }, [controlConfig])
+    useEffect(() => { syncReporting() }, [reportingConfig])
+
+    const contentSections = [
+        { id: 'activity', label: 'Activity Summary', desc: 'Check-ins and resident activity events', checked: incActivity, onChange: (v: boolean) => setIncActivity(v) },
+        { id: 'hubs', label: 'Hubs Summary', desc: 'Hub status, uptime, and connectivity', checked: incHubs, onChange: (v: boolean) => setIncHubs(v) },
+        { id: 'alerts', label: 'Alerts Summary', desc: 'Flagged events and hazard reports', checked: incAlerts, onChange: (v: boolean) => setIncAlerts(v) },
+        { id: 'performance', label: 'AI Performance', desc: 'Confidence scores and classification accuracy', checked: incPerformance, onChange: (v: boolean) => setIncPerformance(v) },
+        { id: 'ai-summary', label: 'AI Summary', desc: 'GPT-generated narrative overview of the report', checked: useAiSummary, onChange: (v: boolean) => setUseAiSummary(v) },
+    ]
+
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 w-full flex-1 min-h-0">
+            {/* ──── AI Classification ──── */}
+            <ConfigPanel
+                title="AI Classification"
+                description="Confidence thresholds and autonomous classification behavior."
+                icon={Bot}
+                onCancel={syncControl}
+                onSave={() =>
+                    saveControl({
+                        confidence_threshold: confidence,
+                        autonomous_classification: autoClassification,
+                        review_report_frequency: freqMinutesToControlString(freqMinutes),
+                    })
+                }
+                isPending={updateControlHook.isPending}
+            >
+                <div className="flex flex-col gap-4">
+                    {/* Confidence Threshold */}
+                    <div>
+                        <div className="flex items-center justify-between mb-3">
+                            <div>
+                                <h3 className="text-[13px] font-semibold text-foreground">Confidence Threshold</h3>
+                                <p className="text-[11px] text-muted-foreground mt-0.5">
+                                    Minimum AI confidence to auto-classify a message.
+                                </p>
+                            </div>
+                            <span className="text-xl font-bold text-primary tabular-nums tracking-tight">
+                                {confidence}%
+                            </span>
+                        </div>
+                        <div className="relative pt-0.5">
+                            {/* Track background (unfilled) */}
+                            <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-2 rounded-full bg-muted/70" />
+                            {/* Track fill */}
+                            <div
+                                className="absolute top-1/2 -translate-y-1/2 left-0 h-2 rounded-full bg-primary"
+                                style={{ width: `${((confidence - 50) / 49) * 100}%` }}
+                            />
+                            <input
+                                type="range"
+                                min={50}
+                                max={99}
+                                value={confidence}
+                                onChange={(e) => setConfidence(Number(e.target.value))}
+                                aria-label="Confidence threshold"
+                                aria-valuetext={`${confidence} percent`}
+                                className="relative w-full h-2.5 appearance-none bg-transparent outline-none cursor-pointer z-10
+                                    [&::-webkit-slider-runnable-track]:bg-transparent
+                                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
+                                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-md
+                                    [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white
+                                    [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-transform
+                                    [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:active:scale-95
+                                    [&::-moz-range-track]:bg-transparent
+                                    [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full
+                                    [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white
+                                    [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:transition-transform
+                                    [&::-moz-range-thumb]:hover:scale-110"
+                            />
+                            <div className="flex justify-between text-[10px] text-muted-foreground mt-1 font-medium">
+                                <span>50%</span>
+                                <span>99%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Auto-Classification */}
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                            <h3 className="text-[13px] font-semibold text-foreground">Auto-Classification</h3>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">
+                                Auto-classify messages meeting confidence threshold.
+                            </p>
+                        </div>
+                        <Switch
+                            checked={autoClassification}
+                            onCheckedChange={setAutoClassification}
+                            className="data-[state=checked]:bg-primary shrink-0"
+                        />
+                    </div>
+
+                    <Separator />
+
+                    {/* Report Interval */}
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                            <h3 className="text-[13px] font-semibold text-foreground">Report Interval</h3>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">
+                                Minutes between auto reports.
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                            <div className="relative">
+                                <input
+                                    type="number"
+                                    min={1}
+                                    step={1}
+                                    value={freqMinutes}
+                                    onChange={(e) => setFreqMinutes(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                                    className="w-20 h-8 rounded-lg bg-background border border-border px-3 pr-7 text-xs font-semibold outline-none focus:ring-2 focus:ring-primary/20 text-center"
+                                />
+                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-medium pointer-events-none">min</span>
+                            </div>
+                            <Select value="" onValueChange={(val) => setFreqMinutes(Number(val))}>
+                                <SelectTrigger className="w-fit min-w-[90px] bg-background border border-border rounded-lg h-8 text-[11px] font-medium shadow-none px-2">
+                                    <SelectValue placeholder="Pick" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="5">5 min</SelectItem>
+                                    <SelectItem value="15">15 min</SelectItem>
+                                    <SelectItem value="60">1 hour</SelectItem>
+                                    <SelectItem value="1440">Daily</SelectItem>
+                                    <SelectItem value="10080">Weekly</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+
+                </div>
+            </ConfigPanel>
+
+            {/* ──── Reporting Configuration ──── */}
+            <ConfigPanel
+                title="Reporting Configuration"
+                description="Automated report generation, intervals, and content sections."
+                icon={BarChart2}
+                onCancel={syncReporting}
+                onSave={() =>
+                    saveReporting({
+                        auto_reporting_enabled: autoReporting,
+                        include_activity_summary: incActivity,
+                        include_hubs_summary: incHubs,
+                        include_alerts_summary: incAlerts,
+                        include_ai_performance: incPerformance,
+                        use_ai_summary: useAiSummary,
+                    })
+                }
+                isPending={updateReportingHook.isPending}
+            >
+                <div className="flex flex-col gap-4">
+                    {/* Auto Reporting */}
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                            <h3 className="text-[13px] font-semibold text-foreground">Auto Reporting</h3>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">
+                                {autoReporting ? 'Automatic on schedule.' : 'Manual only.'}
+                            </p>
+                        </div>
+                        <Switch
+                            checked={autoReporting}
+                            onCheckedChange={setAutoReporting}
+                            className="data-[state=checked]:bg-primary shrink-0"
+                        />
+                    </div>
+
+                    <Separator />
+
+                    {/* Report Contents */}
+                    <div>
+                        <h3 className="text-[13px] font-semibold text-foreground mb-2">Report Contents</h3>
+                        <div className="flex flex-col gap-0.5">
+                            {contentSections.map((section) => (
+                                <label
+                                    key={section.id}
+                                    className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-muted/40 transition-colors cursor-pointer"
+                                >
+                                    <Checkbox
+                                        checked={section.checked}
+                                        onCheckedChange={(val) => section.onChange(val === true)}
+                                    />
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="text-[13px] font-medium text-foreground leading-tight">
+                                            {section.label}
+                                        </span>
+                                        <span className="text-[10px] text-muted-foreground truncate leading-tight">
+                                            {section.desc}
+                                        </span>
+                                    </div>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </ConfigPanel>
+        </div>
+    )
+}
+
+function ReportsCenterTab() {
+    const [page, setPage] = useState(1)
+    const [limit, setLimit] = useState(10)
+
+    const { data: reportPage, isLoading: isHistoryLoading, isError: isHistoryError, error: historyError } = useReportHistory({ page, limit })
+    const history = reportPage?.results ?? []
+    const totalCount = reportPage?.count ?? 0
+
+    // ─── Toast for data fetch failures ─────────────────────────────────────
+    useQueryErrorToast({ key: 'reports-history', label: 'Reports history', isError: isHistoryError, error: historyError })
+
+    const updateReportHook = useUpdateReport()
+    const deleteReportHook = useDeleteReport()
+
+    const [editingId, setEditingId] = useState<number | null>(null)
+    const [editSummary, setEditSummary] = useState('')
+    const [editIsAuto, setEditIsAuto] = useState(false)
+
+    const [searchQuery, setSearchQuery] = useState('')
+    const [dateFrom, setDateFrom] = useState('')
+    const [dateTo, setDateTo] = useState('')
+
+    const deleteReport = (id: number) =>
+        deleteReportHook.mutate(id, {
+            onSuccess: () => toast.success('Report deleted successfully'),
+            onError: (err: any) => toast.error(err.message || 'Failed to delete report'),
+        })
+
+    const startEdit = (report: ReportHistoryItem) => {
+        setEditingId(report.id)
+        setEditSummary(report.summary)
+        setEditIsAuto(report.is_auto)
+    }
+
+    const cancelEdit = () => {
+        setEditingId(null)
+        setEditSummary('')
+        setEditIsAuto(false)
+    }
+
+    const saveEdit = async (id: number) => {
+        try {
+            await updateReportHook.mutateAsync({ id, data: { summary: editSummary, is_auto: editIsAuto } })
+            toast.success('Report updated successfully')
+            setEditingId(null)
+        } catch (err: any) {
+            toast.error(err.message || 'Failed to update report')
+        }
+    }
+
+    const clearFilters = () => {
+        setSearchQuery('')
+        setDateFrom('')
+        setDateTo('')
+    }
+
+    const hasActiveFilters = !!(searchQuery || dateFrom || dateTo)
+
+    // Client-side filter over server-fetched page
+    const filteredHistory = useMemo(() => {
+        if (!searchQuery && !dateFrom && !dateTo) return history
+        return history.filter((report) => {
+            if (searchQuery) {
+                const q = searchQuery.toLowerCase().trim()
+                const idMatch = String(report.id).includes(q)
+                const summaryMatch = report.summary.toLowerCase().includes(q)
+                if (!idMatch && !summaryMatch) return false
+            }
+            if (dateFrom || dateTo) {
+                const reportDate = report.created_at ? new Date(report.created_at) : null
+                if (!reportDate) return false
+                if (dateFrom) {
+                    const from = new Date(dateFrom)
+                    from.setHours(0, 0, 0, 0)
+                    if (reportDate < from) return false
+                }
+                if (dateTo) {
+                    const to = new Date(dateTo)
+                    to.setHours(23, 59, 59, 999)
+                    if (reportDate > to) return false
+                }
+            }
+            return true
+        })
+    }, [history, searchQuery, dateFrom, dateTo])
 
     const columns: DataTableColumn<ReportHistoryItem>[] = useMemo(
         () => [
             {
-                key: 'info',
-                header: '',
-                className: 'py-4',
-                headerClassName: 'hidden',
-                render: (row: ReportHistoryItem) => {
-                    const date = row.created_at ? new Date(row.created_at) : null
+                key: 'report',
+                header: 'REPORT',
+                className: 'py-2 px-2 min-w-[80px]',
+                headerClassName: 'px-2',
+                render: (report: ReportHistoryItem) => {
+                    const isEditingThis = editingId === report.id
+                    return (
+                        <span className={cn(
+                            'font-semibold text-foreground text-[14px]',
+                            isEditingThis && 'text-primary'
+                        )}>
+                            #{report.id}
+                        </span>
+                    )
+                },
+            },
+            {
+                key: 'details',
+                header: 'DETAILS',
+                className: 'py-2 px-2 min-w-[200px] max-w-[360px]',
+                headerClassName: 'px-2',
+                render: (report: ReportHistoryItem) => {
+                    const isEditingThis = editingId === report.id
+                    const date = report.created_at ? new Date(report.created_at) : null
                     const dateStr = date
                         ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
                         : '—'
-                    // Strip markdown, take first 120 chars as preview
-                    const preview = row.summary.replace(/[#*_`>\-]/g, '').trim().slice(0, 120) + (row.summary.length > 120 ? '…' : '')
 
                     return (
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1.5 min-w-0 max-w-full">
                             <div className="flex items-center gap-2">
-                                <span className="font-semibold text-foreground text-[14px]">
-                                    Situation Report #{row.id}
-                                </span>
-                                <span
-                                    className={cn(
-                                        'text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider',
-                                        row.is_auto
-                                            ? 'bg-blue-100 text-blue-700'
-                                            : 'bg-violet-100 text-violet-700',
-                                    )}
-                                >
-                                    {row.is_auto ? 'Auto' : 'Manual'}
-                                </span>
+                                {isEditingThis ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => setEditIsAuto(!editIsAuto)}
+                                        className={cn(
+                                            'text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider transition-colors',
+                                            editIsAuto
+                                                ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                                : 'bg-violet-100 text-violet-700 hover:bg-violet-200',
+                                        )}
+                                    >
+                                        {editIsAuto ? 'Auto' : 'Manual'}
+                                    </button>
+                                ) : (
+                                    <span
+                                        className={cn(
+                                            'text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider',
+                                            report.is_auto
+                                                ? 'bg-blue-100 text-blue-700'
+                                                : 'bg-violet-100 text-violet-700',
+                                        )}
+                                    >
+                                        {report.is_auto ? 'Auto' : 'Manual'}
+                                    </span>
+                                )}
                             </div>
-                            <p className="text-[12px] text-muted-foreground leading-snug line-clamp-2">{preview}</p>
+                            {isEditingThis ? (
+                                <textarea
+                                    value={editSummary}
+                                    onChange={(e) => setEditSummary(e.target.value)}
+                                    rows={3}
+                                    className="w-full rounded-lg border border-border bg-white px-2.5 py-1.5 text-[12px] text-foreground leading-relaxed resize-none outline-none focus:ring-2 focus:ring-primary/20"
+                                />
+                            ) : (
+                                <p className="text-[12px] text-muted-foreground leading-snug line-clamp-2 break-words">
+                                    {report.summary.replace(/[#*_`>\-]/g, '').trim().slice(0, 120)}
+                                    {report.summary.length > 120 ? '…' : ''}
+                                </p>
+                            )}
                             <span className="text-[11px] text-muted-foreground/70">{dateStr}</span>
                         </div>
                     )
                 },
             },
             {
-                key: 'action',
-                header: '',
-                className: 'py-4 text-right',
-                headerClassName: 'hidden',
-                render: (row: ReportHistoryItem) => (
-                    <div className="flex items-center justify-end gap-2">
-                        {row.pdf_url ? (
-                            <a href={row.pdf_url} target="_blank" rel="noreferrer">
-                                <Button variant="secondary" size="sm" className="gap-1.5">
-                                    <Download className="h-3.5 w-3.5" />
-                                    PDF
+                key: 'actions',
+                header: 'ACTIONS',
+                className: 'py-2 px-2 text-right whitespace-nowrap',
+                headerClassName: 'px-2 text-right',
+                render: (report: ReportHistoryItem) => {
+                    const isEditingThis = editingId === report.id
+                    if (isEditingThis) {
+                        return (
+                            <div className="flex items-center justify-end gap-1.5">
+                                <Button variant="secondary" size="sm" className="gap-1 h-8 px-2.5" onClick={cancelEdit} disabled={updateReportHook.isPending}>
+                                    <XCircle className="size-3.5" />
+                                    <span className="hidden sm:inline">Cancel</span>
                                 </Button>
-                            </a>
-                        ) : (
-                            <Button variant="secondary" size="sm" className="gap-1.5 opacity-40" disabled>
-                                <Download className="h-3.5 w-3.5" />
-                                PDF
+                                <Button variant="default" size="sm" className="gap-1 h-8 px-2.5" onClick={() => saveEdit(report.id)} disabled={updateReportHook.isPending}>
+                                    {updateReportHook.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
+                                    <span className="hidden sm:inline">Save</span>
+                                </Button>
+                            </div>
+                        )
+                    }
+                    return (
+                        <div className="flex items-center justify-end gap-1.5">
+                            <Button variant="ghost" size="sm" className="gap-1 h-8 px-2" onClick={() => startEdit(report)}>
+                                <Edit className="size-3.5" />
+                                <span className="hidden sm:inline">Edit</span>
                             </Button>
-                        )}
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-destructive hover:bg-destructive/10"
-                            disabled={deleteReportMutation.isPending}
-                            onClick={() => deleteReportMutation.mutate(row.id)}
-                        >
-                            Delete
-                        </Button>
-                    </div>
-                ),
+                            {report.pdf_url ? (
+                                <a href={report.pdf_url} target="_blank" rel="noreferrer">
+                                    <Button variant="secondary" size="sm" className="gap-1 h-8 px-2.5">
+                                        <Download className="h-3.5 w-3.5" />
+                                        <span className="hidden sm:inline">PDF</span>
+                                    </Button>
+                                </a>
+                            ) : (
+                                <Button variant="secondary" size="sm" className="gap-1 h-8 px-2.5 opacity-40" disabled>
+                                    <Download className="h-3.5 w-3.5" />
+                                    <span className="hidden sm:inline">PDF</span>
+                                </Button>
+                            )}
+                            <Button variant="ghost" size="sm" className="text-destructive hover:bg-destructive/10 h-8 px-2" disabled={deleteReportHook.isPending} onClick={() => deleteReport(report.id)}>
+                                Delete
+                            </Button>
+                        </div>
+                    )
+                },
             },
         ],
-        [deleteReportMutation],
+        [editingId, editSummary, editIsAuto, updateReportHook.isPending, deleteReportHook.isPending],
     )
 
-
-    const formatMinutes = (mins: number): string => {
-        if (mins < 60) return `${mins} min${mins !== 1 ? 's' : ''}`
-        const hours = Math.floor(mins / 60)
-        const remainingMins = mins % 60
-        if (hours < 24) return remainingMins > 0 ? `${hours}h ${remainingMins}m` : `${hours} hour${hours !== 1 ? 's' : ''}`
-        const days = Math.floor(hours / 24)
-        const remainingHours = hours % 24
-        if (days < 7) return remainingHours > 0 ? `${days}d ${remainingHours}h` : `${days} day${days !== 1 ? 's' : ''}`
-        const weeks = Math.floor(days / 7)
-        const remainingDays = days % 7
-        return remainingDays > 0 ? `${weeks}w ${remainingDays}d` : `${weeks} week${weeks !== 1 ? 's' : ''}`
-    }
-
-    const contentSections: { id: string; label: string; desc: string; checked: boolean; onChange: (v: boolean) => void }[] = [
-        { id: 'activity', label: 'Activity Summary', desc: 'Check-ins and resident activity events', checked: incActivity, onChange: (v) => { setIncActivity(v); updateReportingMutation.mutate({ include_activity_summary: v }) } },
-        { id: 'hubs', label: 'Hubs Summary', desc: 'Hub status, uptime, and connectivity', checked: incHubs, onChange: (v) => { setIncHubs(v); updateReportingMutation.mutate({ include_hubs_summary: v }) } },
-        { id: 'alerts', label: 'Alerts Summary', desc: 'Flagged events and hazard reports', checked: incAlerts, onChange: (v) => { setIncAlerts(v); updateReportingMutation.mutate({ include_alerts_summary: v }) } },
-        { id: 'performance', label: 'AI Performance', desc: 'Confidence scores and classification accuracy', checked: incPerformance, onChange: (v) => { setIncPerformance(v); updateReportingMutation.mutate({ include_ai_performance: v }) } },
-        { id: 'ai-summary', label: 'AI Summary', desc: 'GPT-generated narrative overview of the report', checked: useAiSummary, onChange: (v) => { setUseAiSummary(v); updateReportingMutation.mutate({ use_ai_summary: v }) } },
-    ]
-
     return (
-        <div className="flex-1 flex flex-col md:flex-row gap-6 min-h-0 w-full overflow-y-auto md:overflow-hidden pb-6 md:pb-0">
-            <Card className="flex-[4] rounded-[20px] bg-white shadow-sm flex flex-col h-max md:h-full md:overflow-y-auto border-0 overflow-hidden">
-                <div className="flex items-center gap-4">
-                    <div className="flex-1 bg-secondary rounded-xl p-5 flex flex-col gap-1.5">
-                        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">GENERATED</span>
-                        <span className="text-[32px] leading-none font-bold text-foreground mt-1">{history.length}</span>
-                    </div>
-                    <div className="flex-1 px-6 py-5 flex flex-col gap-1">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Interval</span>
-                        <span className="text-[22px] leading-none font-bold text-foreground mt-1.5 tracking-tight">
-                            {formatMinutes(freqMinutes)}
-                        </span>
-                    </div>
-                </div>
-
-                {/* Auto Reporting toggle */}
-                <div className="px-6 py-5 flex items-center justify-between border-t border-border/60">
-                    <div className="flex flex-col gap-0.5">
-                        <span className="text-[15px] font-semibold text-foreground">Auto Reporting</span>
-                        <span className="text-[12px] text-muted-foreground">
-                            {autoReporting ? 'Reports generate automatically' : 'Manual generation only'}
-                        </span>
-                    </div>
-                    <Switch
-                        checked={autoReporting}
-                        onCheckedChange={(checked) => {
-                            setAutoReporting(checked)
-                            updateReportingMutation.mutate({ auto_reporting_enabled: checked })
-                        }}
-                        className="data-[state=checked]:bg-primary scale-110 origin-right"
-                    />
-                </div>
-
-                {/* Frequency */}
-                <div className="px-6 py-5 flex flex-col gap-3 border-t border-border/60">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[15px] font-semibold text-foreground">Report Frequency</span>
-                        <span className="text-[11px] font-semibold bg-primary/10 text-primary px-2.5 py-1 rounded-full">
-                            {formatMinutes(freqMinutes)}
-                        </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="relative flex-1">
-                            <input
-                                type="number"
-                                min={1}
-                                step={1}
-                                value={freqMinutes}
-                                onChange={(e) => {
-                                    const val = Math.max(1, parseInt(e.target.value, 10) || 1)
-                                    setFreqMinutes(val)
-                                }}
-                                onBlur={(e) => {
-                                    const val = Math.max(1, parseInt(e.target.value, 10) || 1)
-                                    setFreqMinutes(val)
-                                    updateReportingMutation.mutate({ frequency_interval_minutes: val })
-                                }}
-                                onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
-                                className="w-full h-11 rounded-xl bg-muted border border-border/50 px-4 pr-10 text-[14px] font-semibold outline-none focus:ring-2 focus:ring-primary/20 text-center"
-                            />
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground font-medium pointer-events-none">min</span>
+        <div className="flex-1 flex flex-col gap-6 w-full min-h-0">
+            <Card className="flex-1 rounded-[20px] bg-white p-6 md:p-8 shadow-sm flex flex-col min-h-0 border-0">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+                    <h2 className="text-xl md:text-2xl font-bold text-foreground">Report History</h2>
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <div className="relative w-full sm:w-auto">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by ID or summary..." className="w-full sm:w-[220px] h-9 rounded-xl bg-muted border border-border pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-shadow" />
                         </div>
-                        <Select
-                            value=""
-                            onValueChange={(val) => {
-                                const mins = Number(val)
-                                setFreqMinutes(mins)
-                                updateReportingMutation.mutate({ frequency_interval_minutes: mins })
-                            }}
-                        >
-                            <SelectTrigger className="w-fit min-w-[120px] bg-muted border border-border/50 rounded-xl h-11 text-[13px] font-medium shadow-none">
-                                <SelectValue placeholder="Quick pick" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="5">5 min</SelectItem>
-                                <SelectItem value="10">10 min</SelectItem>
-                                <SelectItem value="15">15 min</SelectItem>
-                                <SelectItem value="30">30 min</SelectItem>
-                                <SelectItem value="60">1 hour</SelectItem>
-                                <SelectItem value="180">3 hours</SelectItem>
-                                <SelectItem value="360">6 hours</SelectItem>
-                                <SelectItem value="720">12 hours</SelectItem>
-                                <SelectItem value="1440">Daily</SelectItem>
-                                <SelectItem value="10080">Weekly</SelectItem>
-                                <SelectItem value="43200">Monthly</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-
-                {/* Report Contents */}
-                <div className="px-6 pb-6 flex flex-col border-t border-border/60">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest pt-5 pb-3">Report Contents</span>
-                    <div className="flex flex-col divide-y divide-border/50">
-                        {contentSections.map((section) => (
-                            <div key={section.id} className="flex items-center justify-between py-3.5">
-                                <div className="flex flex-col gap-0.5">
-                                    <label htmlFor={section.id} className="text-[14px] font-semibold text-foreground cursor-pointer leading-none">
-                                        {section.label}
-                                    </label>
-                                    <span className="text-[11px] text-muted-foreground">{section.desc}</span>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" className={cn('h-9 rounded-full px-4 gap-2 text-xs font-semibold border-black/5 bg-white shadow-sm hover:bg-slate-50', hasActiveFilters && 'border-primary text-primary')}>
+                                    <SlidersHorizontal className="size-3.5" />
+                                    Filter
+                                    {hasActiveFilters && <span className="size-1.5 rounded-full bg-primary" />}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-80 rounded-2xl p-4 flex flex-col gap-4 border shadow-xl bg-white" align="end">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="font-semibold text-sm">Filters</h3>
+                                    {hasActiveFilters && (
+                                        <Button variant="ghost" size="sm" onClick={clearFilters} className="h-auto p-0 text-xs font-medium text-muted-foreground hover:text-foreground">
+                                            Clear all
+                                        </Button>
+                                    )}
                                 </div>
-                                <Switch
-                                    id={section.id}
-                                    checked={section.checked}
-                                    onCheckedChange={section.onChange}
-                                    className="data-[state=checked]:bg-primary scale-90 origin-right"
-                                />
-                            </div>
-                        ))}
+                                <div className="flex flex-col gap-3">
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-xs font-medium text-muted-foreground">From Date</label>
+                                        <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-full h-10 rounded-lg bg-muted/40 border-none px-3 text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+                                    </div>
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-xs font-medium text-muted-foreground">To Date</label>
+                                        <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-full h-10 rounded-lg bg-muted/40 border-none px-3 text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+                                    </div>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                        <div className="bg-secondary rounded-full px-4 py-1.5 flex items-center gap-2">
+                            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Generated</span>
+                            <span className="text-sm font-bold text-foreground">{totalCount}</span>
+                        </div>
                     </div>
                 </div>
-            </Card>
-
-            <Card className="flex-[6] rounded-[20px] bg-white p-6 md:p-8 shadow-sm flex flex-col min-h-0 border-0 h-[600px] md:h-full">
-                <h2 className="text-xl md:text-2xl font-bold text-foreground mb-6">Report History</h2>
                 <div className="flex-1 flex flex-col min-h-0">
-                    {isLoading ? (
-                        <div className="flex-1 flex items-center justify-center text-muted-foreground">Loading history...</div>
-                    ) : (
-                        <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                            <div className="flex-1 overflow-y-auto pr-2">
-                                <DataTable columns={columns} data={history} noun="reports" />
-                            </div>
-                        </div>
-                    )}
+                    <div className="flex-1 flex flex-col gap-4">
+                        <ServerDataTable
+                            columns={columns}
+                            data={filteredHistory}
+                            noun="reports"
+                            emptyIcon={<Eye className="h-6 w-6" />}
+                            onReset={hasActiveFilters ? clearFilters : undefined}
+                            totalCount={totalCount}
+                            page={page}
+                            limit={limit}
+                            onPageChange={(p) => { setPage(p); setEditingId(null) }}
+                            onLimitChange={(l) => { setLimit(l); setPage(1); setEditingId(null) }}
+                            isLoading={isHistoryLoading}
+                        />
+                    </div>
                 </div>
             </Card>
         </div>
@@ -681,16 +1074,6 @@ function ReportsCenterTab() {
 function AiReportsPage() {
     const [activeTab, setActiveTab] = useState('ai-control')
     const { data: controlConfig } = useControlConfig()
-
-    const updateControlHook = useUpdateControlConfig()
-    const updateControlMutation = {
-        isPending: updateControlHook.isPending,
-        mutate: (variables: any) =>
-            updateControlHook.mutate(variables, {
-                onSuccess: () => toast.success('AI Control configuration updated'),
-                onError: (err: any) => toast.error(err.message || 'Failed to update AI Control configuration'),
-            }),
-    }
 
     const generateReportHook = useGenerateReport()
     const generateReportMutation = {
@@ -702,47 +1085,10 @@ function AiReportsPage() {
             }),
     }
 
-    const [confidence, setConfidence] = useState(85)
-    const [autoClassification, setAutoClassification] = useState(true)
-    const [controlFreqVal, setControlFreqVal] = useState(60)
-    const [controlFreqUnit, setControlFreqUnit] = useState('min')
     const [controlLastUpdated, setControlLastUpdated] = useState<string | undefined>(undefined)
-
-    const handleControlFreqChange = (newVal: number, newUnit: string) => {
-        setControlFreqVal(newVal)
-        setControlFreqUnit(newUnit)
-        
-        let str = `${newVal}${newUnit}`
-        if (newUnit === 'days') {
-            if (newVal === 1) str = 'daily'
-            else if (newVal === 7) str = 'weekly'
-            else if (newVal === 30 || newVal === 31) str = 'monthly'
-        }
-        updateControlMutation.mutate({ review_report_frequency: str })
-    }
 
     useEffect(() => {
         if (controlConfig) {
-            setConfidence(controlConfig.confidence_threshold)
-            setAutoClassification(controlConfig.autonomous_classification)
-            
-            const freq = controlConfig.review_report_frequency || '60min'
-            let val = 60
-            let unit = 'min'
-            if (freq === 'daily') { val = 1; unit = 'days' }
-            else if (freq === 'weekly') { val = 7; unit = 'days' }
-            else if (freq === 'monthly') { val = 30; unit = 'days' }
-            else {
-                const match = freq.match(/^(\d+)(min|hours|days|hour)$/)
-                if (match) {
-                    val = parseInt(match[1], 10)
-                    unit = match[2]
-                    if (unit === 'hour') unit = 'hours'
-                }
-            }
-            setControlFreqVal(val)
-            setControlFreqUnit(unit)
-
             if (controlConfig.updated_at) {
                 setControlLastUpdated(
                     new Date(controlConfig.updated_at).toLocaleString('en-US', {
@@ -794,90 +1140,8 @@ function AiReportsPage() {
                         ))}
                     </div>
 
-                    <TabsContent value="ai-control" className="mt-6 flex flex-col gap-4 outline-none w-full flex-1">
-                        <div className="rounded-2xl bg-muted border border-black/[0.03] shadow-sm p-6">
-                            <div className="space-y-1">
-                                <h2 className="text-[17px] font-semibold text-foreground tracking-tight">Confidence Threshold</h2>
-                                <p className="text-sm text-muted-foreground">Minimum AI confidence required to auto-classify a message.</p>
-                            </div>
-
-                            <div className="mt-14 relative">
-                                <div className="absolute right-0 -top-11 text-[28px] font-bold text-primary tracking-tight">
-                                    {confidence}%
-                                </div>
-                                <input
-                                    type="range"
-                                    min={50}
-                                    max={99}
-                                    value={confidence}
-                                    onChange={(event) => setConfidence(Number(event.target.value))}
-                                    onMouseUp={() => updateControlMutation.mutate({ confidence_threshold: confidence })}
-                                    onTouchEnd={() => updateControlMutation.mutate({ confidence_threshold: confidence })}
-                                    className="w-full h-2.5 rounded-full appearance-none outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:border-0 cursor-pointer"
-                                    style={{
-                                        background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${((confidence - 50) / 49) * 100}%, var(--secondary) ${((confidence - 50) / 49) * 100}%, var(--secondary) 100%)`,
-                                    }}
-                                />
-                                <div className="flex justify-between text-[11px] text-muted-foreground mt-2.5 font-medium">
-                                    <span>Passes More (50%)</span>
-                                    <span>Flags More (99%)</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="rounded-2xl bg-muted border border-black/[0.03] shadow-sm p-6 flex items-center justify-between gap-6">
-                            <div className="space-y-1 flex-1">
-                                <h2 className="text-[17px] font-semibold text-foreground tracking-tight">Enable Auto-Classification</h2>
-                                <p className="text-sm text-muted-foreground">
-                                    If disabled, all incoming messages will require manual human review regardless of confidence score.
-                                </p>
-                            </div>
-                            <Switch
-                                checked={autoClassification}
-                                onCheckedChange={(checked) => {
-                                    setAutoClassification(checked)
-                                    updateControlMutation.mutate({ autonomous_classification: checked })
-                                }}
-                                className="data-[state=checked]:bg-primary scale-125 origin-right"
-                            />
-                        </div>
-
-                        <div className="rounded-2xl bg-muted border border-black/[0.03] shadow-sm p-6 flex items-center justify-between gap-6">
-                            <div className="space-y-1 flex-1">
-                                <h2 className="text-[17px] font-semibold text-foreground tracking-tight">Report Frequency</h2>
-                                <p className="text-sm text-muted-foreground">
-                                    Select how often automated performance reports are generated.
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="number"
-                                    min={1}
-                                    step={1}
-                                    value={controlFreqVal}
-                                    onChange={(e) => setControlFreqVal(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                                    onBlur={(e) => {
-                                        const val = Math.max(1, parseInt(e.target.value, 10) || 1)
-                                        handleControlFreqChange(val, controlFreqUnit)
-                                    }}
-                                    onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
-                                    className="w-20 h-10 rounded-xl bg-background border border-border px-3 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 text-center"
-                                />
-                                <Select
-                                    value={controlFreqUnit}
-                                    onValueChange={(val) => handleControlFreqChange(controlFreqVal, val)}
-                                >
-                                    <SelectTrigger className="w-[110px] bg-background border border-border rounded-xl h-10 shadow-sm text-sm font-medium">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="min">Minutes</SelectItem>
-                                        <SelectItem value="hours">Hours</SelectItem>
-                                        <SelectItem value="days">Days</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
+                    <TabsContent value="ai-control" className="mt-6 outline-none flex-1 data-[state=active]:flex flex-col min-h-0 pb-6">
+                        <AiControlTab />
                     </TabsContent>
 
                     <TabsContent value="message-review" className="mt-6 outline-none flex-1 data-[state=active]:flex flex-col min-h-0">

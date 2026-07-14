@@ -10,9 +10,10 @@ import {
     deleteReport,
     getControlConfig,
     updateControlConfig,
-    generateReport
+    generateReport,
+    updateReportItem
 } from '@/lib/ai-reports'
-import type { MessageReviewStatus } from '@/lib/ai-reports'
+import type { MessageReviewStatus, ReportHistoryPage } from '@/lib/ai-reports'
 
 export function useMessageReviews(params: { page?: number; limit?: number; status?: string; source?: string; severity?: number }) {
     return useQuery({
@@ -47,10 +48,11 @@ export function useUpdateMessageReviewStatus() {
 }
 
 export function useReportHistory(params?: { page?: number; limit?: number }) {
-    return useQuery({
-        queryKey: adminKeys.reports(),
+    return useQuery<ReportHistoryPage>({
+        queryKey: adminKeys.reportsList(params as Record<string, any>),
         queryFn: () => fetchReportHistory(params),
-        // Uses global 5 min staleTime
+        placeholderData: keepPreviousData,
+        staleTime: 30 * 1000,
     })
 }
 
@@ -96,6 +98,17 @@ export function useUpdateControlConfig() {
         mutationFn: updateControlConfig,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: adminKeys.aiControl() })
+        },
+    })
+}
+
+export function useUpdateReport() {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: ({ id, data }: { id: number; data: { summary?: string; is_auto?: boolean } }) =>
+            updateReportItem(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: adminKeys.reports() })
         },
     })
 }

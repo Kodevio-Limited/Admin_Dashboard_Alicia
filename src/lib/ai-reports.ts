@@ -82,6 +82,7 @@ export interface AIControlConfig {
     confidence_threshold: number
     autonomous_classification: boolean
     review_report_frequency: string
+    updated_at?: string
 }
 
 export interface AIReportingConfig {
@@ -117,6 +118,14 @@ export function mapBackendMessageReview(item: MessageReviewItem): MessageReviewR
         longitude: item.longitude ?? null,
         photo_url: item.photo_url ?? null,
     }
+}
+
+// Paginated page shape for the reports list
+export interface ReportHistoryPage {
+    count: number
+    next: string | null
+    previous: string | null
+    results: ReportHistoryItem[]
 }
 
 // Map backend to ReportHistoryItem (already matches — passthrough with safe defaults)
@@ -196,12 +205,46 @@ export async function updateReviewItemStatus(type: 'hazard' | 'checkin', id: num
     })
 }
 
-// GET Reports list — paginated, results are not wrapped in { data: [] }
-export async function fetchReportHistory(params?: { page?: number; limit?: number }): Promise<ReportHistoryItem[]> {
+// GET Reports list — paginated, same response shape as message-review (no { status, data } wrapper)
+export async function fetchReportHistory(params?: { page?: number; limit?: number }): Promise<ReportHistoryPage> {
     const query = toQuery(params || {})
-    const res = await client<{ count: number; next: string | null; previous: string | null; results: any[] }>(`/ai/reports/${query}`)
-    const list = Array.isArray(res.results) ? res.results : []
-    return list.map(mapBackendReportHistory)
+    const res = await client<any>(`/ai/reports/${query}`)
+
+    // The API returns the paginated result directly: { count, next, previous, results } or a flat array [{...}]
+    // Some environments may also wrap in { status, data, message } — handle both.
+
+    // If it's already our expected shape with a .results array, use it directly
+    if (res && typeof res === 'object' && 'results' in res && Array.isArray(res.results)) {
+        return {
+            count: res.count ?? 0,
+            next: res.next ?? null,
+            previous: res.previous ?? null,
+            results: res.results.map(mapBackendReportHistory),
+        }
+    }
+
+    // If it's a flat array
+    if (Array.isArray(res)) {
+        const items = res.map(mapBackendReportHistory)
+        return { count: items.length, next: null, previous: null, results: items }
+    }
+
+    // Possibly wrapped in { status, data: {...} } from some environments
+    const payload = res?.data ?? []
+    if (Array.isArray(payload)) {
+        const items = payload.map(mapBackendReportHistory)
+        return { count: items.length, next: null, previous: null, results: items }
+    }
+    if (payload && typeof payload === 'object' && 'results' in payload) {
+        return {
+            count: payload.count ?? 0,
+            next: payload.next ?? null,
+            previous: payload.previous ?? null,
+            results: (payload.results ?? []).map(mapBackendReportHistory),
+        }
+    }
+
+    return { count: 0, next: null, previous: null, results: [] }
 }
 
 // POST Generate Report
@@ -225,30 +268,72 @@ export async function getReportDetails(id: number): Promise<Report> {
     return res.data
 }
 
-// Stub function to maintain backwards compatibility
-export async function fetchReports(): Promise<Report[]> {
-    const res = await client<ApiResponse<Report[]>>('/ai/reports/')
-    const list = Array.isArray(res.data) ? res.data : (res.data as any)?.results || []
-    return list
+// PATCH Report item (partial update for inline editing)
+export async function updateReportItem(id: number, data: { summary?: string; is_auto?: boolean }): Promise<any> {
+    return client<ApiResponse<any>>(`/ai/reports/${id}/`, {
+        method: 'PATCH',
+        data,
+    })
 }
 
 // Stub function to maintain backwards compatibility
+export async function fetchReports(): Promise<Report[]> {
+    const res = await client<any>('/ai/reports/')
+
+    // Direct paginated shape: { count, next, previous, results }
+    if (res && typeof res === 'object' && 'results' in res && Array.isArray(res.results)) {
+        return res.results
+    }
+
+    // Flat array: [{...}]
+    if (Array.isArray(res)) {
+        return res
+    }
+
+    // Wrapped: { status, data: [...] }
+    const payload = res?.data
+    if (Array.isArray(payload)) {
+        return payload
+    }
+    // Wrapped with results: { status, data: { results: [...] } }
+    if (payload && typeof payload === 'object' && 'results' in payload && Array.isArray(payload.results)) {
+        return payload.results
+    }
+
+    return []
+}
+
+// Stub function to maintain backwards compatibility — delegates to the proper API functions
 export function getReportById(id: number): Promise<Report | undefined> {
     return getReportDetails(id).catch(() => undefined)
 }
 
 // Stub function to maintain backwards compatibility
-export function createReport(data: Omit<Report, 'id'>): Promise<Report> {
-    return client<ApiResponse<Report>>('/ai/reports/', {
+export async function createReport(data: Omit<Report, 'id'>): Promise<Report> {
+    const res = await client<any>('/ai/reports/', {
         method: 'POST',
         data,
-    }).then((res) => res.data)
+    })
+    // Response may be the created object directly or wrapped in { status, data }
+    if (res && typeof res === 'object' && 'id' in res) {
+        return res as Report
+    }
+    return res?.data as Report ?? data as unknown as Report
 }
 
 // Stub function to maintain backwards compatibility
-export function updateReport(id: number, data: Partial<Report>): Promise<Report | undefined> {
-    return client<ApiResponse<Report>>(`/ai/reports/${id}/`, {
-        method: 'PUT',
-        data,
-    }).then((res) => res.data).catch(() => undefined)
+export async function updateReport(id: number, data: Partial<Report>): Promise<Report | undefined> {
+    try {
+        const res = await client<any>(`/ai/reports/${id}/`, {
+            method: 'PUT',
+            data,
+        })
+        // Response may be the updated object directly or wrapped in { status, data }
+        if (res && typeof res === 'object' && 'id' in res) {
+            return res as Report
+        }
+        return res?.data as Report ?? undefined
+    } catch {
+        return undefined
+    }
 }

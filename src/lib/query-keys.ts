@@ -31,5 +31,6 @@ export const adminKeys = {
 
     // AI Reports
     reports: () => [...adminKeys.all, 'reports'] as const,
+    reportsList: (params?: Record<string, any>) => [...adminKeys.reports(), params] as const,
     reportDetail: (id: number) => [...adminKeys.all, 'reports', id] as const,
 }
