@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
-import { Eye, SlidersHorizontal } from 'lucide-react'
+import { Users, Building2, UserCheck, Eye, SlidersHorizontal } from 'lucide-react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Card, CardContent } from '@/components/ui/card'
 import { PageHeader } from '@/components/sections/page-header'
@@ -306,18 +306,21 @@ function ManagementPage() {
                                 value="residents"
                                 className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm text-muted-foreground transition-all"
                             >
+                                <Users className="size-[15px] shrink-0 mr-1.5" />
                                 Residents
                             </TabsTrigger>
                             <TabsTrigger
                                 value="hubs"
                                 className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm text-muted-foreground transition-all"
                             >
+                                <Building2 className="size-[15px] shrink-0 mr-1.5" />
                                 Hubs
                             </TabsTrigger>
                             <TabsTrigger
                                 value="coordinators"
                                 className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm text-muted-foreground transition-all"
                             >
+                                <UserCheck className="size-[15px] shrink-0 mr-1.5" />
                                 Coordinators
                             </TabsTrigger>
                         </TabsList>
