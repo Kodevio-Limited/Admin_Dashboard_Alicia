@@ -34,6 +34,9 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                 setOpen(false)
                 toast.success(`Coordinator status updated to ${status}`)
             },
+            onError: (err: any) => {
+                toast.error(err?.message || `Failed to update coordinator status to ${status}`)
+            },
         })
 
     const suspendMutation = createStatusMutation('INACTIVE')
