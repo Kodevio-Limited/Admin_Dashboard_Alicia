@@ -11,7 +11,7 @@ import {
     SidebarMenuItem,
     SidebarMenuButton,
 } from '@/components/ui/sidebar'
-import { LayoutDashboard, BrainCircuit, Settings, LogOutIcon, Users, Shield } from 'lucide-react'
+import { LayoutDashboard, BrainCircuit, Settings, LogOutIcon, Users, Shield, Map } from 'lucide-react'
 import * as React from 'react'
 import { useLogout } from '@/hooks/use-logout'
 
@@ -21,6 +21,11 @@ export const data = {
             title: 'Overview',
             url: '/',
             icon: <LayoutDashboard />,
+        },
+        {
+            title: 'Map',
+            url: '/map',
+            icon: <Map />,
         },
         {
             title: 'Management',
