@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { DataTable } from '@/components/ui/data-table'
 import type { DataTableColumn } from '@/components/ui/data-table'
 import { ServerDataTable } from '@/components/shared/server-data-table'
@@ -53,6 +54,9 @@ function MessageReviewTab() {
     const [sourceFilter, setSourceFilter] = useState('all')
     const [severityFilter, setSeverityFilter] = useState('all')
     const [viewingMessage, setViewingMessage] = useState<MessageReviewRow | null>(null)
+    const [searchQuery, setSearchQuery] = useState(
+        typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('search') || '' : '',
+    )
     const statusOptions = ['all', 'pending', 'escalated', 'resolved', 'reviewed']
 
     const queryParams = {
@@ -65,6 +69,17 @@ function MessageReviewTab() {
 
     const reviews = page?.results ?? []
     const totalCount = page?.count ?? 0
+
+    // Client-side search filter (over server-fetched page)
+    const filteredReviews = useMemo(() => {
+        if (!searchQuery.trim()) return reviews
+        const q = searchQuery.toLowerCase().trim()
+        return reviews.filter((r) =>
+            String(r.id).includes(q) ||
+            r.preview.toLowerCase().includes(q) ||
+            r.resident.toLowerCase().includes(q)
+        )
+    }, [reviews, searchQuery])
 
     // ─── Toasts for data fetch failures ────────────────────────────────────
     useQueryErrorToast({ key: 'message-reviews', label: 'Message reviews', isError: isReviewsError, error: reviewsError })
@@ -225,6 +240,18 @@ function MessageReviewTab() {
                 </div>
 
                 <div className="flex items-center gap-2 ml-auto">
+                    {/* Search */}
+                    <div className="relative">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="Search messages..."
+                            className="w-[160px] h-9 rounded-xl bg-background border border-border pl-8 pr-3 text-xs outline-none focus:ring-2 focus:ring-primary/20 transition-shadow"
+                        />
+                    </div>
+
                     {/* Source filter */}
                     <Select value={sourceFilter} onValueChange={setSourceFilter}>
                         <SelectTrigger className="w-[130px] bg-white border border-border rounded-xl h-9 text-sm font-medium shadow-none">
@@ -255,17 +282,47 @@ function MessageReviewTab() {
             {/* Count badge */}
             {!isLoading && (
                 <p className="text-sm text-muted-foreground">
-                    Showing <span className="font-semibold text-foreground">{reviews.length}</span> of <span className="font-semibold text-foreground">{totalCount}</span> items
+                    Showing <span className="font-semibold text-foreground">{filteredReviews.length}</span> of <span className="font-semibold text-foreground">{totalCount}</span> items
                 </p>
             )}
 
             <Card className="flex-1 overflow-hidden shadow-sm flex flex-col min-h-0">
                 <CardContent className="p-4 flex-1 flex flex-col">
                     {isLoading ? (
-                        <div className="flex-1 flex items-center justify-center text-muted-foreground">Loading message reviews...</div>
+                        <div className="flex flex-col gap-4">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        {columns.map((col) => (
+                                            <TableHead key={col.key} className={col.headerClassName}>
+                                                {col.header}
+                                            </TableHead>
+                                        ))}
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {Array.from({ length: 10 }).map((_, index) => (
+                                        <TableRow key={index}>
+                                            {columns.map((col) => (
+                                                <TableCell key={col.key} className={col.className}>
+                                                    <Skeleton className="h-6 w-full max-w-[250px] mx-auto rounded-md" />
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                            <div className="flex items-center justify-between">
+                                <Skeleton className="h-4 w-48" />
+                                <div className="flex items-center gap-4">
+                                    <Skeleton className="h-8 w-24" />
+                                    <Skeleton className="h-8 w-64" />
+                                </div>
+                            </div>
+                        </div>
                     ) : (
                         <div className="flex-1 flex flex-col gap-4">
-                            <DataTable columns={columns} data={reviews} noun="messages" emptyIcon={<Eye className="h-6 w-6" />} />
+                            <DataTable columns={columns} data={filteredReviews} noun="messages" emptyIcon={<Eye className="h-6 w-6" />} />
                         </div>
                     )}
                 </CardContent>
@@ -807,7 +864,9 @@ function ReportsCenterTab() {
     const [editSummary, setEditSummary] = useState('')
     const [editIsAuto, setEditIsAuto] = useState(false)
 
-    const [searchQuery, setSearchQuery] = useState('')
+    const [searchQuery, setSearchQuery] = useState(
+        typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('search') || '' : '',
+    )
     const [dateFrom, setDateFrom] = useState('')
     const [dateTo, setDateTo] = useState('')
 
@@ -1008,7 +1067,7 @@ function ReportsCenterTab() {
         <div className="flex-1 flex flex-col gap-6 w-full min-h-0">
             <Card className="flex-1 rounded-[20px] bg-white p-6 md:p-8 shadow-sm flex flex-col min-h-0 border-0">
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-                    <h2 className="text-xl md:text-2xl font-bold text-foreground">Report History</h2>
+                    {/* <h2 className="text-xl md:text-2xl font-bold text-foreground">Report History</h2> */}
                     <div className="flex items-center gap-3 flex-wrap">
                         <div className="relative w-full sm:w-auto">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />

@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useMemo, useState, useEffect } from 'react'
 import { Eye, X, SlidersHorizontal } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -20,6 +21,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Card, CardContent } from '@/components/ui/card'
 import { PageHeader } from '@/components/sections/page-header'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { DataTable } from '@/components/ui/data-table'
 import type { DataTableColumn } from '@/components/ui/data-table'
 
@@ -366,7 +368,9 @@ function AccessControlPage() {
     const [editingUser, setEditingUser] = useState<UserAPIResult | null>(null)
     const [dialogMode, setDialogMode] = useState<'view' | 'edit'>('view')
 
-    const [search, setSearch] = useState('')
+    const [search, setSearch] = useState(
+        typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('search') || '' : '',
+    )
     const [roleFilter, setRoleFilter] = useState('all')
     const [statusFilter, setStatusFilter] = useState('all')
 
@@ -576,7 +580,37 @@ function AccessControlPage() {
             <Card className="flex-1 overflow-hidden shadow-sm flex flex-col min-h-0">
                 <CardContent className="p-4 flex-1 flex flex-col">
                     {isLoading ? (
-                        <div className="flex-1 flex items-center justify-center text-muted-foreground">Loading access control data...</div>
+                        <div className="flex flex-col gap-4">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        {columns.map((col) => (
+                                            <TableHead key={col.key} className={col.headerClassName}>
+                                                {col.header}
+                                            </TableHead>
+                                        ))}
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {Array.from({ length: 10 }).map((_, index) => (
+                                        <TableRow key={index}>
+                                            {columns.map((col) => (
+                                                <TableCell key={col.key} className={col.className}>
+                                                    <Skeleton className="h-6 w-full max-w-[250px] mx-auto rounded-md" />
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                            <div className="flex items-center justify-between">
+                                <Skeleton className="h-4 w-48" />
+                                <div className="flex items-center gap-4">
+                                    <Skeleton className="h-8 w-24" />
+                                    <Skeleton className="h-8 w-64" />
+                                </div>
+                            </div>
+                        </div>
                     ) : (
                         <div className="flex-1 flex flex-col gap-4">
                             <DataTable columns={columns} data={usersList} noun="users" emptyIcon={<Eye className="h-6 w-6" />} />

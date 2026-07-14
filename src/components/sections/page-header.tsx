@@ -11,6 +11,8 @@ export interface PageHeaderProps {
     searchValue?: string
     onSearchChange?: (val: string) => void
     searchPlaceholder?: string
+    searchPrefix?: React.ReactNode
+    onSearchKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
 }
 
 export function PageHeader({
@@ -22,6 +24,8 @@ export function PageHeader({
     searchValue,
     onSearchChange,
     searchPlaceholder = 'Search region, hub, or incident...',
+    searchPrefix,
+    onSearchKeyDown,
 }: PageHeaderProps) {
     return (
         <div className={cn('flex flex-col md:flex-row md:items-start justify-between w-full gap-4 shrink-0', className)}>
@@ -39,16 +43,20 @@ export function PageHeader({
                 )}
                 <div className="flex items-center gap-3">
                     {children}
-                    <div className="bg-white shadow-sm h-9 items-center gap-2 rounded-full w-[260px] lg:w-[320px] px-3 cursor-text transition-colors hover:bg-white/90 hidden md:flex border border-black/5 focus-within:border-primary/20 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/10">
-                        <Search className="shrink-0 size-4 text-muted-foreground" />
-                        <input
-                            type="search"
-                            aria-label="Search"
-                            placeholder={searchPlaceholder}
-                            value={searchValue || ''}
-                            onChange={(e) => onSearchChange?.(e.target.value)}
-                            className="font-medium text-xs md:text-sm text-foreground bg-transparent outline-none w-full placeholder:text-muted-foreground"
-                        />
+                    <div className="bg-white shadow-sm h-9 items-center rounded-full w-[260px] lg:w-[320px] pl-1.5 pr-1 cursor-text transition-colors hover:bg-white/90 hidden md:flex border border-black/5 focus-within:border-primary/20 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/10">
+                        {searchPrefix}
+                        <div className="flex items-center gap-1.5 flex-1 min-w-0 px-1.5">
+                            <Search className="shrink-0 size-4 text-muted-foreground" />
+                            <input
+                                type="search"
+                                aria-label="Search"
+                                placeholder={searchPlaceholder}
+                                value={searchValue || ''}
+                                onChange={(e) => onSearchChange?.(e.target.value)}
+                                onKeyDown={onSearchKeyDown}
+                                className="font-medium text-xs md:text-sm text-foreground bg-transparent outline-none w-full placeholder:text-muted-foreground"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>

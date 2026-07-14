@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useAdminOverview } from '@/hooks/useDashboard'
 import {
     AreaChart,
     Area,
@@ -16,6 +17,7 @@ import {
     Legend,
 } from 'recharts'
 import { HeartPulse, TriangleAlert, Waves, BatteryWarning, Users, Activity, CheckCircle, ShieldCheck, AlertCircle } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { PageHeader } from '#/components/sections/page-header'
 import { StatCard } from '#/components/sections/stat-card'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,7 +27,6 @@ export const Route = createFileRoute('/_authenticated/')({
     component: Dashboard,
 })
 
-import { useAdminOverview } from '@/hooks/useDashboard'
 
 function FlagIcon({ type, color }: { type: string; color: string }) {
     return (
@@ -44,16 +45,35 @@ function FlagIcon({ type, color }: { type: string; color: string }) {
     )
 }
 
+const SEARCH_CATEGORIES = [
+    { value: 'users', label: 'Users', route: '/access-control' },
+    { value: 'messages', label: 'Messages', route: '/ai-reports' },
+    { value: 'reports', label: 'Reports', route: '/ai-reports' },
+    { value: 'residents', label: 'Residents', route: '/management' },
+    { value: 'hubs', label: 'Hubs', route: '/management' },
+    { value: 'coordinators', label: 'Coordinators', route: '/management' },
+] as const
+
 function Dashboard() {
+    const navigate = useNavigate()
+    const [searchCategory, setSearchCategory] = useState('users')
+    const [searchTerm, setSearchTerm] = useState('')
+
+    const handleGlobalSearch = (term: string) => {
+        const trimmed = term.trim()
+        if (!trimmed) return
+        const category = SEARCH_CATEGORIES.find((c) => c.value === searchCategory)
+        if (!category) return
+        navigate({ to: category.route, search: { search: trimmed } })
+    }
+
     const { data: overviewData, isLoading } = useAdminOverview()
-    const {
-        checkinData = [],
-        hazardData = [],
-        workloadData = [],
-        urgentFlags = [],
-        urgentFlagsCount = 0,
-        statCards = [],
-    } = overviewData || {}
+    const checkinData = overviewData?.checkinData || []
+    const hazardData = overviewData?.hazardData || []
+    const workloadData = overviewData?.workloadData || []
+    const urgentFlags = overviewData?.urgentFlags || []
+    const urgentFlagsCount = overviewData?.urgentFlagsCount || 0
+    const statCards = overviewData?.statCards || []
     const [currentTime, setCurrentTime] = useState('')
 
     useEffect(() => {
@@ -74,7 +94,41 @@ function Dashboard() {
 
     return (
         <div className="flex flex-col gap-3 w-full max-w-full overflow-hidden pb-2 font-sans">
-            <PageHeader title="Dashboard" description="System status overview" lastUpdated={currentTime} />
+            <PageHeader
+                title="Dashboard"
+                description="System status overview"
+                lastUpdated={currentTime}
+                searchValue={searchTerm}
+                onSearchChange={(val) => {
+                    setSearchTerm(val)
+                }}
+                searchPlaceholder={(() => {
+                    const cat = SEARCH_CATEGORIES.find((c) => c.value === searchCategory)
+                    return cat ? `Search ${cat.label.toLowerCase()}...` : 'Search...'
+                })()}
+                searchPrefix={
+                    <div className="flex items-center">
+                        <Select value={searchCategory} onValueChange={setSearchCategory}>
+                            <SelectTrigger className="h-7 border-0 bg-transparent shadow-none rounded-full px-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground gap-1 focus:ring-0 min-w-0">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl border shadow-md min-w-[160px]">
+                                {SEARCH_CATEGORIES.map((cat) => (
+                                    <SelectItem key={cat.value} value={cat.value} className="text-xs font-medium">
+                                        {cat.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <div className="h-5 w-px bg-border mx-0.5" />
+                    </div>
+                }
+                onSearchKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        handleGlobalSearch(searchTerm)
+                    }
+                }}
+            />
             {/* Stat cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 shrink-0">
                 {statCards.map((card) => {

@@ -21,7 +21,9 @@ function ManagementPage() {
 
     const [residentPage, setResidentPage] = useState(1)
     const [residentLimit, setResidentLimit] = useState(10)
-    const [residentSearch, setResidentSearch] = useState('')
+    const initialSearch = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('search') || '' : ''
+
+    const [residentSearch, setResidentSearch] = useState(initialSearch)
     const [residentHubId, setResidentHubId] = useState<string>('all')
     const [residentIsActive, setResidentIsActive] = useState<string>('all')
 
@@ -37,7 +39,7 @@ function ManagementPage() {
 
     const [hubPage, setHubPage] = useState(1)
     const [hubLimit, setHubLimit] = useState(10)
-    const [hubSearch, setHubSearch] = useState('')
+    const [hubSearch, setHubSearch] = useState(initialSearch)
     const [hubStatus, setHubStatus] = useState<string>('all')
 
     const { data: hubsData, isLoading: isLoadingHubs } = useHubs({
@@ -49,7 +51,7 @@ function ManagementPage() {
 
     const [coordinatorPage, setCoordinatorPage] = useState(1)
     const [coordinatorLimit, setCoordinatorLimit] = useState(10)
-    const [coordinatorSearch, setCoordinatorSearch] = useState('')
+    const [coordinatorSearch, setCoordinatorSearch] = useState(initialSearch)
     const [coordinatorHubId, setCoordinatorHubId] = useState<string>('all')
     const [coordinatorIsActive, setCoordinatorIsActive] = useState<string>('all')
 
