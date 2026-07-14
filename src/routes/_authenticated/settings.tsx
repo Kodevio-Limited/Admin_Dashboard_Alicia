@@ -227,7 +227,11 @@ function TermsAndConditionsTab() {
             </div>
 
             <div className="flex flex-col gap-4 mt-2">
-                <p className="text-sm font-medium text-foreground">Last updated: June 8, 2026 by Dianne Plummer.</p>
+                <p className="text-sm font-medium text-foreground">
+                    {data?.updated_at || data?.last_edited_by
+                        ? `Last updated: ${data.updated_at ? new Date(data.updated_at).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' }) : '—'}${data.last_edited_by ? ` by ${data.last_edited_by}` : ''}.`
+                        : 'No update history available.'}
+                </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 w-full">
                     {!isEditing ? (
@@ -432,7 +436,11 @@ function PrivacyPolicyTab() {
             </div>
 
             <div className="flex flex-col gap-4 mt-2">
-                <p className="text-sm font-medium text-foreground">Last updated: June 8, 2026 by Dianne Plummer.</p>
+                <p className="text-sm font-medium text-foreground">
+                    {data?.updated_at || data?.last_edited_by
+                        ? `Last updated: ${data.updated_at ? new Date(data.updated_at).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' }) : '—'}${data.last_edited_by ? ` by ${data.last_edited_by}` : ''}.`
+                        : 'No update history available.'}
+                </p>
 
                 <div className="flex flex-col sm:flex-row gap-4 w-full">
                     {!isEditing ? (
@@ -492,6 +500,215 @@ function PrivacyPolicyTab() {
                             </div>
                             <div>
                                 <DialogTitle className="text-lg font-bold tracking-tight text-white">Privacy Policy Preview</DialogTitle>
+                                <p className="text-xs text-white/50">Draft Version (Live View)</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Badge className="bg-green-500/20 text-green-400 hover:bg-green-500/20 border-none font-semibold px-3 py-1 rounded-full text-xs">
+                                Ready to Publish
+                            </Badge>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="size-8 rounded-full bg-white/10 hover:bg-white/20 text-white"
+                                onClick={() => setIsPreviewOpen(false)}
+                            >
+                                <X className="size-4" />
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 bg-slate-900/60 p-6 md:p-10 overflow-y-auto flex justify-center">
+                        <div className="w-full max-w-4xl bg-white text-slate-900 rounded-2xl shadow-2xl border border-slate-100 p-8 md:p-16 min-h-[60vh] h-fit relative">
+                            <div className="w-12 h-1 bg-primary rounded-full mx-auto mb-8" />
+                            <div className="prose prose-slate lg:prose-base max-w-none leading-relaxed text-slate-800">
+                                <div
+                                    dangerouslySetInnerHTML={{
+                                        __html:
+                                            content || '<p className="text-muted-foreground italic text-center">No content available.</p>',
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </div>
+    )
+}
+
+function AccountDeletionPolicyTab() {
+    const queryClient = useQueryClient()
+    const [content, setContent] = useState<string>('')
+    const [isInitialized, setIsInitialized] = useState(false)
+    const [isEditing, setIsEditing] = useState(false)
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+
+    const { data, isLoading, error } = useQuery({
+        queryKey: ['static-content', 'account-deletion-policy'],
+        queryFn: () => staticContentApi.get('account-deletion-policy'),
+    })
+
+    const updateContent = useMutation({
+        mutationFn: () =>
+            staticContentApi.update('account-deletion-policy', {
+                slug: data?.slug || 'account-deletion-policy',
+                title: data?.title || 'Account Deletion Policy',
+                content: content,
+            }),
+
+        onSuccess: () => {
+            toast.success('Account Deletion Policy updated successfully')
+            setIsEditing(false)
+
+            queryClient.invalidateQueries({
+                queryKey: ['static-content', 'account-deletion-policy'],
+            })
+        },
+
+        onError: () => {
+            toast.error('Failed to update Account Deletion Policy')
+        },
+    })
+
+    useEffect(() => {
+        if (!isLoading) {
+            setContent(data?.content ?? '')
+            setIsInitialized(true)
+        }
+    }, [data, isLoading])
+
+    const handleCancel = () => {
+        if (data) {
+            setContent(data.content ?? '')
+        }
+        setIsEditing(false)
+    }
+
+    const config = useMemo(
+        () => ({
+            height: 512,
+            readonly: !isEditing,
+            buttons: [
+                'bold',
+                'italic',
+                'underline',
+                'strike',
+                'subscript',
+                'superscript',
+                '|',
+                'font',
+                'fontsize',
+                'paragraph',
+                '|',
+                'align',
+                'ul',
+                'ol',
+                'outdent',
+                'indent',
+                '|',
+                'table',
+                'hr',
+                'link',
+                '|',
+                'undo',
+                'redo',
+            ],
+            placeholder: 'Start typing...',
+        }),
+        [isEditing],
+    )
+
+    if (isLoading || !isInitialized) {
+        return (
+            <div className="flex flex-col justify-center items-center h-96 gap-4 text-muted-foreground">
+                <Loader2 className="size-8 animate-spin" />
+                <p>Loading Account Deletion Policy...</p>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="flex justify-center items-center h-96">
+                <p className="text-destructive font-medium">Error loading Account Deletion Policy</p>
+            </div>
+        )
+    }
+
+    return (
+        <div className="flex-1 flex flex-col gap-6 w-full mt-4">
+            <div className="rounded-xl overflow-hidden border shadow-sm">
+                <JoditEditor config={config} value={content} onChange={(value) => setContent(value)} />
+            </div>
+
+            <div className="flex flex-col gap-4 mt-2">
+                <p className="text-sm font-medium text-foreground">
+                    {data?.updated_at || data?.last_edited_by
+                        ? `Last updated: ${data.updated_at ? new Date(data.updated_at).toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' }) : '—'}${data.last_edited_by ? ` by ${data.last_edited_by}` : ''}.`
+                        : 'No update history available.'}
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-4 w-full">
+                    {!isEditing ? (
+                        <>
+                            <Button
+                                size="lg"
+                                variant="secondary"
+                                className="flex-1 rounded-full text-base h-12 bg-muted/50 hover:bg-muted shadow-none border"
+                                onClick={() => setIsPreviewOpen(true)}
+                            >
+                                Preview
+                            </Button>
+                            <Button
+                                size="lg"
+                                variant="default"
+                                className="flex-1 rounded-full text-base h-12"
+                                onClick={() => setIsEditing(true)}
+                            >
+                                Edit
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button
+                                size="lg"
+                                variant="outline"
+                                className="flex-1 rounded-full text-base h-12"
+                                onClick={handleCancel}
+                                disabled={updateContent.isPending}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                size="lg"
+                                variant="default"
+                                disabled={updateContent.isPending}
+                                onClick={() => updateContent.mutate()}
+                                className="flex-1 rounded-full text-base h-12"
+                            >
+                                {updateContent.isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+                                Save Changes
+                            </Button>
+                        </>
+                    )}
+                </div>
+            </div>
+
+            <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+                <DialogContent
+                    showCloseButton={false}
+                    className="sm:max-w-5xl w-[92vw] h-[85vh] overflow-hidden flex flex-col p-0 rounded-3xl border-none shadow-2xl bg-slate-900 text-white outline-none"
+                >
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-slate-950">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-primary/20 text-primary p-2 rounded-xl">
+                                <SlidersHorizontal className="size-5" />
+                            </div>
+                            <div>
+                                <DialogTitle className="text-lg font-bold tracking-tight text-white">
+                                    Account Deletion Policy Preview
+                                </DialogTitle>
                                 <p className="text-xs text-white/50">Draft Version (Live View)</p>
                             </div>
                         </div>
@@ -720,6 +937,12 @@ function SettingsPage() {
                     >
                         Terms & Conditions
                     </TabsTrigger>
+                    <TabsTrigger
+                        value="account-deletion-policy"
+                        className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm text-muted-foreground transition-all"
+                    >
+                        Account Deletion Policy
+                    </TabsTrigger>
                 </TabsList>
 
                 <div className="mt-2 flex-1 bg-white rounded-[12px] p-6 md:p-10 flex flex-col shadow-sm min-h-0 overflow-y-auto">
@@ -737,6 +960,12 @@ function SettingsPage() {
                         className="m-0 border-0 p-0 outline-none flex-1 data-[state=active]:flex flex-col"
                     >
                         <TermsAndConditionsTab />
+                    </TabsContent>
+                    <TabsContent
+                        value="account-deletion-policy"
+                        className="m-0 border-0 p-0 outline-none flex-1 data-[state=active]:flex flex-col"
+                    >
+                        <AccountDeletionPolicyTab />
                     </TabsContent>
                 </div>
             </Tabs>

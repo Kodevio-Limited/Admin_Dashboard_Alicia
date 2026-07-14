@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useMemo, useEffect } from 'react'
 // unused tanstack query imports removed
-import { Eye, Download, X } from 'lucide-react'
+import { Eye, Download, X, Bot, MessageSquare, BarChart2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -22,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DataTable } from '@/components/ui/data-table'
 import type { DataTableColumn } from '@/components/ui/data-table'
 import { cn } from '@/lib/utils'
-import { Input } from '@/components/ui/input'
+
 
 import {
     useMessageReviews,
@@ -430,20 +430,22 @@ function ReportsCenterTab() {
     }
 
     const [autoReporting, setAutoReporting] = useState(true)
-    const [freq, setFreq] = useState('weekly')
+    const [freqMinutes, setFreqMinutes] = useState(60)
     const [incActivity, setIncActivity] = useState(true)
     const [incHubs, setIncHubs] = useState(true)
     const [incAlerts, setIncAlerts] = useState(true)
     const [incPerformance, setIncPerformance] = useState(true)
+    const [useAiSummary, setUseAiSummary] = useState(true)
 
     useEffect(() => {
         if (reportingConfig) {
             setAutoReporting(reportingConfig.auto_reporting_enabled)
-            setFreq(reportingConfig.frequency)
+            setFreqMinutes(reportingConfig.frequency_interval_minutes ?? 10080)
             setIncActivity(reportingConfig.include_activity_summary)
             setIncHubs(reportingConfig.include_hubs_summary)
             setIncAlerts(reportingConfig.include_alerts_summary)
             setIncPerformance(reportingConfig.include_ai_performance)
+            setUseAiSummary(reportingConfig.use_ai_summary ?? true)
         }
     }, [reportingConfig])
 
@@ -522,120 +524,138 @@ function ReportsCenterTab() {
     )
 
 
+    const formatMinutes = (mins: number): string => {
+        if (mins < 60) return `${mins} min${mins !== 1 ? 's' : ''}`
+        const hours = Math.floor(mins / 60)
+        const remainingMins = mins % 60
+        if (hours < 24) return remainingMins > 0 ? `${hours}h ${remainingMins}m` : `${hours} hour${hours !== 1 ? 's' : ''}`
+        const days = Math.floor(hours / 24)
+        const remainingHours = hours % 24
+        if (days < 7) return remainingHours > 0 ? `${days}d ${remainingHours}h` : `${days} day${days !== 1 ? 's' : ''}`
+        const weeks = Math.floor(days / 7)
+        const remainingDays = days % 7
+        return remainingDays > 0 ? `${weeks}w ${remainingDays}d` : `${weeks} week${weeks !== 1 ? 's' : ''}`
+    }
+
+    const contentSections: { id: string; label: string; desc: string; checked: boolean; onChange: (v: boolean) => void }[] = [
+        { id: 'activity', label: 'Activity Summary', desc: 'Check-ins and resident activity events', checked: incActivity, onChange: (v) => { setIncActivity(v); updateReportingMutation.mutate({ include_activity_summary: v }) } },
+        { id: 'hubs', label: 'Hubs Summary', desc: 'Hub status, uptime, and connectivity', checked: incHubs, onChange: (v) => { setIncHubs(v); updateReportingMutation.mutate({ include_hubs_summary: v }) } },
+        { id: 'alerts', label: 'Alerts Summary', desc: 'Flagged events and hazard reports', checked: incAlerts, onChange: (v) => { setIncAlerts(v); updateReportingMutation.mutate({ include_alerts_summary: v }) } },
+        { id: 'performance', label: 'AI Performance', desc: 'Confidence scores and classification accuracy', checked: incPerformance, onChange: (v) => { setIncPerformance(v); updateReportingMutation.mutate({ include_ai_performance: v }) } },
+        { id: 'ai-summary', label: 'AI Summary', desc: 'GPT-generated narrative overview of the report', checked: useAiSummary, onChange: (v) => { setUseAiSummary(v); updateReportingMutation.mutate({ use_ai_summary: v }) } },
+    ]
+
     return (
         <div className="flex-1 flex flex-col md:flex-row gap-6 min-h-0 w-full overflow-y-auto md:overflow-hidden pb-6 md:pb-0">
-            <Card className="flex-[4] rounded-[20px] bg-white p-6 shadow-sm flex flex-col gap-8 h-max md:h-full md:overflow-y-auto border-0">
+            <Card className="flex-[4] rounded-[20px] bg-white shadow-sm flex flex-col h-max md:h-full md:overflow-y-auto border-0 overflow-hidden">
                 <div className="flex items-center gap-4">
                     <div className="flex-1 bg-secondary rounded-xl p-5 flex flex-col gap-1.5">
                         <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">GENERATED</span>
                         <span className="text-[32px] leading-none font-bold text-foreground mt-1">{history.length}</span>
                     </div>
-                    <div className="flex-1 bg-secondary rounded-xl p-5 flex flex-col gap-1.5">
-                        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">NEXT AUTO</span>
-                        <span className="text-[26px] leading-none font-bold text-foreground mt-2.5 tracking-tight">Tomorrow</span>
+                    <div className="flex-1 px-6 py-5 flex flex-col gap-1">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Interval</span>
+                        <span className="text-[22px] leading-none font-bold text-foreground mt-1.5 tracking-tight">
+                            {formatMinutes(freqMinutes)}
+                        </span>
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-6">
-                    <div className="flex items-center justify-between">
-                        <span className="text-[17px] font-bold text-foreground">Auto Reporting</span>
-                        <Switch
-                            checked={autoReporting}
-                            onCheckedChange={(checked) => {
-                                setAutoReporting(checked)
-                                updateReportingMutation.mutate({ auto_reporting_enabled: checked })
-                            }}
-                            className="data-[state=checked]:bg-primary scale-125 origin-right"
-                        />
+                {/* Auto Reporting toggle */}
+                <div className="px-6 py-5 flex items-center justify-between border-t border-border/60">
+                    <div className="flex flex-col gap-0.5">
+                        <span className="text-[15px] font-semibold text-foreground">Auto Reporting</span>
+                        <span className="text-[12px] text-muted-foreground">
+                            {autoReporting ? 'Reports generate automatically' : 'Manual generation only'}
+                        </span>
                     </div>
+                    <Switch
+                        checked={autoReporting}
+                        onCheckedChange={(checked) => {
+                            setAutoReporting(checked)
+                            updateReportingMutation.mutate({ auto_reporting_enabled: checked })
+                        }}
+                        className="data-[state=checked]:bg-primary scale-110 origin-right"
+                    />
+                </div>
 
-                    <div className="flex flex-col gap-2.5">
-                        <span className="text-[13px] font-medium text-muted-foreground">Frequency</span>
+                {/* Frequency */}
+                <div className="px-6 py-5 flex flex-col gap-3 border-t border-border/60">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[15px] font-semibold text-foreground">Report Frequency</span>
+                        <span className="text-[11px] font-semibold bg-primary/10 text-primary px-2.5 py-1 rounded-full">
+                            {formatMinutes(freqMinutes)}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="relative flex-1">
+                            <input
+                                type="number"
+                                min={1}
+                                step={1}
+                                value={freqMinutes}
+                                onChange={(e) => {
+                                    const val = Math.max(1, parseInt(e.target.value, 10) || 1)
+                                    setFreqMinutes(val)
+                                }}
+                                onBlur={(e) => {
+                                    const val = Math.max(1, parseInt(e.target.value, 10) || 1)
+                                    setFreqMinutes(val)
+                                    updateReportingMutation.mutate({ frequency_interval_minutes: val })
+                                }}
+                                onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
+                                className="w-full h-11 rounded-xl bg-muted border border-border/50 px-4 pr-10 text-[14px] font-semibold outline-none focus:ring-2 focus:ring-primary/20 text-center"
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground font-medium pointer-events-none">min</span>
+                        </div>
                         <Select
-                            value={freq}
+                            value=""
                             onValueChange={(val) => {
-                                setFreq(val)
-                                updateReportingMutation.mutate({ frequency: val })
+                                const mins = Number(val)
+                                setFreqMinutes(mins)
+                                updateReportingMutation.mutate({ frequency_interval_minutes: mins })
                             }}
                         >
-                            <SelectTrigger className="w-full bg-secondary border-0 rounded-3xl h-[52px] text-[15px] font-medium px-5 shadow-none">
-                                <SelectValue placeholder="Select frequency" />
+                            <SelectTrigger className="w-fit min-w-[120px] bg-muted border border-border/50 rounded-xl h-11 text-[13px] font-medium shadow-none">
+                                <SelectValue placeholder="Quick pick" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="5min">Every 5 minutes</SelectItem>
-                                <SelectItem value="10min">Every 10 minutes</SelectItem>
-                                <SelectItem value="15min">Every 15 minutes</SelectItem>
-                                <SelectItem value="30min">Every 30 minutes</SelectItem>
-                                <SelectItem value="60min">Every 1 hour</SelectItem>
-                                <SelectItem value="12hours">Every 12 hours</SelectItem>
-                                <SelectItem value="daily">Daily</SelectItem>
-                                <SelectItem value="weekly">Weekly</SelectItem>
-                                <SelectItem value="monthly">Monthly</SelectItem>
+                                <SelectItem value="5">5 min</SelectItem>
+                                <SelectItem value="10">10 min</SelectItem>
+                                <SelectItem value="15">15 min</SelectItem>
+                                <SelectItem value="30">30 min</SelectItem>
+                                <SelectItem value="60">1 hour</SelectItem>
+                                <SelectItem value="180">3 hours</SelectItem>
+                                <SelectItem value="360">6 hours</SelectItem>
+                                <SelectItem value="720">12 hours</SelectItem>
+                                <SelectItem value="1440">Daily</SelectItem>
+                                <SelectItem value="10080">Weekly</SelectItem>
+                                <SelectItem value="43200">Monthly</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
+                </div>
 
-                    <div className="flex flex-col gap-6 mt-4">
-                        <div className="flex items-center gap-4">
-                            <Checkbox
-                                id="activity"
-                                checked={incActivity}
-                                onCheckedChange={(checked) => {
-                                    const val = !!checked
-                                    setIncActivity(val)
-                                    updateReportingMutation.mutate({ include_activity_summary: val })
-                                }}
-                                className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5"
-                            />
-                            <label htmlFor="activity" className="text-[15px] font-medium leading-none cursor-pointer">
-                                Activity Summary
-                            </label>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <Checkbox
-                                id="hubs"
-                                checked={incHubs}
-                                onCheckedChange={(checked) => {
-                                    const val = !!checked
-                                    setIncHubs(val)
-                                    updateReportingMutation.mutate({ include_hubs_summary: val })
-                                }}
-                                className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5"
-                            />
-                            <label htmlFor="hubs" className="text-[15px] font-medium leading-none cursor-pointer">
-                                Hubs Summary
-                            </label>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <Checkbox
-                                id="alerts"
-                                checked={incAlerts}
-                                onCheckedChange={(checked) => {
-                                    const val = !!checked
-                                    setIncAlerts(val)
-                                    updateReportingMutation.mutate({ include_alerts_summary: val })
-                                }}
-                                className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5"
-                            />
-                            <label htmlFor="alerts" className="text-[15px] font-medium leading-none cursor-pointer">
-                                Alerts Summary
-                            </label>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <Checkbox
-                                id="ai"
-                                checked={incPerformance}
-                                onCheckedChange={(checked) => {
-                                    const val = !!checked
-                                    setIncPerformance(val)
-                                    updateReportingMutation.mutate({ include_ai_performance: val })
-                                }}
-                                className="rounded-[4px] border-muted-foreground/30 data-[state=checked]:bg-black data-[state=checked]:text-white data-[state=checked]:border-black h-5 w-5"
-                            />
-                            <label htmlFor="ai" className="text-[15px] font-medium leading-none cursor-pointer">
-                                AI Performance
-                            </label>
-                        </div>
+                {/* Report Contents */}
+                <div className="px-6 pb-6 flex flex-col border-t border-border/60">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest pt-5 pb-3">Report Contents</span>
+                    <div className="flex flex-col divide-y divide-border/50">
+                        {contentSections.map((section) => (
+                            <div key={section.id} className="flex items-center justify-between py-3.5">
+                                <div className="flex flex-col gap-0.5">
+                                    <label htmlFor={section.id} className="text-[14px] font-semibold text-foreground cursor-pointer leading-none">
+                                        {section.label}
+                                    </label>
+                                    <span className="text-[11px] text-muted-foreground">{section.desc}</span>
+                                </div>
+                                <Switch
+                                    id={section.id}
+                                    checked={section.checked}
+                                    onCheckedChange={section.onChange}
+                                    className="data-[state=checked]:bg-primary scale-90 origin-right"
+                                />
+                            </div>
+                        ))}
                     </div>
                 </div>
             </Card>
@@ -684,8 +704,22 @@ function AiReportsPage() {
 
     const [confidence, setConfidence] = useState(85)
     const [autoClassification, setAutoClassification] = useState(true)
-    const [freqValue, setFreqValue] = useState('60')
-    const [freqUnit, setFreqUnit] = useState('min')
+    const [controlFreqVal, setControlFreqVal] = useState(60)
+    const [controlFreqUnit, setControlFreqUnit] = useState('min')
+    const [controlLastUpdated, setControlLastUpdated] = useState<string | undefined>(undefined)
+
+    const handleControlFreqChange = (newVal: number, newUnit: string) => {
+        setControlFreqVal(newVal)
+        setControlFreqUnit(newUnit)
+        
+        let str = `${newVal}${newUnit}`
+        if (newUnit === 'days') {
+            if (newVal === 1) str = 'daily'
+            else if (newVal === 7) str = 'weekly'
+            else if (newVal === 30 || newVal === 31) str = 'monthly'
+        }
+        updateControlMutation.mutate({ review_report_frequency: str })
+    }
 
     useEffect(() => {
         if (controlConfig) {
@@ -693,46 +727,36 @@ function AiReportsPage() {
             setAutoClassification(controlConfig.autonomous_classification)
             
             const freq = controlConfig.review_report_frequency || '60min'
-            if (freq === 'daily') {
-                setFreqValue('1')
-                setFreqUnit('days')
-            } else if (freq === 'weekly') {
-                setFreqValue('7')
-                setFreqUnit('days')
-            } else {
-                const match = freq.match(/^(\d+)(min|hours|days)$/)
+            let val = 60
+            let unit = 'min'
+            if (freq === 'daily') { val = 1; unit = 'days' }
+            else if (freq === 'weekly') { val = 7; unit = 'days' }
+            else if (freq === 'monthly') { val = 30; unit = 'days' }
+            else {
+                const match = freq.match(/^(\d+)(min|hours|days|hour)$/)
                 if (match) {
-                    setFreqValue(match[1])
-                    setFreqUnit(match[2])
-                } else {
-                    setFreqValue('60')
-                    setFreqUnit('min')
+                    val = parseInt(match[1], 10)
+                    unit = match[2]
+                    if (unit === 'hour') unit = 'hours'
                 }
+            }
+            setControlFreqVal(val)
+            setControlFreqUnit(unit)
+
+            if (controlConfig.updated_at) {
+                setControlLastUpdated(
+                    new Date(controlConfig.updated_at).toLocaleString('en-US', {
+                        dateStyle: 'medium',
+                        timeStyle: 'short',
+                    })
+                )
             }
         }
     }, [controlConfig])
 
-    const handleUpdateFrequency = (rawVal = freqValue, unit = freqUnit) => {
-        let num = parseInt(rawVal, 10)
-        if (isNaN(num) || num <= 0) num = 1 // Fallback to minimum
-
-        // Clamp maximums depending on unit to prevent absurd values
-        if (unit === 'min' && num > 1440) num = 1440 // Max 24 hours in mins
-        if (unit === 'hours' && num > 720) num = 720 // Max 30 days in hours
-        if (unit === 'days' && num > 365) num = 365 // Max 1 year
-
-        const valStr = num.toString()
-        setFreqValue(valStr) // Update UI with clamped value
-
-        let finalStr = `${valStr}${unit}`
-        if (unit === 'days' && valStr === '1') finalStr = 'daily'
-        if (unit === 'days' && valStr === '7') finalStr = 'weekly'
-        updateControlMutation.mutate({ review_report_frequency: finalStr })
-    }
-
     return (
         <>
-            <PageHeader title="AI & Reports" description="Monitor AI performance and manage automated reporting" lastUpdated="05:41:15 PM">
+            <PageHeader title="AI & Reports" description="Monitor AI performance and manage automated reporting" lastUpdated={controlLastUpdated}>
                 <Button
                     variant="default"
                     disabled={generateReportMutation.isPending}
@@ -744,26 +768,31 @@ function AiReportsPage() {
 
             <div className="flex-1 flex flex-col gap-6 w-full min-h-0">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0 w-full">
-                    <TabsList className="inline-flex w-fit h-10 md:h-12 bg-muted p-1.5 rounded-full overflow-x-auto justify-start border-0">
-                        <TabsTrigger
-                            value="ai-control"
-                            className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm text-muted-foreground transition-all"
-                        >
-                            AI Control
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="message-review"
-                            className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm text-muted-foreground transition-all"
-                        >
-                            Message Review
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="reports-center"
-                            className="rounded-full px-6 h-full text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm text-muted-foreground transition-all"
-                        >
-                            Reports Center
-                        </TabsTrigger>
-                    </TabsList>
+                    <div className="relative flex border-b border-border/60">
+                        {([
+                            { value: 'ai-control', label: 'AI Control', icon: Bot },
+                            { value: 'message-review', label: 'Message Review', icon: MessageSquare },
+                            { value: 'reports-center', label: 'Reports Center', icon: BarChart2 },
+                        ] as const).map(({ value, label, icon: Icon }) => (
+                            <button
+                                key={value}
+                                type="button"
+                                onClick={() => setActiveTab(value)}
+                                className={cn(
+                                    'relative flex items-center gap-2 px-5 py-3.5 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/30 rounded-t-sm',
+                                    activeTab === value
+                                        ? 'text-foreground'
+                                        : 'text-muted-foreground hover:text-foreground/80',
+                                )}
+                            >
+                                <Icon className="h-[15px] w-[15px] shrink-0" />
+                                {label}
+                                {activeTab === value && (
+                                    <span className="absolute inset-x-0 -bottom-px h-[2px] bg-primary rounded-full" />
+                                )}
+                            </button>
+                        ))}
+                    </div>
 
                     <TabsContent value="ai-control" className="mt-6 flex flex-col gap-4 outline-none w-full flex-1">
                         <div className="rounded-2xl bg-muted border border-black/[0.03] shadow-sm p-6">
@@ -821,33 +850,25 @@ function AiReportsPage() {
                                 </p>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Input
+                                <input
                                     type="number"
                                     min={1}
                                     step={1}
-                                    value={freqValue}
-                                    onChange={(e) => {
-                                        // Only allow digits
-                                        const cleanVal = e.target.value.replace(/[^0-9]/g, '')
-                                        setFreqValue(cleanVal)
+                                    value={controlFreqVal}
+                                    onChange={(e) => setControlFreqVal(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                                    onBlur={(e) => {
+                                        const val = Math.max(1, parseInt(e.target.value, 10) || 1)
+                                        handleControlFreqChange(val, controlFreqUnit)
                                     }}
-                                    onBlur={() => handleUpdateFrequency()}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                            e.currentTarget.blur()
-                                        }
-                                    }}
-                                    className="w-20 bg-background border-border rounded-xl h-10 shadow-sm text-sm text-center font-medium"
+                                    onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
+                                    className="w-20 h-10 rounded-xl bg-background border border-border px-3 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/20 text-center"
                                 />
                                 <Select
-                                    value={freqUnit}
-                                    onValueChange={(val) => {
-                                        setFreqUnit(val)
-                                        handleUpdateFrequency(freqValue, val)
-                                    }}
+                                    value={controlFreqUnit}
+                                    onValueChange={(val) => handleControlFreqChange(controlFreqVal, val)}
                                 >
-                                    <SelectTrigger className="w-fit min-w-[110px] bg-background border border-border rounded-xl h-10 shadow-sm text-sm font-medium">
-                                        <SelectValue placeholder="Unit" />
+                                    <SelectTrigger className="w-[110px] bg-background border border-border rounded-xl h-10 shadow-sm text-sm font-medium">
+                                        <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="min">Minutes</SelectItem>

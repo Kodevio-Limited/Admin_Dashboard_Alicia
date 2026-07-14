@@ -4,6 +4,8 @@ export interface StaticContentAPIResult {
     slug: string
     title: string
     content: string
+    updated_at?: string
+    last_edited_by?: string
 }
 
 interface ApiResponse<T> {
@@ -14,16 +16,29 @@ interface ApiResponse<T> {
 
 export const staticContentApi = {
     get: async (key: string): Promise<StaticContentAPIResult> => {
-        const endpoint = key === 'privacy-policy' ? '/admin/content/privacy-policy/' : '/admin/content/terms/'
+        const endpoint =
+            key === 'privacy-policy'
+                ? '/admin/content/privacy-policy/'
+                : key === 'account-deletion-policy'
+                  ? '/admin/content/account-deletion-policy/'
+                  : '/admin/content/terms/'
         try {
             const response = await client<ApiResponse<StaticContentAPIResult>>(endpoint)
             return response.data
         } catch (err: any) {
             const isNotFound = err?.message?.toLowerCase().includes('not found') || err?.message?.includes('404')
             if (isNotFound) {
+                const slugMap: Record<string, string> = {
+                    'privacy-policy': 'privacy-policy',
+                    'account-deletion-policy': 'account-deletion-policy',
+                }
+                const titleMap: Record<string, string> = {
+                    'privacy-policy': 'Privacy Policy',
+                    'account-deletion-policy': 'Account Deletion Policy',
+                }
                 return {
-                    slug: key === 'privacy-policy' ? 'privacy-policy' : 'terms-and-conditions',
-                    title: key === 'privacy-policy' ? 'Privacy Policy' : 'Terms & Conditions',
+                    slug: slugMap[key] ?? 'terms-and-conditions',
+                    title: titleMap[key] ?? 'Terms & Conditions',
                     content: '',
                 }
             }
@@ -31,7 +46,12 @@ export const staticContentApi = {
         }
     },
     update: async (key: string, payload: { slug: string; title: string; content: string }): Promise<StaticContentAPIResult> => {
-        const endpoint = key === 'privacy-policy' ? '/admin/content/privacy-policy/' : '/admin/content/terms/'
+        const endpoint =
+            key === 'privacy-policy'
+                ? '/admin/content/privacy-policy/'
+                : key === 'account-deletion-policy'
+                  ? '/admin/content/account-deletion-policy/'
+                  : '/admin/content/terms/'
         const response = await client<ApiResponse<StaticContentAPIResult>>(endpoint, {
             method: 'PATCH',
             data: payload,

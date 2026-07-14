@@ -86,7 +86,7 @@ export interface AIControlConfig {
 
 export interface AIReportingConfig {
     auto_reporting_enabled: boolean
-    frequency: string
+    frequency_interval_minutes: number
     include_activity_summary: boolean
     include_hubs_summary: boolean
     include_alerts_summary: boolean
