@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { adminKeys } from '@/lib/query-keys'
 import { getAdminOverview } from '@/lib/api/dashboard'
 import type { AdminDashboardOverviewResponse } from '@/lib/api/dashboard'
@@ -8,6 +8,10 @@ import {
     statCardsData as fallbackStatCards,
 } from '@/lib/dashboard'
 import type { CheckinDataPoint, HazardDataPoint, WorkloadDataPoint, UrgentFlag, StatCardData } from '@/lib/dashboard'
+import { getDashboardMap } from '@/data/dashboard'
+import { getMapConfig, type MapPoint } from '@/lib/maps'
+import { dashboardKeys } from './keys'
+import type { DashboardMapResponse } from '@/types/dashboard'
 
 export type AdminOverviewData = AdminDashboardOverviewResponse['data'] & {
     checkinData: CheckinDataPoint[]
@@ -92,6 +96,90 @@ export function useAdminOverview() {
                 urgentFlags,
                 urgentFlagsCount,
                 statCards,
+            }
+        },
+    })
+}
+
+export type DashboardMapData = DashboardMapResponse & { markers: MapPoint[] }
+
+function inferHubCategory(name: string): string {
+    const lower = name.toLowerCase()
+    if (lower.includes('shelter') || lower.includes('refuge')) return 'Emergency Shelter'
+    if (lower.includes('medical') || lower.includes('clinic') || lower.includes('hospital')) return 'Medical Center'
+    if (lower.includes('command') || lower.includes('control')) return 'Command Center'
+    return 'Charging Station'
+}
+
+export function useDashboardMap(
+    bounds?: { lat_min?: number; lat_max?: number; lng_min?: number; lng_max?: number },
+    type?: string,
+    category?: string
+) {
+    const stableKey = dashboardKeys.map([
+        bounds?.lat_min,
+        bounds?.lat_max,
+        bounds?.lng_min,
+        bounds?.lng_max,
+        type,
+        category,
+    ])
+
+    return useQuery<DashboardMapResponse, Error, DashboardMapData>({
+        queryKey: stableKey,
+        queryFn: () => getDashboardMap(bounds, type, category),
+        staleTime: 60_000,
+        placeholderData: keepPreviousData,
+        select: (data) => {
+            const hubMarkers: MapPoint[] = (data.medical_hubs?.locations ?? []).map((hub) => {
+                const category = inferHubCategory(hub.name)
+                return {
+                    id: hub.id,
+                    lat: hub.latitude,
+                    lng: hub.longitude,
+                    type: category,
+                    entityType: 'hub',
+                    name: hub.name,
+                    ...getMapConfig('hub', category),
+                }
+            })
+
+            const hazardMarkers: MapPoint[] = (data.hazards ?? []).map((hazard) => {
+                const category = hazard.category.charAt(0).toUpperCase() + hazard.category.slice(1)
+                return {
+                    id: hazard.id,
+                    lat: hazard.latitude,
+                    lng: hazard.longitude,
+                    type: category,
+                    entityType: 'hazard',
+                    name: hazard.description ? `${category}: ${hazard.description}` : `${category} Incident`,
+                    ...getMapConfig('hazard', category),
+                }
+            })
+
+            const fallMarkers: MapPoint[] = (data.fall_incidents ?? []).map((fall) => ({
+                id: fall.id,
+                lat: fall.latitude,
+                lng: fall.longitude,
+                type: 'Fallen Tree',
+                entityType: 'hazard',
+                name: 'Fallen Tree Blockage',
+                ...getMapConfig('hazard', 'Fallen Tree'),
+            }))
+
+            const medicalNeedMarkers: MapPoint[] = (data.medical_needs ?? []).map((med) => ({
+                id: med.id,
+                lat: med.latitude,
+                lng: med.longitude,
+                type: 'Medical Emergency',
+                entityType: 'hazard',
+                name: 'Urgent Medical Emergency',
+                ...getMapConfig('hazard', 'Medical Emergency'),
+            }))
+
+            return {
+                ...data,
+                markers: [...hubMarkers, ...hazardMarkers, ...fallMarkers, ...medicalNeedMarkers],
             }
         },
     })

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useAdminOverview } from '@/hooks/useDashboard'
+import { useAdminOverview, useDashboardMap } from '@/hooks/useDashboard'
 import {
     AreaChart,
     Area,
@@ -16,8 +16,10 @@ import {
     Pie,
     Legend,
 } from 'recharts'
-import { HeartPulse, TriangleAlert, Waves, BatteryWarning, Users, Activity, CheckCircle, ShieldCheck, AlertCircle } from 'lucide-react'
+import { HeartPulse, TriangleAlert, Waves, BatteryWarning, Users, Activity, CheckCircle, ShieldCheck, AlertCircle, MapPin } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+
+const MapboxLiveMap = lazy(() => import('@/components/sections/mapbox-live-map').then(m => ({ default: m.MapboxLiveMap })))
 import { PageHeader } from '#/components/sections/page-header'
 import { StatCard } from '#/components/sections/stat-card'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -74,6 +76,7 @@ function Dashboard() {
     const urgentFlags = overviewData?.urgentFlags || []
     const urgentFlagsCount = overviewData?.urgentFlagsCount || 0
     const statCards = overviewData?.statCards || []
+    const { data: mapData, isError: isMapError } = useDashboardMap()
     const [currentTime, setCurrentTime] = useState('')
 
     useEffect(() => {
@@ -144,63 +147,52 @@ function Dashboard() {
                 })}
             </div>
 
-            {/* Charts row 1 */}
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 h-auto lg:h-110">
-                {/* Check-ins trend */}
-                <Card className="xl:col-span-8 p-5 md:p-6 flex flex-col min-h-[300px] lg:min-h-0">
-                    <CardHeader className="px-0 pt-0 pb-2">
-                        <CardTitle className="text-[22px] font-bold">Residents Check-ins Trend</CardTitle>
-                        <p className="text-muted-foreground text-[15px] font-medium">Network-wide check-in volume over the last 6 hours</p>
-                    </CardHeader>
-                    <CardContent className="p-0 flex-1 min-h-[300px] lg:min-h-0 w-full relative">
-                        {isLoading ? (
-                            <div className="w-full h-full p-4 flex flex-col gap-4">
-                                <Skeleton className="h-[250px] w-full" />
+            {/* Map + Urgent Flags row */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 w-full">
+                <Card
+                    className="lg:col-span-7 xl:col-span-8 overflow-hidden relative cursor-pointer min-h-[300px] lg:min-h-[400px] group p-0"
+                    onClick={() => navigate({ to: '/map' })}
+                >
+                    <div className="absolute inset-0 z-0 pointer-events-none">
+                        <Suspense fallback={<Skeleton className="w-full h-full" />}>
+                            {isMapError ? (
+                                <div className="w-full h-full flex items-center justify-center bg-slate-100 text-slate-400 text-sm">
+                                    Map data unavailable
+                                </div>
+                            ) : (
+                                <MapboxLiveMap
+                                    className="w-full h-full rounded-none"
+                                    showControls={false}
+                                    showFilters={false}
+                                    showLegend={false}
+                                    interactive={false}
+                                    markers={mapData?.markers || []}
+                                    autoLocate={false}
+                                    defaultShowUserLocation={false}
+                                    center={[-77.2975, 18.1096]}
+                                    zoom={8}
+                                />
+                            )}
+                        </Suspense>
+                    </div>
+                    <div className="relative z-10 flex h-full flex-col justify-between p-5 md:p-6 pointer-events-none">
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="flex flex-col justify-start bg-white/90 backdrop-blur-sm px-2 py-1.5 rounded-lg shadow-sm pointer-events-auto transition-transform hover:scale-[1.02]">
+                                <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-slate-500 mb-0.5">Live Map</p>
+                                <h3 className="text-sm font-bold text-slate-900 leading-none">Region overview</h3>
                             </div>
-                        ) : (
-                            <ResponsiveContainer width="100%" height={300}>
-                                <AreaChart data={checkinData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                    <defs>
-                                        <linearGradient id="checkinGradient" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.15} />
-                                            <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                                    <XAxis
-                                        dataKey="time"
-                                        tick={{ fill: 'var(--muted-foreground)', fontSize: 13, fontWeight: 500 }}
-                                        axisLine={false}
-                                        tickLine={false}
-                                        dy={12}
-                                    />
-                                    <YAxis
-                                        tick={{ fill: 'var(--muted-foreground)', fontSize: 13, fontWeight: 500 }}
-                                        axisLine={false}
-                                        tickLine={false}
-                                        tickFormatter={(v) => `${v / 1000}K`}
-                                    />
-                                    <Tooltip
-                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}
-                                        formatter={(v: any) => [`${Number(v).toLocaleString()}`, 'Check-ins']}
-                                    />
-                                    <Area
-                                        type="monotone"
-                                        dataKey="value"
-                                        stroke="var(--primary)"
-                                        strokeWidth={3}
-                                        fill="url(#checkinGradient)"
-                                        dot={false}
-                                        activeDot={{ r: 6, fill: 'var(--primary)', stroke: 'white', strokeWidth: 2 }}
-                                    />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        )}
-                    </CardContent>
+                            <div className="rounded-full bg-white/90 backdrop-blur-sm shadow-sm p-1.5 text-slate-600 pointer-events-auto transition-transform hover:scale-110">
+                                <MapPin className="size-3" />
+                            </div>
+                        </div>
+                        <div className="mt-auto self-center bg-white/90 backdrop-blur-sm px-5 py-2.5 rounded-full shadow-sm flex items-center gap-2 pointer-events-auto opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                            <span className="text-sm font-medium text-slate-700">Tap to open interactive map</span>
+                        </div>
+                    </div>
                 </Card>
 
                 {/* Urgent Flags */}
-                <Card className="xl:col-span-4 p-5 md:p-6 flex flex-col">
+                <Card className="lg:col-span-5 xl:col-span-4 p-5 md:p-6 flex flex-col h-100 xl:h-auto">
                     <CardHeader className="px-0 pt-0 pb-2 flex flex-row items-center justify-between space-y-0">
                         <CardTitle className="text-[22px] font-bold">Urgent Flags</CardTitle>
                         <span className="bg-rose-100/80 text-rose-600 text-[13px] font-bold px-4 py-1.5 rounded-full">
@@ -251,9 +243,65 @@ function Dashboard() {
             </div>
 
             {/* Charts row 2 */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-auto lg:h-110">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 h-auto lg:h-110">
+                {/* Check-ins trend */}
+                <Card className="xl:col-span-12 p-5 md:p-6 flex flex-col min-h-[300px] lg:min-h-0">
+                    <CardHeader className="px-0 pt-0 pb-2">
+                        <CardTitle className="text-[22px] font-bold">Residents Check-ins Trend</CardTitle>
+                        <p className="text-muted-foreground text-[15px] font-medium">Network-wide check-in volume over the last 6 hours</p>
+                    </CardHeader>
+                    <CardContent className="p-0 flex-1 min-h-[300px] lg:min-h-0 w-full relative">
+                        {isLoading ? (
+                            <div className="w-full h-full p-4 flex flex-col gap-4">
+                                <Skeleton className="h-[250px] w-full" />
+                            </div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height={300}>
+                                <AreaChart data={checkinData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="checkinGradient" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.15} />
+                                            <stop offset="95%" stopColor="var(--primary)" stopOpacity={0} />
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                                    <XAxis
+                                        dataKey="time"
+                                        tick={{ fill: 'var(--muted-foreground)', fontSize: 13, fontWeight: 500 }}
+                                        axisLine={false}
+                                        tickLine={false}
+                                        dy={12}
+                                    />
+                                    <YAxis
+                                        tick={{ fill: 'var(--muted-foreground)', fontSize: 13, fontWeight: 500 }}
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tickFormatter={(v) => `${v / 1000}K`}
+                                    />
+                                    <Tooltip
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}
+                                        formatter={(v: any) => [`${Number(v).toLocaleString()}`, 'Check-ins']}
+                                    />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="value"
+                                        stroke="var(--primary)"
+                                        strokeWidth={3}
+                                        fill="url(#checkinGradient)"
+                                        dot={false}
+                                        activeDot={{ r: 6, fill: 'var(--primary)', stroke: 'white', strokeWidth: 2 }}
+                                    />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Charts row 3 */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 h-auto lg:h-120">
                 {/* Hazard Types */}
-                <Card className="p-5 md:p-6 flex flex-col">
+                <Card className="lg:col-span-7 p-5 md:p-6 flex flex-col">
                     <CardHeader className="px-0 pt-0 pb-2">
                         <CardTitle className="text-[22px] font-bold">Hazard Types</CardTitle>
                     </CardHeader>
@@ -308,7 +356,7 @@ function Dashboard() {
                 </Card>
 
                 {/* System Workload */}
-                <Card className="p-5 md:p-6 flex flex-col">
+                <Card className="lg:col-span-5 p-5 md:p-6 flex flex-col">
                     <CardHeader className="px-0 pt-0 pb-4">
                         <CardTitle className="text-[22px] font-bold">System Workload</CardTitle>
                     </CardHeader>
@@ -320,7 +368,7 @@ function Dashboard() {
                                 <PieChart>
                                     <Pie
                                         data={workloadData}
-                                        cx="40%"
+                                        cx="50%"
                                         cy="50%"
                                         outerRadius={135}
                                         dataKey="value"
