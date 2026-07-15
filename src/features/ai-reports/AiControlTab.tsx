@@ -141,32 +141,59 @@ export function AiControlTab() {
 
                     <Separator />
 
-                    <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-start sm:items-center justify-between gap-4 flex-col sm:flex-row">
                         <div className="min-w-0">
                             <h3 className="text-[13px] font-semibold text-foreground">Report Interval</h3>
-                            <p className="text-[11px] text-muted-foreground mt-0.5">Minutes between auto reports.</p>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">Time between automated reports.</p>
                         </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                            <div className="relative">
-                                <input
-                                    type="number"
-                                    min={1}
-                                    value={freqMinutes}
-                                    onChange={(e) => setFreqMinutes(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                                    className="w-20 h-8 rounded-lg bg-background border border-border px-3 pr-7 text-xs font-semibold outline-none focus:ring-2 focus:ring-primary/20 text-center"
-                                />
-                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-medium pointer-events-none">min</span>
-                            </div>
-                            <Select value="" onValueChange={(val) => setFreqMinutes(Number(val))}>
-                                <SelectTrigger className="w-fit min-w-[90px] bg-background border border-border rounded-lg h-8 text-[11px] font-medium shadow-none px-2">
-                                    <SelectValue placeholder="Pick" />
+                        <div className="flex items-center rounded-lg border border-input bg-background shadow-sm overflow-hidden focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all shrink-0">
+                            <input
+                                type="number"
+                                min={1}
+                                value={
+                                    freqMinutes % 1440 === 0 
+                                        ? freqMinutes / 1440 
+                                        : freqMinutes % 60 === 0 
+                                            ? freqMinutes / 60 
+                                            : freqMinutes
+                                }
+                                onChange={(e) => {
+                                    const val = Math.max(1, parseInt(e.target.value, 10) || 1)
+                                    const isDays = freqMinutes % 1440 === 0
+                                    const isHours = !isDays && freqMinutes % 60 === 0
+                                    if (isDays) setFreqMinutes(val * 1440)
+                                    else if (isHours) setFreqMinutes(val * 60)
+                                    else setFreqMinutes(val)
+                                }}
+                                className="w-16 h-9 px-3 bg-transparent border-none outline-none text-sm text-right font-medium tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            />
+                            <div className="w-[1px] h-5 bg-border" />
+                            <Select 
+                                value={
+                                    freqMinutes % 1440 === 0 
+                                        ? 'days' 
+                                        : freqMinutes % 60 === 0 
+                                            ? 'hours' 
+                                            : 'minutes'
+                                } 
+                                onValueChange={(unit) => {
+                                    const currentVal = freqMinutes % 1440 === 0 
+                                        ? freqMinutes / 1440 
+                                        : freqMinutes % 60 === 0 
+                                            ? freqMinutes / 60 
+                                            : freqMinutes
+                                    if (unit === 'days') setFreqMinutes(currentVal * 1440)
+                                    else if (unit === 'hours') setFreqMinutes(currentVal * 60)
+                                    else setFreqMinutes(currentVal)
+                                }}
+                            >
+                                <SelectTrigger className="h-9 border-none shadow-none bg-transparent hover:bg-muted/50 focus:ring-0 rounded-none px-3 gap-2 text-sm font-medium">
+                                    <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="5">5 min</SelectItem>
-                                    <SelectItem value="15">15 min</SelectItem>
-                                    <SelectItem value="60">1 hour</SelectItem>
-                                    <SelectItem value="1440">Daily</SelectItem>
-                                    <SelectItem value="10080">Weekly</SelectItem>
+                                <SelectContent align="end" className="rounded-xl shadow-md border-border/50">
+                                    <SelectItem value="minutes">Minutes</SelectItem>
+                                    <SelectItem value="hours">Hours</SelectItem>
+                                    <SelectItem value="days">Days</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>

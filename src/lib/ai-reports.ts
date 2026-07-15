@@ -268,10 +268,10 @@ export async function getReportDetails(id: number): Promise<Report> {
     return res.data
 }
 
-// PATCH Report item (partial update for inline editing)
+// PATCH/PUT Report item (partial update for inline editing)
 export async function updateReportItem(id: number, data: { summary?: string; is_auto?: boolean }): Promise<any> {
     return client<ApiResponse<any>>(`/ai/reports/${id}/`, {
-        method: 'PATCH',
+        method: 'PUT',
         data,
     })
 }
