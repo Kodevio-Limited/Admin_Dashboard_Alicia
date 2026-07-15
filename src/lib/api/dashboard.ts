@@ -43,3 +43,51 @@ export interface AdminDashboardOverviewResponse {
 export async function getAdminOverview(): Promise<AdminDashboardOverviewResponse> {
     return client<AdminDashboardOverviewResponse>('/admin/overview/')
 }
+
+export interface UrgentFlagResult {
+    id: number
+    category: string
+    category_label: string
+    description: string
+    latitude: number
+    longitude: number
+    severity: number
+    severity_label: string
+    reporter_name: string
+    status: string
+    review_status: string
+    risk_score: number
+    photo: string | null
+    created_at: string
+}
+
+export interface UrgentFlagsResponse {
+    status: string
+    data: {
+        hazard_breakdown: {
+            [key: string]: number
+        }
+        checkins: {
+            total: number
+            today: number
+            safe: number
+            need_assistance: number
+        }
+        count: number
+        next: string | null
+        previous: string | null
+        results: UrgentFlagResult[]
+    }
+    message: string
+}
+
+export async function getUrgentFlagsList(category?: string, page?: number): Promise<UrgentFlagsResponse> {
+    let url = '/gov/urgent-flags/'
+    const params = new URLSearchParams()
+    if (category) params.append('category', category)
+    if (page) params.append('page', page.toString())
+
+    const qs = params.toString()
+    if (qs) url += `?${qs}`
+    return client<UrgentFlagsResponse>(url)
+}

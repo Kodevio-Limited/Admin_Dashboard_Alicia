@@ -13,9 +13,9 @@ export const hubColumns: DataTableColumn<HubAPIResult>[] = [
     {
         key: 'location',
         header: 'LOCATION',
-        className: 'py-2 text-center',
-        headerClassName: 'text-center',
-        render: (hub) => <div className="whitespace-normal max-w-[120px] mx-auto leading-tight">{hub.address}</div>,
+        className: 'py-2 px-3 w-[260px]',
+        headerClassName: 'w-[260px]',
+        render: (hub) => <div className="whitespace-normal leading-snug text-sm">{hub.address}</div>,
     },
     {
         key: 'battery',

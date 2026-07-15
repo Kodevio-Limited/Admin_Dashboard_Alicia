@@ -1,6 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useAdminOverview, useDashboardMap } from '@/hooks/useDashboard'
+import { useAdminOverview, useDashboardMap, useUrgentFlagsList } from '@/hooks/useDashboard'
+import type { UrgentFlagResult } from '@/lib/api/dashboard'
 import {
     AreaChart,
     Area,
@@ -16,8 +17,9 @@ import {
     Pie,
     Legend,
 } from 'recharts'
-import { HeartPulse, TriangleAlert, Waves, BatteryWarning, Users, Activity, CheckCircle, ShieldCheck, AlertCircle, MapPin } from 'lucide-react'
+import { HeartPulse, TriangleAlert, Waves, BatteryWarning, Users, Activity, CheckCircle, ShieldCheck, AlertCircle, MapPin, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
 
 const MapboxLiveMap = lazy(() => import('@/components/sections/mapbox-live-map').then(m => ({ default: m.MapboxLiveMap })))
 import { PageHeader } from '#/components/sections/page-header'
@@ -30,7 +32,11 @@ export const Route = createFileRoute('/_authenticated/')({
 })
 
 
-function FlagIcon({ type, color }: { type: string; color: string }) {
+function FlagIcon({ category, color }: { category: string; color: string }) {
+    const isMedical = category.toLowerCase().includes('medical')
+    const isFlood = category.toLowerCase().includes('flood')
+    const isWarning = !isMedical && !isFlood
+
     return (
         <div className="relative shrink-0 size-12 rounded-full bg-muted flex items-center justify-center">
             <div
@@ -38,13 +44,18 @@ function FlagIcon({ type, color }: { type: string; color: string }) {
                 style={{ backgroundColor: color }}
             />
             <div className="relative z-10 text-white flex items-center justify-center">
-                {type === 'medical' && <HeartPulse className="size-5.5" />}
-                {type === 'warning' && <TriangleAlert className="size-5.5" fill="white" />}
-                {type === 'flood' && <Waves className="size-5.5" />}
-                {type === 'battery' && <BatteryWarning className="size-5.5" fill="white" />}
+                {isMedical && <HeartPulse className="size-5.5" />}
+                {isWarning && <TriangleAlert className="size-5.5" fill="white" />}
+                {isFlood && <Waves className="size-5.5" />}
             </div>
         </div>
     )
+}
+
+function colorForFlag(category: string): string {
+    if (category.toLowerCase().includes('medical')) return '#DC2626'
+    if (category.toLowerCase().includes('flood')) return '#30A2F3'
+    return '#FEBD09'
 }
 
 const SEARCH_CATEGORIES = [
@@ -56,10 +67,26 @@ const SEARCH_CATEGORIES = [
     { value: 'coordinators', label: 'Coordinators', route: '/management' },
 ] as const
 
+const URGENT_FLAG_CATEGORIES = [
+    { value: 'all', label: 'All Categories' },
+    { value: 'fire', label: 'Fire' },
+    { value: 'medical', label: 'Medical' },
+    { value: 'flood', label: 'Flood' },
+    { value: 'blocked_road', label: 'Blocked Road' },
+    { value: 'fallen_tree', label: 'Fallen Tree' },
+] as const
+
 function Dashboard() {
     const navigate = useNavigate()
     const [searchCategory, setSearchCategory] = useState('users')
     const [searchTerm, setSearchTerm] = useState('')
+    const [urgentFlagCategory, setUrgentFlagCategory] = useState<string>('all')
+    const [urgentFlagPage, setUrgentFlagPage] = useState(1)
+
+    const handleCategoryChange = (val: string) => {
+        setUrgentFlagCategory(val)
+        setUrgentFlagPage(1)
+    }
 
     const handleGlobalSearch = (term: string) => {
         const trimmed = term.trim()
@@ -69,13 +96,17 @@ function Dashboard() {
         navigate({ to: category.route, search: { search: trimmed } })
     }
 
-    const { data: overviewData, isLoading } = useAdminOverview()
+    const { data: overviewData, isLoading: isOverviewLoading } = useAdminOverview()
     const checkinData = overviewData?.checkinData || []
     const hazardData = overviewData?.hazardData || []
     const workloadData = overviewData?.workloadData || []
-    const urgentFlags = overviewData?.urgentFlags || []
-    const urgentFlagsCount = overviewData?.urgentFlagsCount || 0
     const statCards = overviewData?.statCards || []
+
+    const { data: urgentFlagsData, isLoading: isUrgentFlagsLoading } = useUrgentFlagsList(urgentFlagCategory === 'all' ? undefined : urgentFlagCategory, urgentFlagPage)
+    const urgentFlags = urgentFlagsData?.data?.results || []
+    const urgentFlagsCount = urgentFlagsData?.data?.count || 0
+    const hasNextPage = !!urgentFlagsData?.data?.next
+    const hasPrevPage = !!urgentFlagsData?.data?.previous
     const { data: mapData, isError: isMapError } = useDashboardMap()
     const [currentTime, setCurrentTime] = useState('')
 
@@ -143,7 +174,7 @@ function Dashboard() {
                         AlertCircle,
                     }
                     const IconComponent = icons[card.iconName] || AlertCircle
-                    return <StatCard key={card.label} {...(card as any)} icon={IconComponent} isLoading={isLoading} />
+                    return <StatCard key={card.label} {...(card as any)} icon={IconComponent} isLoading={isOverviewLoading} />
                 })}
             </div>
 
@@ -192,15 +223,29 @@ function Dashboard() {
                 </Card>
 
                 {/* Urgent Flags */}
-                <Card className="lg:col-span-5 xl:col-span-4 p-5 md:p-6 flex flex-col h-100 xl:h-auto">
+                <Card className="lg:col-span-5 xl:col-span-4 p-5 md:p-6 flex flex-col h-[400px]">
                     <CardHeader className="px-0 pt-0 pb-2 flex flex-row items-center justify-between space-y-0">
-                        <CardTitle className="text-[22px] font-bold">Urgent Flags</CardTitle>
+                        <div className="flex items-center gap-3">
+                            <CardTitle className="text-[22px] font-bold">Urgent Flags</CardTitle>
+                            <Select value={urgentFlagCategory} onValueChange={handleCategoryChange}>
+                                <SelectTrigger className="h-7 border-slate-200 bg-white rounded-full px-3 text-xs font-semibold text-slate-700 focus:ring-0 min-w-[120px]">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl border shadow-md">
+                                    {URGENT_FLAG_CATEGORIES.map((cat) => (
+                                        <SelectItem key={cat.value} value={cat.value} className="text-xs font-medium">
+                                            {cat.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <span className="bg-rose-100/80 text-rose-600 text-[13px] font-bold px-4 py-1.5 rounded-full">
                             {urgentFlagsCount} Active
                         </span>
                     </CardHeader>
                     <CardContent className="p-0 flex flex-col gap-6 flex-1 overflow-y-auto pr-2">
-                        {isLoading ? (
+                        {isUrgentFlagsLoading ? (
                             <div className="w-full py-4 flex flex-col gap-4">
                                 {[1, 2, 3, 4].map((i) => (
                                     <div key={i} className="flex items-center gap-4 px-2">
@@ -213,32 +258,59 @@ function Dashboard() {
                                 ))}
                             </div>
                         ) : urgentFlags.length > 0 ? (
-                            urgentFlags.map((flag) => (
+                            urgentFlags.map((flag: UrgentFlagResult) => (
                                 <div
                                     key={flag.id}
                                     className="flex items-center justify-between group cursor-pointer hover:bg-slate-50/50 p-2 -mx-2 rounded-xl transition-colors"
                                 >
                                     <div className="flex items-center gap-4">
-                                        <FlagIcon type={flag.icon} color={flag.color} />
+                                        <FlagIcon category={flag.category} color={colorForFlag(flag.category)} />
                                         <div className="flex flex-col gap-1 min-w-0">
                                             <p className="text-slate-900 text-[16px] font-bold group-hover:text-blue-700 transition-colors">
-                                                {flag.type}
+                                                {flag.category_label}
                                             </p>
                                             <p
                                                 className="text-muted-foreground text-[13px] font-medium leading-tight max-w-40 truncate"
-                                                title={flag.location}
+                                                title={flag.description || 'Active incident'}
                                             >
-                                                {flag.location}
+                                                {flag.description || 'Active incident'}
                                             </p>
                                         </div>
                                     </div>
-                                    <p className="text-muted-foreground text-[13px] font-semibold shrink-0 ml-2">{flag.time}</p>
+                                    <p className="text-slate-400 text-[13px] font-semibold shrink-0 ml-2">
+                                        {new Date(flag.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                                    </p>
                                 </div>
                             ))
                         ) : (
                             <div className="w-full py-10 flex items-center justify-center text-muted-foreground">No urgent flags.</div>
                         )}
                     </CardContent>
+                    
+                    {/* Pagination */}
+                    <div className="flex items-center justify-between pt-4 mt-auto border-t border-slate-100">
+                        <span className="text-xs text-muted-foreground font-medium">Page {urgentFlagPage}</span>
+                        <div className="flex items-center gap-2">
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-7 px-2" 
+                                disabled={!hasPrevPage || isUrgentFlagsLoading}
+                                onClick={() => setUrgentFlagPage(p => Math.max(1, p - 1))}
+                            >
+                                <ChevronLeft className="size-4" />
+                            </Button>
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-7 px-2" 
+                                disabled={!hasNextPage || isUrgentFlagsLoading}
+                                onClick={() => setUrgentFlagPage(p => p + 1)}
+                            >
+                                <ChevronRight className="size-4" />
+                            </Button>
+                        </div>
+                    </div>
                 </Card>
             </div>
 
@@ -251,7 +323,7 @@ function Dashboard() {
                         <p className="text-muted-foreground text-[15px] font-medium">Network-wide check-in volume over the last 6 hours</p>
                     </CardHeader>
                     <CardContent className="p-0 flex-1 min-h-[300px] lg:min-h-0 w-full relative">
-                        {isLoading ? (
+                        {isOverviewLoading ? (
                             <div className="w-full h-full p-4 flex flex-col gap-4">
                                 <Skeleton className="h-[250px] w-full" />
                             </div>
@@ -306,7 +378,7 @@ function Dashboard() {
                         <CardTitle className="text-[22px] font-bold">Hazard Types</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0 flex-1 min-h-[300px] lg:min-h-0 w-full relative">
-                        {isLoading ? (
+                        {isOverviewLoading ? (
                             <div className="w-full h-full p-4 flex flex-col gap-6 justify-center">
                                 {[1, 2, 3, 4].map((i) => (
                                     <div key={i} className="flex items-center gap-4">
@@ -361,7 +433,7 @@ function Dashboard() {
                         <CardTitle className="text-[22px] font-bold">System Workload</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0 flex-1 min-h-[300px] lg:min-h-0 flex items-center justify-center w-full relative">
-                        {isLoading ? (
+                        {isOverviewLoading ? (
                             <Skeleton className="size-[250px] rounded-full" />
                         ) : (
                             <ResponsiveContainer width="100%" height={350}>

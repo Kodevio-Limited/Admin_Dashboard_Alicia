@@ -19,6 +19,8 @@ export const adminKeys = {
     // System
     overview: () => [...adminKeys.all, 'overview'] as const,
     aiConfig: () => [...adminKeys.all, 'ai-config'] as const,
+    urgentFlagsList: (category?: string) => [...adminKeys.all, 'urgent-flags', category] as const,
+
 
     // AI Control & Reporting
     aiControl: () => [...adminKeys.all, 'ai-control-config'] as const,

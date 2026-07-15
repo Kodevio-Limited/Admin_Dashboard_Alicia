@@ -1,7 +1,7 @@
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { adminKeys } from '@/lib/query-keys'
-import { getAdminOverview } from '@/lib/api/dashboard'
-import type { AdminDashboardOverviewResponse } from '@/lib/api/dashboard'
+import { getAdminOverview, getUrgentFlagsList } from '@/lib/api/dashboard'
+import type { AdminDashboardOverviewResponse, UrgentFlagResult } from '@/lib/api/dashboard'
 import {
     workloadData as fallbackWorkloadData,
     // urgentFlags as fallbackUrgentFlags,
@@ -98,6 +98,15 @@ export function useAdminOverview() {
                 statCards,
             }
         },
+    })
+}
+
+export function useUrgentFlagsList(category?: string, page: number = 1) {
+    return useQuery({
+        queryKey: [...adminKeys.urgentFlagsList(category), page],
+        queryFn: () => getUrgentFlagsList(category, page),
+        staleTime: 30_000,
+        refetchInterval: 30_000,
     })
 }
 
