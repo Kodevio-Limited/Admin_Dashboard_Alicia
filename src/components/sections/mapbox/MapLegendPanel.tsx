@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card'
-import { BriefcaseMedical, TriangleAlert, Waves, BatteryWarning } from 'lucide-react'
+import { BriefcaseMedical, TrafficCone, TreePine, Waves, BatteryWarning } from 'lucide-react'
 
 interface MapLegendPanelProps {
     showLegend: boolean
@@ -42,12 +42,12 @@ export function MapLegendPanel({ showLegend, isNavigating }: MapLegendPanelProps
                 <div className="flex gap-10">
                     <div className="flex flex-col gap-3.5">
                         <LegendItem color="#DC2626" label="Medical" icon={BriefcaseMedical} />
-                        <LegendItem color="#FEBD09" label="Road Block" icon={TriangleAlert} />
+                        <LegendItem color="#FEBD09" label="Road Block" icon={TrafficCone} />
                         <LegendItem color="#30A2F3" label="Flooding" icon={Waves} />
                     </div>
                     <div className="flex flex-col gap-3.5">
                         <LegendItem color="#008A00" label="Hub" icon={BatteryWarning} />
-                        <LegendItem color="#FEBD09" label="Fallen Tree" icon={TriangleAlert} />
+                        <LegendItem color="#FEBD09" label="Fallen Tree" icon={TreePine} />
                     </div>
                 </div>
             </CardContent>
