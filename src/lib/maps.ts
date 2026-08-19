@@ -18,7 +18,7 @@ export function getMapConfig(entityType: 'hazard' | 'hub', typeCategory: string)
         switch (typeCategory) {
             case 'Medical Emergency':
                 return { icon: BriefcaseMedical, color: '#DC2626', pulse: true, size: 'lg' as const }
-            case 'Blocked Road':
+            case 'Road BLock':
                 return { icon: TriangleAlert, color: '#FEBD09', pulse: true, size: 'lg' as const }
             case 'Flooding':
                 return { icon: Waves, color: '#30A2F3', pulse: true, size: 'lg' as const }

@@ -79,9 +79,9 @@ function MapPage() {
                 case 'Fallen Tree':
                     type = 'fallen'
                     break
-                case 'Blocked Road':
+                case 'Road Block':
                     type = 'hazards'
-                    category = 'blocked road'
+                    category = 'Road Block'
                     break
                 case 'All':
                 default:

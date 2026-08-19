@@ -30,7 +30,7 @@ const markerHtmlCache = new Map<string, string>()
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN
 
-const FILTERS = ['All', 'Medical', 'Flooding', 'Hubs', 'Fallen Tree', 'Blocked Road'] as const
+const FILTERS = ['All', 'Medical', 'Flooding', 'Hubs', 'Fallen Tree', 'Road Block'] as const
 export type Filter = (typeof FILTERS)[number]
 
 export function MapPinMarker({

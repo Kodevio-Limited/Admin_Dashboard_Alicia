@@ -77,7 +77,7 @@ export function HazardDetailsDialog({
                 heroImage = 'https://images.unsplash.com/photo-1547683905-f686c993b472?q=80&w=2070&auto=format&fit=crop'
             else if (title.toLowerCase() === 'fallen tree')
                 heroImage = 'https://images.unsplash.com/photo-1562624475-cb51bd20e2e9?q=80&w=2070&auto=format&fit=crop'
-            else if (title.toLowerCase() === 'blocked road')
+            else if (title.toLowerCase() === 'Road Block')
                 heroImage = 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?q=80&w=2070&auto=format&fit=crop'
             else heroImage = 'https://images.unsplash.com/photo-1502809737437-1d85c70dd2ca?q=80&w=2089&auto=format&fit=crop'
         }
@@ -101,7 +101,7 @@ export function HazardDetailsDialog({
                 id: 1,
                 author: 'Hub Manager',
                 avatarUrl: `https://ui-avatars.com/api/?name=HM&background=0D8ABC&color=fff`,
-                message: `Starlink: ${hub.connectivity?.starlink ? 'Online ✓' : 'Offline ✗'} • Solar input: ${hub.solar?.input_w ?? 0}W, output: ${hub.solar?.output_w ?? 0}W • Battery: ${hub.battery_percentage}%`,
+                message: `Internet Connectivity: ${hub.connectivity?.starlink ? 'Online ✓' : 'Offline ✗'} • Solar input: ${hub.solar?.input_w ?? 0}W, output: ${hub.solar?.output_w ?? 0}W • Battery: ${hub.battery_percentage}%`,
                 createdAt: lastSync,
             },
         ]

@@ -92,7 +92,7 @@ function RouteComponent() {
                         {user && (
                             <div className="flex gap-3 items-center shrink-0">
                                 <span className="hidden lg:flex items-center gap-1.5 rounded-md border bg-muted px-2.5 py-0.5 text-[11px] uppercase font-bold text-muted-foreground">
-                                    {user.role}
+                                    {"Organizational Management"} {/* user.role || => part removed */}
                                 </span>
                                 <NavUser user={{ name: user.full_name, email: user.email, avatar: user.profile_photo ? resolveImage(user.profile_photo) : undefined }} />
                             </div>

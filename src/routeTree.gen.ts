@@ -9,56 +9,56 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as _authRouteRouteImport } from './routes/__auth/route'
-import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedMapRouteImport } from './routes/_authenticated/map'
-import { Route as AuthenticatedManagementRouteImport } from './routes/_authenticated/management'
-import { Route as AuthenticatedAiReportsRouteImport } from './routes/_authenticated/ai-reports'
-import { Route as AuthenticatedAccessControlRouteImport } from './routes/_authenticated/access-control'
-import { Route as _authVerificationRouteImport } from './routes/__auth/verification'
-import { Route as _authSigninRouteImport } from './routes/__auth/signin'
-import { Route as _authResetPasswordRouteImport } from './routes/__auth/reset-password'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AcceptInviteRouteImport } from './routes/accept-invite'
 import { Route as _authForgotPasswordRouteImport } from './routes/__auth/forgot-password'
+import { Route as _authResetPasswordRouteImport } from './routes/__auth/reset-password'
+import { Route as _authSigninRouteImport } from './routes/__auth/signin'
+import { Route as _authVerificationRouteImport } from './routes/__auth/verification'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedAccessControlRouteImport } from './routes/_authenticated/access-control'
+import { Route as AuthenticatedAiReportsRouteImport } from './routes/_authenticated/ai-reports'
+import { Route as AuthenticatedManagementRouteImport } from './routes/_authenticated/management'
+import { Route as AuthenticatedMapRouteImport } from './routes/_authenticated/map'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 
-const AcceptInviteRoute = AcceptInviteRouteImport.update({
-  id: '/accept-invite',
-  path: '/accept-invite',
+const _authRouteRoute = _authRouteRouteImport.update({
+  id: '/__auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const _authRouteRoute = _authRouteRouteImport.update({
-  id: '/__auth',
+const AcceptInviteRoute = AcceptInviteRouteImport.update({
+  id: '/accept-invite',
+  path: '/accept-invite',
   getParentRoute: () => rootRouteImport,
+} as any)
+const _authForgotPasswordRoute = _authForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => _authRouteRoute,
+} as any)
+const _authResetPasswordRoute = _authResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => _authRouteRoute,
+} as any)
+const _authSigninRoute = _authSigninRouteImport.update({
+  id: '/signin',
+  path: '/signin',
+  getParentRoute: () => _authRouteRoute,
+} as any)
+const _authVerificationRoute = _authVerificationRouteImport.update({
+  id: '/verification',
+  path: '/verification',
+  getParentRoute: () => _authRouteRoute,
 } as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedMapRoute = AuthenticatedMapRouteImport.update({
-  id: '/map',
-  path: '/map',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedManagementRoute = AuthenticatedManagementRouteImport.update({
-  id: '/management',
-  path: '/management',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedAiReportsRoute = AuthenticatedAiReportsRouteImport.update({
-  id: '/ai-reports',
-  path: '/ai-reports',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAccessControlRoute =
@@ -67,25 +67,25 @@ const AuthenticatedAccessControlRoute =
     path: '/access-control',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const _authVerificationRoute = _authVerificationRouteImport.update({
-  id: '/verification',
-  path: '/verification',
-  getParentRoute: () => _authRouteRoute,
+const AuthenticatedAiReportsRoute = AuthenticatedAiReportsRouteImport.update({
+  id: '/ai-reports',
+  path: '/ai-reports',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const _authSigninRoute = _authSigninRouteImport.update({
-  id: '/signin',
-  path: '/signin',
-  getParentRoute: () => _authRouteRoute,
+const AuthenticatedManagementRoute = AuthenticatedManagementRouteImport.update({
+  id: '/management',
+  path: '/management',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const _authResetPasswordRoute = _authResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
-  getParentRoute: () => _authRouteRoute,
+const AuthenticatedMapRoute = AuthenticatedMapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const _authForgotPasswordRoute = _authForgotPasswordRouteImport.update({
-  id: '/forgot-password',
-  path: '/forgot-password',
-  getParentRoute: () => _authRouteRoute,
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -182,11 +182,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/accept-invite': {
-      id: '/accept-invite'
-      path: '/accept-invite'
-      fullPath: '/accept-invite'
-      preLoaderRoute: typeof AcceptInviteRouteImport
+    '/__auth': {
+      id: '/__auth'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof _authRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -196,67 +196,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/__auth': {
-      id: '/__auth'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof _authRouteRouteImport
+    '/accept-invite': {
+      id: '/accept-invite'
+      path: '/accept-invite'
+      fullPath: '/accept-invite'
+      preLoaderRoute: typeof AcceptInviteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/': {
-      id: '/_authenticated/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/settings': {
-      id: '/_authenticated/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/map': {
-      id: '/_authenticated/map'
-      path: '/map'
-      fullPath: '/map'
-      preLoaderRoute: typeof AuthenticatedMapRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/management': {
-      id: '/_authenticated/management'
-      path: '/management'
-      fullPath: '/management'
-      preLoaderRoute: typeof AuthenticatedManagementRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/ai-reports': {
-      id: '/_authenticated/ai-reports'
-      path: '/ai-reports'
-      fullPath: '/ai-reports'
-      preLoaderRoute: typeof AuthenticatedAiReportsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/access-control': {
-      id: '/_authenticated/access-control'
-      path: '/access-control'
-      fullPath: '/access-control'
-      preLoaderRoute: typeof AuthenticatedAccessControlRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/__auth/verification': {
-      id: '/__auth/verification'
-      path: '/verification'
-      fullPath: '/verification'
-      preLoaderRoute: typeof _authVerificationRouteImport
-      parentRoute: typeof _authRouteRoute
-    }
-    '/__auth/signin': {
-      id: '/__auth/signin'
-      path: '/signin'
-      fullPath: '/signin'
-      preLoaderRoute: typeof _authSigninRouteImport
+    '/__auth/forgot-password': {
+      id: '/__auth/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof _authForgotPasswordRouteImport
       parentRoute: typeof _authRouteRoute
     }
     '/__auth/reset-password': {
@@ -266,12 +217,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof _authResetPasswordRouteImport
       parentRoute: typeof _authRouteRoute
     }
-    '/__auth/forgot-password': {
-      id: '/__auth/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof _authForgotPasswordRouteImport
+    '/__auth/signin': {
+      id: '/__auth/signin'
+      path: '/signin'
+      fullPath: '/signin'
+      preLoaderRoute: typeof _authSigninRouteImport
       parentRoute: typeof _authRouteRoute
+    }
+    '/__auth/verification': {
+      id: '/__auth/verification'
+      path: '/verification'
+      fullPath: '/verification'
+      preLoaderRoute: typeof _authVerificationRouteImport
+      parentRoute: typeof _authRouteRoute
+    }
+    '/_authenticated/': {
+      id: '/_authenticated/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/access-control': {
+      id: '/_authenticated/access-control'
+      path: '/access-control'
+      fullPath: '/access-control'
+      preLoaderRoute: typeof AuthenticatedAccessControlRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ai-reports': {
+      id: '/_authenticated/ai-reports'
+      path: '/ai-reports'
+      fullPath: '/ai-reports'
+      preLoaderRoute: typeof AuthenticatedAiReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/management': {
+      id: '/_authenticated/management'
+      path: '/management'
+      fullPath: '/management'
+      preLoaderRoute: typeof AuthenticatedManagementRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/map': {
+      id: '/_authenticated/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof AuthenticatedMapRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
