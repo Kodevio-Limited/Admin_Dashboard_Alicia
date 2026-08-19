@@ -17,7 +17,8 @@ export const Route = createFileRoute('/_authenticated/management')({
 })
 
 function ManagementPage() {
-    const [activeTab, setActiveTab] = useState('residents')
+    const initialTab = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('tab') || 'residents' : 'residents'
+    const [activeTab, setActiveTab] = useState(initialTab)
 
     const [residentPage, setResidentPage] = useState(1)
     const [residentLimit, setResidentLimit] = useState(10)

@@ -77,7 +77,7 @@ export function HazardDetailsDialog({
                 heroImage = 'https://images.unsplash.com/photo-1547683905-f686c993b472?q=80&w=2070&auto=format&fit=crop'
             else if (title.toLowerCase() === 'fallen tree')
                 heroImage = 'https://images.unsplash.com/photo-1562624475-cb51bd20e2e9?q=80&w=2070&auto=format&fit=crop'
-            else if (title.toLowerCase() === 'Road Block')
+            else if (title.toLowerCase() === 'road block' || title.toLowerCase() === 'blocked road')
                 heroImage = 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?q=80&w=2070&auto=format&fit=crop'
             else heroImage = 'https://images.unsplash.com/photo-1502809737437-1d85c70dd2ca?q=80&w=2089&auto=format&fit=crop'
         }

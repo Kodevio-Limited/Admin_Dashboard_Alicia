@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react'
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useAdminOverview, useDashboardMap, useUrgentFlagsList } from '@/hooks/useDashboard'
 import type { UrgentFlagResult } from '@/lib/api/dashboard'
@@ -17,7 +17,7 @@ import {
     Pie,
     Legend,
 } from 'recharts'
-import { HeartPulse, TriangleAlert, Waves, BatteryWarning, Users, Activity, CheckCircle, ShieldCheck, AlertCircle, MapPin, ChevronLeft, ChevronRight } from 'lucide-react'
+import { HeartPulse, TriangleAlert, Waves, Users, Activity, CheckCircle, ShieldCheck, AlertCircle, MapPin, ChevronLeft, ChevronRight, TrafficCone, TreePine, Flame } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 
@@ -33,9 +33,12 @@ export const Route = createFileRoute('/_authenticated/')({
 
 
 function FlagIcon({ category, color }: { category: string; color: string }) {
-    const isMedical = category.toLowerCase().includes('medical')
-    const isFlood = category.toLowerCase().includes('flood')
-    const isWarning = !isMedical && !isFlood
+    const cat = category.toLowerCase()
+    const isMedical = cat.includes('medical')
+    const isFlood = cat.includes('flood')
+    const isTree = cat.includes('tree')
+    const isRoadBlock = cat.includes('road') || cat.includes('block')
+    const isFire = cat.includes('fire')
 
     return (
         <div className="relative shrink-0 size-12 rounded-full bg-muted flex items-center justify-center">
@@ -45,8 +48,11 @@ function FlagIcon({ category, color }: { category: string; color: string }) {
             />
             <div className="relative z-10 text-white flex items-center justify-center">
                 {isMedical && <HeartPulse className="size-5.5" />}
-                {isWarning && <TriangleAlert className="size-5.5" fill="white" />}
                 {isFlood && <Waves className="size-5.5" />}
+                {isTree && <TreePine className="size-5.5" />}
+                {isRoadBlock && <TrafficCone className="size-5.5" />}
+                {isFire && <Flame className="size-5.5" />}
+                {!isMedical && !isFlood && !isTree && !isRoadBlock && !isFire && <TriangleAlert className="size-5.5" fill="white" />}
             </div>
         </div>
     )
@@ -62,9 +68,10 @@ const SEARCH_CATEGORIES = [
     { value: 'users', label: 'Users', route: '/access-control' },
     { value: 'messages', label: 'Messages', route: '/ai-reports' },
     { value: 'reports', label: 'Reports', route: '/ai-reports' },
-    { value: 'residents', label: 'Residents', route: '/management' },
-    { value: 'hubs', label: 'Hubs', route: '/management' },
-    { value: 'coordinators', label: 'Coordinators', route: '/management' },
+    { value: 'residents', label: 'Residents', route: '/management', tab: 'residents' },
+    { value: 'hubs', label: 'Hubs', route: '/management', tab: 'hubs' },
+    { value: 'coordinators', label: 'Coordinators', route: '/management', tab: 'coordinators' },
+    { value: 'hazards', label: 'Hazards', route: '/map' },
 ] as const
 
 const URGENT_FLAG_CATEGORIES = [
@@ -88,14 +95,6 @@ function Dashboard() {
         setUrgentFlagPage(1)
     }
 
-    const handleGlobalSearch = (term: string) => {
-        const trimmed = term.trim()
-        if (!trimmed) return
-        const category = SEARCH_CATEGORIES.find((c) => c.value === searchCategory)
-        if (!category) return
-        navigate({ to: category.route, search: { search: trimmed } })
-    }
-
     const { data: overviewData, isLoading: isOverviewLoading } = useAdminOverview()
     const checkinData = overviewData?.checkinData || []
     const hazardData = overviewData?.hazardData || []
@@ -109,6 +108,105 @@ function Dashboard() {
     const hasPrevPage = !!urgentFlagsData?.data?.previous
     const { data: mapData, isError: isMapError } = useDashboardMap()
     const [currentTime, setCurrentTime] = useState('')
+
+    const handleGlobalSearch = (term: string) => {
+        const trimmed = term.trim()
+        if (!trimmed) return
+        const category = SEARCH_CATEGORIES.find((c) => c.value === searchCategory)
+        if (!category) return
+        navigate({
+            to: category.route,
+            search: {
+                search: trimmed,
+                ...('tab' in category && category.tab ? { tab: category.tab } : {}),
+            },
+        })
+    }
+
+    const searchResults = useMemo(() => {
+        const query = searchTerm.toLowerCase().trim()
+        if (!query) return []
+
+        const results: Array<{
+            id: string
+            place_name: string
+            category: string
+            route?: string
+            search?: Record<string, any>
+            center?: [number, number]
+        }> = []
+
+        // 1. Current selected category direct search action
+        const currentCat = SEARCH_CATEGORIES.find((c) => c.value === searchCategory)
+        if (currentCat) {
+            results.push({
+                id: `action-${currentCat.value}`,
+                place_name: `Search "${searchTerm}" in ${currentCat.label}`,
+                category: currentCat.label,
+                route: currentCat.route,
+                search: {
+                    search: searchTerm,
+                    ...('tab' in currentCat && currentCat.tab ? { tab: currentCat.tab } : {}),
+                },
+            })
+        }
+
+        // 2. Matching markers / Hubs / Hazards from mapData
+        if (mapData?.markers) {
+            const matchedMarkers = mapData.markers
+                .filter(
+                    (m) =>
+                        (m.name || '').toLowerCase().includes(query) ||
+                        m.type.toLowerCase().includes(query) ||
+                        m.entityType.toLowerCase().includes(query)
+                )
+                .slice(0, 5)
+
+            matchedMarkers.forEach((m) => {
+                results.push({
+                    id: `marker-${m.id}`,
+                    place_name: m.name || `${m.type} Location`,
+                    category: m.type,
+                    center: [m.lng, m.lat],
+                    route: '/map',
+                    search: { search: m.name || m.type },
+                })
+            })
+        }
+
+        // 3. Quick jump to other search categories
+        SEARCH_CATEGORIES.filter((c) => c.value !== searchCategory).forEach((cat) => {
+            if (cat.label.toLowerCase().includes(query) || query.length >= 2) {
+                results.push({
+                    id: `cat-${cat.value}`,
+                    place_name: `Search "${searchTerm}" in ${cat.label}`,
+                    category: cat.label,
+                    route: cat.route,
+                    search: {
+                        search: searchTerm,
+                        ...('tab' in cat && cat.tab ? { tab: cat.tab } : {}),
+                    },
+                })
+            }
+        })
+
+        return results.slice(0, 8)
+    }, [searchTerm, searchCategory, mapData?.markers])
+
+    const handleSelectResult = (result: any) => {
+        if (result.route) {
+            navigate({
+                to: result.route,
+                search: result.search || (result.center ? { search: result.place_name } : { search: searchTerm }),
+            })
+        } else if (result.center) {
+            navigate({
+                to: '/map',
+                search: { search: result.place_name },
+            })
+        }
+        setSearchTerm('')
+    }
 
     useEffect(() => {
         const update = () => {
@@ -136,6 +234,8 @@ function Dashboard() {
                 onSearchChange={(val) => {
                     setSearchTerm(val)
                 }}
+                searchResults={searchResults}
+                onSelectResult={handleSelectResult}
                 searchPlaceholder={(() => {
                     const cat = SEARCH_CATEGORIES.find((c) => c.value === searchCategory)
                     return cat ? `Search ${cat.label.toLowerCase()}...` : 'Search...'

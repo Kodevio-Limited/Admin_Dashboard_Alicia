@@ -13,7 +13,7 @@ export interface PageHeaderProps {
     searchPlaceholder?: string
     searchPrefix?: React.ReactNode
     onSearchKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
-    searchResults?: Array<{ id: string; place_name: string; center: [number, number] }>
+    searchResults?: Array<{ id: string; place_name: string; center?: [number, number]; category?: string; [key: string]: any }>
     onSelectResult?: (result: any) => void
     loadingResults?: boolean
 }
@@ -65,7 +65,7 @@ export function PageHeader({
                     <div
                         ref={containerRef}
                         className={cn(
-                            "bg-white h-9 items-center rounded-full w-[260px] lg:w-[320px] pl-1.5 pr-1 transition-colors hover:bg-white/90 hidden md:flex border border-black/5",
+                            "relative bg-white h-9 items-center rounded-full w-[260px] lg:w-[340px] pl-1.5 pr-1 transition-colors hover:bg-white/90 hidden md:flex border border-black/5 shadow-sm",
                             onSearchChange
                                 ? "cursor-text focus-within:border-primary/20 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary/10"
                                 : "opacity-50 cursor-not-allowed"
@@ -95,7 +95,7 @@ export function PageHeader({
                         </div>
 
                         {dropdownOpen && searchResults && searchResults.length > 0 && (
-                            <ul className="absolute top-10 left-0 w-full bg-white border border-slate-100 rounded-lg shadow-xl overflow-hidden py-1.5 z-50 list-none p-0 max-h-60 overflow-y-auto pointer-events-auto">
+                            <ul className="absolute top-10 left-0 w-full bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden py-1 z-50 list-none p-0 max-h-64 overflow-y-auto pointer-events-auto">
                                 {searchResults.map((result) => (
                                     <li
                                         key={result.id}
@@ -103,9 +103,14 @@ export function PageHeader({
                                             onSelectResult?.(result)
                                             setDropdownOpen(false)
                                         }}
-                                        className="px-3 py-2 text-slate-700 text-xs md:text-sm hover:bg-slate-50 cursor-pointer transition-colors truncate"
+                                        className="px-3.5 py-2 text-slate-700 text-xs md:text-sm hover:bg-slate-50 cursor-pointer transition-colors flex items-center justify-between gap-2"
                                     >
-                                        {result.place_name}
+                                        <span className="truncate font-medium">{result.place_name}</span>
+                                        {result.category && (
+                                            <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 shrink-0">
+                                                {result.category}
+                                            </span>
+                                        )}
                                     </li>
                                 ))}
                             </ul>

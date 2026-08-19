@@ -1,4 +1,4 @@
-import { MapPin, BatteryWarning, TriangleAlert, BriefcaseMedical, Waves, ShieldAlert, Home, Activity } from 'lucide-react'
+import { MapPin, BatteryWarning, BriefcaseMedical, Waves, ShieldAlert, Home, Activity, TrafficCone, TreePine, Flame } from 'lucide-react'
 
 export interface MapPoint {
     id: number
@@ -17,15 +17,20 @@ export function getMapConfig(entityType: 'hazard' | 'hub', typeCategory: string)
     if (entityType === 'hazard') {
         switch (typeCategory) {
             case 'Medical Emergency':
+            case 'Medical':
                 return { icon: BriefcaseMedical, color: '#DC2626', pulse: true, size: 'lg' as const }
+            case 'Road Block':
             case 'Road BLock':
-                return { icon: TriangleAlert, color: '#FEBD09', pulse: true, size: 'lg' as const }
+            case 'Blocked Road':
+            case 'Hazard':
+                return { icon: TrafficCone, color: '#FEBD09', pulse: true, size: 'lg' as const }
             case 'Flooding':
+            case 'Flood':
                 return { icon: Waves, color: '#30A2F3', pulse: true, size: 'lg' as const }
             case 'Fallen Tree':
-                return { icon: TriangleAlert, color: '#FEBD09', pulse: false, size: 'md' as const }
+                return { icon: TreePine, color: '#FEBD09', pulse: false, size: 'md' as const }
             case 'Fire':
-                return { icon: TriangleAlert, color: '#DC2626', pulse: true, size: 'lg' as const }
+                return { icon: Flame, color: '#DC2626', pulse: true, size: 'lg' as const }
             default:
                 return { icon: MapPin, color: '#DC2626', pulse: true, size: 'md' as const }
         }

@@ -1,7 +1,7 @@
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { adminKeys } from '@/lib/query-keys'
 import { getAdminOverview, getUrgentFlagsList } from '@/lib/api/dashboard'
-import type { AdminDashboardOverviewResponse, UrgentFlagResult } from '@/lib/api/dashboard'
+import type { AdminDashboardOverviewResponse } from '@/lib/api/dashboard'
 import {
     workloadData as fallbackWorkloadData,
     // urgentFlags as fallbackUrgentFlags,
