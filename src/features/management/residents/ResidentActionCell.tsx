@@ -82,7 +82,7 @@ export function ResidentActionCell({ resident }: { resident: ResidentAPIResult }
                         Action
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" sideOffset={8}>
+                <DropdownMenuContent align="end" sideOffset={8} className="w-48">
                     <DialogTrigger asChild>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>View details</DropdownMenuItem>
                     </DialogTrigger>
