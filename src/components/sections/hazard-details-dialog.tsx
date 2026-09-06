@@ -92,7 +92,7 @@ export function HazardDetailsDialog({
             ? new Date(hub.sync.last_sync_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })
             : 'Unknown'
 
-        overview = `📍 ${hub.location?.address || 'Unknown location'}\nBattery: ${hub.battery_percentage}% • Starlink: ${hub.connectivity?.starlink ? 'Connected' : 'Offline'}`
+        overview = `📍 ${hub.location?.address || 'Unknown location'}\n  • Battery: ${hub.battery_percentage}% \n  • Internet Connectivity: ${hub.connectivity?.starlink ? 'Connected' : 'Offline'}`
         affectedLabel = 'Last Sync'
         affectedNum = lastSync
 

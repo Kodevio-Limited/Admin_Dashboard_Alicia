@@ -14,3 +14,5 @@ todos.json
 .vercel
 config.bat
 .env
+.env*.local
+.env.production

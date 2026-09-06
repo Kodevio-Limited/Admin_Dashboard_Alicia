@@ -53,7 +53,7 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                         Action
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" sideOffset={8}>
+                <DropdownMenuContent align="end" sideOffset={8} className="w-56"> {/* removed chipped off of words */}
                     <DialogTrigger asChild>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>View details</DropdownMenuItem>
                     </DialogTrigger>
@@ -73,7 +73,7 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                             disabled={unsuspendMutation.isPending}
                             className="text-emerald-600 focus:text-emerald-600"
                         >
-                            Unsuspend coordinator
+                            Unsuspend Coordinator
                         </DropdownMenuItem>
                     ) : (
                         <DropdownMenuItem
@@ -81,7 +81,7 @@ export function CoordinatorActionCell({ coordinator }: { coordinator: Coordinato
                             disabled={suspendMutation.isPending}
                             className="text-destructive focus:text-destructive"
                         >
-                            Suspend coordinator
+                            Suspend Coordinator
                         </DropdownMenuItem>
                     )}
                 </DropdownMenuContent>
