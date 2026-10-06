@@ -530,7 +530,7 @@ function ManagementPage() {
                                     <div className="flex-1 overflow-y-auto">
                                         <div className="flex flex-col gap-4 min-h-min">
                                             <ServerDataTable<HubAPIResult>
-                                                columns={hubColumns}
+                                                columns={currentHubColumns}
                                                 data={hubsData?.results || ([] as HubAPIResult[])}
                                                 totalCount={hubsData?.count || 0}
                                                 page={hubPage}
