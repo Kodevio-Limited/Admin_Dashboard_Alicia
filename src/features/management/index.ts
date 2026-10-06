@@ -6,7 +6,7 @@ export { residentColumns } from './residents/columns'
 // Hubs
 export { HubActionCell } from './hubs/HubActionCell'
 export { CreateHubDialog } from './hubs/CreateHubDialog'
-export { hubColumns } from './hubs/columns'
+export { hubColumns, getHubColumns } from './hubs/columns'
 
 // Coordinators
 export { CoordinatorActionCell } from './coordinators/CoordinatorActionCell'

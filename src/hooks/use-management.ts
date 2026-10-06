@@ -1,7 +1,25 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { getResidents, getResidentDetails, activateResident, suspendResident,turnCoordinator, getHubs, getCoordinators, createHub, assignCoordinator, reassignCoordinator, getUsers, updateUser } from '@/lib/api/management'
+import {
+    getResidents,
+    getResidentDetails,
+    activateResident,
+    suspendResident,
+    turnCoordinator,
+    getHubs,
+    getCoordinators,
+    createHub,
+    deleteHub,
+    updateHubStatus,
+    controlHubs,
+    type ControlHubsPayload,
+    assignCoordinator,
+    reassignCoordinator,
+    getUsers,
+    updateUser,
+} from '@/lib/api/management'
 import { type GetResidentsParams, type GetHubsParams, type GetCoordinatorsParams, type GetUsersParams } from '@/lib/api/management'
+
 
 export const managementKeys = {
     all: ['management'] as const,
@@ -99,10 +117,59 @@ export function useCreateHub() {
     return useMutation({
         mutationFn: createHub,
         onSuccess: () => {
+            toast.success('Hub created successfully')
             queryClient.invalidateQueries({ queryKey: managementKeys.hubs() })
+        },
+        onError: (err: any) => {
+            toast.error(err?.message || 'Failed to create hub')
         },
     })
 }
+
+export function useDeleteHub() {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: (hubId: number) => deleteHub(hubId),
+        onSuccess: () => {
+            toast.success('Hub deleted successfully')
+            queryClient.invalidateQueries({ queryKey: managementKeys.all })
+        },
+        onError: (err: any) => {
+            toast.error(err?.message || 'Failed to delete hub')
+        },
+    })
+}
+
+export function useUpdateHubStatus() {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: ({ hubId, status }: { hubId: number; status: 'open' | 'closed' | 'low_battery' | 'critical' }) =>
+            updateHubStatus(hubId, status),
+        onSuccess: (res, vars) => {
+            toast.success(`Hub status changed to ${vars.status}`)
+            queryClient.invalidateQueries({ queryKey: managementKeys.hubs() })
+        },
+        onError: (err: any) => {
+            toast.error(err?.message || 'Failed to update hub status')
+        },
+    })
+}
+
+export function useControlHubs() {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: (payload: ControlHubsPayload) => controlHubs(payload),
+        onSuccess: (res) => {
+            const msg = res?.data?.message || 'Hubs updated successfully'
+            toast.success(msg)
+            queryClient.invalidateQueries({ queryKey: managementKeys.all })
+        },
+        onError: (err: any) => {
+            toast.error(err?.message || 'Failed to perform hub control action')
+        },
+    })
+}
+
 
 export function useAssignCoordinator() {
     const queryClient = useQueryClient()

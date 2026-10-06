@@ -187,6 +187,36 @@ export async function reassignCoordinator(hubId: number, payload: ReassignCoordi
     })
 }
 
+export async function deleteHub(hubId: number): Promise<ApiResponse<any>> {
+    return client<ApiResponse<any>>(`/admin/hubs/${hubId}/`, {
+        method: 'DELETE',
+    })
+}
+
+export async function updateHubStatus(
+    hubId: number,
+    status: 'open' | 'closed' | 'low_battery' | 'critical',
+): Promise<ApiResponse<HubAPIResult>> {
+    return client<ApiResponse<HubAPIResult>>(`/admin/hubs/${hubId}/status/`, {
+        method: 'PATCH',
+        data: { status },
+    })
+}
+
+export interface ControlHubsPayload {
+    action: 'open' | 'close' | 'delete' | 'set_status'
+    target?: 'all' | 'selected'
+    hub_ids?: number[]
+    status?: 'open' | 'closed' | 'low_battery' | 'critical'
+}
+
+export async function controlHubs(payload: ControlHubsPayload): Promise<ApiResponse<any>> {
+    return client<ApiResponse<any>>('/admin/hubs/control/', {
+        method: 'POST',
+        data: payload,
+    })
+}
+
 export interface UserAPIResult {
     phone_number: string
     full_name: string
