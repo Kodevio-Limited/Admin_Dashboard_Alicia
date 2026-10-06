@@ -17,7 +17,7 @@ import {
     Pie,
     Legend,
 } from 'recharts'
-import { HeartPulse, TriangleAlert, Waves, Users, Activity, CheckCircle, ShieldCheck, AlertCircle, MapPin, ChevronLeft, ChevronRight, TrafficCone, TreePine, Flame } from 'lucide-react'
+import { TriangleAlert, Users, Activity, CheckCircle, ShieldCheck, AlertCircle, MapPin, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 
@@ -32,37 +32,44 @@ export const Route = createFileRoute('/_authenticated/')({
 })
 
 
-function FlagIcon({ category, color }: { category: string; color: string }) {
+const FLAG_ICON_MAP: Record<string, string> = {
+    medical: '/icons/flags/medical.png',
+    medical_emergency: '/icons/flags/medical_emergency.png',
+    flooding: '/icons/flags/flood.png',
+    flood: '/icons/flags/flood.png',
+    fallen_tree: '/icons/flags/fallen_tree.png',
+    blocked_road: '/icons/flags/blocked_road.png',
+    fallen_utility_pole: '/icons/flags/fallen_utility_pole.png',
+    power_line_down: '/icons/flags/fallen_utility_pole.png',
+    collapsed_building: '/icons/flags/collapsed_building.png',
+    trapped: '/icons/flags/trapped.png',
+    need_supplies: '/icons/flags/need_supplies.png',
+    fire: '/icons/flags/medical_emergency.png',
+    landslide: '/icons/flags/blocked_road.png',
+    earthquake: '/icons/flags/collapsed_building.png',
+    storm: '/icons/flags/flood.png',
+}
+
+function FlagIcon({ category }: { category: string }) {
     const cat = category.toLowerCase()
-    const isMedical = cat.includes('medical')
-    const isFlood = cat.includes('flood')
-    const isTree = cat.includes('tree')
-    const isRoadBlock = cat.includes('road') || cat.includes('block')
-    const isFire = cat.includes('fire')
+    const iconSrc = FLAG_ICON_MAP[cat]
+
+    if (iconSrc) {
+        return (
+            <div className="shrink-0 size-12 rounded-full overflow-hidden">
+                <img src={iconSrc} alt={category} className="size-full object-cover" />
+            </div>
+        )
+    }
 
     return (
-        <div className="relative shrink-0 size-12 rounded-full bg-muted flex items-center justify-center">
-            <div
-                className="absolute inset-0 rounded-full flex items-center justify-center m-1 shadow-sm"
-                style={{ backgroundColor: color }}
-            />
-            <div className="relative z-10 text-white flex items-center justify-center">
-                {isMedical && <HeartPulse className="size-5.5" />}
-                {isFlood && <Waves className="size-5.5" />}
-                {isTree && <TreePine className="size-5.5" />}
-                {isRoadBlock && <TrafficCone className="size-5.5" />}
-                {isFire && <Flame className="size-5.5" />}
-                {!isMedical && !isFlood && !isTree && !isRoadBlock && !isFire && <TriangleAlert className="size-5.5" fill="white" />}
-            </div>
+        <div className="shrink-0 size-12 rounded-full bg-amber-400 flex items-center justify-center">
+            <TriangleAlert className="size-5.5 text-white" fill="white" />
         </div>
     )
 }
 
-function colorForFlag(category: string): string {
-    if (category.toLowerCase().includes('medical')) return '#DC2626'
-    if (category.toLowerCase().includes('flood')) return '#30A2F3'
-    return '#FEBD09'
-}
+
 
 const SEARCH_CATEGORIES = [
     { value: 'users', label: 'Users', route: '/access-control' },
@@ -78,9 +85,15 @@ const URGENT_FLAG_CATEGORIES = [
     { value: 'all', label: 'All Categories' },
     { value: 'fire', label: 'Fire' },
     { value: 'medical', label: 'Medical' },
-    { value: 'flood', label: 'Flood' },
+    { value: 'flooding', label: 'Flood' },
     { value: 'blocked_road', label: 'Blocked Road' },
     { value: 'fallen_tree', label: 'Fallen Tree' },
+    { value: 'fallen_utility_pole', label: 'Fallen Utility Pole' },
+    { value: 'collapsed_building', label: 'Collapsed Building' },
+    { value: 'power_line_down', label: 'Power Line Down' },
+    { value: 'landslide', label: 'Landslide' },
+    { value: 'earthquake', label: 'Earthquake' },
+    { value: 'storm', label: 'Storm' },
 ] as const
 
 function Dashboard() {
@@ -364,7 +377,7 @@ function Dashboard() {
                                     className="flex items-center justify-between group cursor-pointer hover:bg-slate-50/50 p-2 -mx-2 rounded-xl transition-colors"
                                 >
                                     <div className="flex items-center gap-4">
-                                        <FlagIcon category={flag.category} color={colorForFlag(flag.category)} />
+                                        <FlagIcon category={flag.category} />
                                         <div className="flex flex-col gap-1 min-w-0">
                                             <p className="text-slate-900 text-[16px] font-bold group-hover:text-blue-700 transition-colors">
                                                 {flag.category_label}
